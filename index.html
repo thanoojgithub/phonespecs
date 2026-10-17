@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>PhoneSpecs — Mobile Phone Technical Specifications</title>
+  <meta name="description" content="Clean, simple, and modern mobile phone specifications catalog. Built with lightweight Alpine.js, pure GET data rendering, iconic navigation, and side-by-side phone comparison.">
+  
+  <!-- Modern Clean Font Outfit & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Browser Tab Favicon (Trimmed Sleek Minimalist Black Smartphone Emblem) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 30' fill='none'%3E%3Crect width='24' height='30' rx='6' fill='%230F172A'/%3E%3Crect x='2.5' y='2.5' width='19' height='25' rx='3.5' stroke='%23FFFFFF' stroke-width='1.8' stroke-linecap='round'/%3E%3Ccircle cx='7.5' cy='7.5' r='1.5' fill='%23E11D48'/%3E%3Ccircle cx='12.5' cy='7.5' r='1.5' fill='%23FFFFFF'/%3E%3Ccircle cx='10' cy='11.5' r='1.5' fill='%23FDA4AF'/%3E%3Cpath d='M6.5 23.5H17.5' stroke='%23FFFFFF' stroke-width='1.6' stroke-linecap='round' stroke-opacity='0.9'/%3E%3C/svg%3E">
+  
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Alpine.js Application Logic -->
+  <script src="js/app.js"></script>
+
+  <!-- Lightweight Alpine.js (~15KB minified CDN - no install required) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
+</head>
+<body x-data="phoneCatalog" x-cloak>
+
+  <!-- Clean Top Header Navigation: Logo on Top Left, Admin Access on Top Right -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-logo" @click="showAllPhones()" style="cursor: pointer;">
+        <!-- Sleek Trimmed Minimalist Black PhoneSpecs Emblem (No extra padding) -->
+        <div class="ps-brand-emblem">
+          <svg viewBox="0 0 24 30" fill="none" xmlns="http://www.w3.org/2000/svg" class="ps-emblem-svg">
+            <!-- Modern Deep Slate / Black Squircle Base (Tight fit, no extra pads) -->
+            <rect width="24" height="30" rx="6" fill="#0F172A"/>
+            
+            <!-- Sleek Minimalist Smartphone Silhouette -->
+            <rect x="2.5" y="2.5" width="19" height="25" rx="3.5" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>
+            
+            <!-- Precision Camera Cluster Array (Crimson, White, Rose) -->
+            <circle cx="7.5" cy="7.5" r="1.5" fill="#E11D48"/>
+            <circle cx="12.5" cy="7.5" r="1.5" fill="#FFFFFF"/>
+            <circle cx="10" cy="11.5" r="1.5" fill="#FDA4AF"/>
+            
+            <!-- Display Base Indicator Horizon -->
+            <path d="M6.5 23.5H17.5" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-opacity="0.9"/>
+          </svg>
+        </div>
+        <div class="brand-text-wrap">
+          <span class="brand-title">Phone<span class="brand-title-accent">Specs</span></span>
+        </div>
+      </div>
+
+      <!-- Header Action Controls (Top Right) -->
+      <div class="header-actions">
+        <!-- Compare Tray Trigger in Header -->
+        <button class="btn-compare-header" @click="openCompareModal()" x-show="compareList.length > 0">
+          Compare <span class="compare-badge-num" x-text="compareList.length"></span>
+        </button>
+
+        <!-- Modern Compact Admin Access Button -->
+        <button class="btn-admin-compact" :class="{ 'admin-active': adminMode }" @click="toggleAdmin()" title="Toggle Admin Mode">
+          <span class="admin-dot"></span>
+          <span x-text="adminMode ? 'Admin Active' : 'Admin Access'"></span>
+        </button>
+      </div>
+    </div>
+
+  </header>
+
+  <!-- App Owner Admin Status Banner -->
+  <div class="admin-banner" x-show="adminMode" x-transition>
+    <span><strong>App Owner Mode:</strong> Add, edit, or delete mobile phone specifications directly.</span>
+    <div class="admin-banner-actions">
+      <button class="btn-banner-action" @click="openAddModal()">+ Add New Phone</button>
+      <button class="btn-banner-action" @click="exportCatalogJson()" title="Download updated catalog.json file">Export JSON</button>
+      <button class="btn-banner-action" @click="resetToDisk()" title="Reset back to disk catalog.json">Reset to Disk</button>
+    </div>
+  </div>
+
+  <!-- Main Mobile Phones Catalog Section -->
+  <main class="catalog-section">
+    <!-- Clean Controls Bar (Search & Search Results Sort) -->
+    <div class="controls-bar">
+      <div class="search-box-wrapper">
+        <!-- Modern Sleek Precision Search Vector Icon (Disappears once text is typed in) -->
+        <span class="search-icon-wrap" x-show="!searchQuery || searchQuery.trim() === ''" x-transition:leave.duration.150ms>
+          <svg class="modern-search-svg" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="8.5" cy="8.5" r="5.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M12.8 12.8L17.2 17.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <input type="text" class="search-input" :class="{ 'has-query': searchQuery && searchQuery.trim() !== '' }" x-model.debounce.120ms="searchQuery" placeholder="Search mobile model, processor, camera, display specs...">
+        
+        <!-- Quick Clear Button inside search bar when text is present -->
+        <button type="button" class="search-clear-inner" x-show="searchQuery && searchQuery.trim() !== ''" @click="searchQuery = ''" title="Clear search text">
+          ✕
+        </button>
+      </div>
+
+      <!-- Top Sort By (Disabled ONLY when Search Results are not found) -->
+      <div class="filter-group">
+        <select class="filter-select" x-model="searchSortBy" :disabled="filteredPhones.length === 0" title="Sort search results">
+          <option value="name-asc">Model: A → Z</option>
+          <option value="name-desc">Model: Z → A</option>
+          <option value="year-desc">Year: Newest</option>
+          <option value="year-asc">Year: Oldest</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Centered Circular Brand Filter Links Across Multiple Lines Below Search Bar -->
+    <div class="circular-brands-section">
+      <div class="circular-brands-container">
+        <!-- All Brands Circle -->
+        <button class="circle-brand-pill" :class="{ 'active': selectedBrand === 'all' }" @click="selectBrand('all', 'all')">
+          All
+        </button>
+
+        <!-- Brand Circles -->
+        <template x-for="brand in brands" :key="brand.id">
+          <button class="circle-brand-pill" :class="{ 'active': selectedBrand === brand.id }" @click="selectBrand(brand.id, 'all')">
+            <span x-text="brand.name"></span>
+          </button>
+        </template>
+      </div>
+    </div>
+
+    <!-- Brand Series Submenu Filter Pills (Only shown when a brand has multiple distinct series) -->
+    <div class="filter-pills" x-show="selectedBrand !== 'all' && activeSeriesList.length > 1">
+      <button class="filter-pill" :class="{ 'active': selectedSeries === 'all' }" @click="selectSeries('all')">
+        All Series
+      </button>
+      <template x-for="s in activeSeriesList" :key="s.id">
+        <button class="filter-pill" :class="{ 'active': selectedSeries === s.id }" @click="selectSeries(s.id)" x-text="s.name">
+        </button>
+      </template>
+    </div>
+
+    <!-- Active Heading & Dedicated Right-Corner Sort By for All Mobile Models -->
+    <!-- Active Heading & Dedicated Right-Corner Sort By for All Mobile Models -->
+    <div class="catalog-heading-row">
+      <h2 class="catalog-heading-title">
+        <template x-if="searchQuery.trim() !== ''">
+          <span style="display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <span>Search Results for "<span class="brand-title-accent" x-text="searchQuery.trim()"></span>"</span>
+            <button @click="searchQuery = ''" style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: var(--radius-full); padding: 0.2rem 0.6rem; font-size: 0.75rem; font-weight: 700; color: #64748b; cursor: pointer;" title="Clear search">✕ Clear Search</button>
+          </span>
+        </template>
+        <template x-if="searchQuery.trim() === ''">
+          <span>
+            <span x-text="selectedBrand === 'all' ? 'All Mobile Models' : activeBrandObject?.name"></span>
+            <span x-show="selectedSeries !== 'all' && activeSeriesList.some(s => s.id === selectedSeries)" x-text="' › ' + activeSeriesList.find(s => s.id === selectedSeries)?.name"></span>
+          </span>
+        </template>
+      </h2>
+
+      <!-- Right Corner Sort By for All Mobile Models (Shown only in normal catalog mode; disabled ONLY when 0 phones match) -->
+      <div class="filter-group" x-show="!searchQuery || searchQuery.trim() === ''">
+        <select class="filter-select" x-model="catalogSortBy" :disabled="filteredPhones.length === 0" title="Sort mobile models">
+          <option value="name-asc">Model: A → Z</option>
+          <option value="name-desc">Model: Z → A</option>
+          <option value="year-desc">Year: Newest</option>
+          <option value="year-asc">Year: Oldest</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Mobile Phones Cards Grid (Clean, Decluttered, Standard Modern Spec Cards) -->
+    <div class="items-grid">
+      <template x-for="phone in filteredPhones" :key="phone.id">
+        <div class="phone-banner-card" @click="openDetails(phone)">
+          <!-- Top Row: Brand Name Tag -->
+          <div class="banner-top-row">
+            <span class="banner-brand-pill" x-text="phone.brandName"></span>
+          </div>
+
+          <!-- Model Name Row: Model Title with Release Year Parallel on the Right -->
+          <div class="banner-model-row">
+            <h3 class="banner-model-title" x-text="phone.model"></h3>
+            <span class="banner-year-pill" x-show="phone.releaseYear" x-text="phone.releaseYear"></span>
+          </div>
+
+          <!-- Clean Standard Specifications Table (Compact Fixed Keys, Maximum Data Width) -->
+          <div class="card-table-wrapper">
+            <table class="card-specs-table">
+              <tbody>
+                <tr>
+                  <th class="c-key">CPU</th>
+                  <td class="c-val" :title="phone.cardSpecs.cpu" x-text="phone.cardSpecs.cpu"></td>
+                </tr>
+                <tr>
+                  <th class="c-key">GPU</th>
+                  <td class="c-val" :title="phone.cardSpecs.gpu" x-text="phone.cardSpecs.gpu"></td>
+                </tr>
+                <tr>
+                  <th class="c-key">Bit</th>
+                  <td class="c-val" x-text="phone.cardSpecs.bit"></td>
+                </tr>
+                <tr>
+                  <th class="c-key">RAM</th>
+                  <td class="c-val" x-text="phone.cardSpecs.ram"></td>
+                </tr>
+                <tr>
+                  <th class="c-key">Storage</th>
+                  <td class="c-val" x-text="phone.cardSpecs.storage"></td>
+                </tr>
+                <tr>
+                  <th class="c-key">Display</th>
+                  <td class="c-val" :title="phone.specs?.['Display System']?.['Display Size']" x-text="phone.cardSpecs.display"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Bottom Action Row -->
+          <div class="banner-bottom-row">
+            <span class="btn-banner-view">Full Specs →</span>
+            <button class="btn-banner-compare" :class="{ 'in-compare': isInCompare(phone.id) }" @click.stop="toggleCompare(phone)">
+              <span x-text="isInCompare(phone.id) ? '✓ In Compare' : '+ Compare'"></span>
+            </button>
+          </div>
+
+          <!-- App Owner Admin Buttons (Only displayed if Admin Mode is on) -->
+          <div class="item-card-admin-bar" x-show="adminMode" @click.stop>
+            <button class="btn-card-edit" @click="openEditModal(phone)">Edit</button>
+            <button class="btn-card-delete" @click="deletePhone(phone.id)">Delete</button>
+          </div>
+        </div>
+      </template>
+
+      <!-- Empty State -->
+      <div x-show="filteredPhones.length === 0" style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem; color: #475569;">
+        <h4 style="font-size: 1.15rem; color: #0f172a; font-weight: 800; margin-bottom: 0.5rem;">No content to display.</h4>
+        <p style="font-size: 0.95rem; color: #475569; max-width: 480px; margin: 0 auto 1.25rem auto;">Please try adjusting your search terms or selecting another brand.</p>
+        <button class="btn-header" @click="showAllPhones()">Show All Phones</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Compare Phones Bottom Drawer Bar -->
+  <div class="compare-drawer-bar" x-show="compareList.length > 0" x-transition>
+    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+      <span style="font-size: 0.9rem; font-weight: 800; color: #0f172a;">Compare Models (Max 3):</span>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <template x-for="p in compareList" :key="p.id">
+          <div class="compare-chip">
+            <span x-text="p.model"></span>
+            <span class="compare-chip-remove" @click="removeCompare(p.id)" title="Remove">✕</span>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <button class="btn-secondary" style="padding: 0.45rem 0.9rem; font-size: 0.8rem;" @click="clearCompare()">Clear All</button>
+      <button class="btn-red-action" @click="openCompareModal()">
+        Compare Side-by-Side (<span><span x-text="compareList.length"></span>/3</span>) →
+      </button>
+    </div>
+  </div>
+
+  <!-- Side-by-Side Comparison Modal Window (Clean Text-Only Matrix) -->
+  <div class="compare-modal-overlay" x-show="showCompareModal" x-transition>
+    <div class="compare-modal" @click.away="showCompareModal = false">
+      <div class="details-header">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span class="modal-icon-badge" style="display: inline-flex; align-items: center; justify-content: center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--red-primary);">
+              <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+              <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+              <path d="M7 21h10"/>
+              <path d="M12 3v18"/>
+              <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>
+            </svg>
+          </span>
+          <h3 class="details-title">Mobile Phone Comparison</h3>
+        </div>
+        <button class="btn-close-modal" @click="showCompareModal = false">✕</button>
+      </div>
+
+      <div class="compare-table-scroll-wrap">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th class="compare-corner-header">
+                <span class="compare-param-corner-badge">Specs</span>
+              </th>
+              <template x-for="phone in compareList" :key="phone.id">
+                <td class="compare-model-header-cell">
+                  <div class="compare-header-card">
+                    <button class="compare-remove-btn" @click="removeCompare(phone.id)" title="Remove phone">✕ Remove</button>
+                    <span class="banner-brand-pill" x-text="phone.brandName"></span>
+                    <h4 class="compare-model-name" x-text="phone.model"></h4>
+                    <span class="compare-year-chip" x-show="phone.releaseYear" x-text="phone.releaseYear"></span>
+                  </div>
+                </td>
+              </template>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>Processor & Silicon</th>
+              <template x-for="p in compareList" :key="p.id">
+                <td x-text="getSpecValue(p, 'Processor & Silicon', 'SoC')"></td>
+              </template>
+            </tr>
+            <tr>
+              <th>Display & Refresh Rate</th>
+              <template x-for="p in compareList" :key="p.id">
+                <td x-text="getSpecValue(p, 'Display System', 'Display Size') + ' • ' + getSpecValue(p, 'Display System', 'Refresh Rate')"></td>
+              </template>
+            </tr>
+            <tr>
+              <th>Peak Brightness</th>
+              <template x-for="p in compareList" :key="p.id">
+                <td x-text="getSpecValue(p, 'Display System', 'Peak Brightness')"></td>
+              </template>
+            </tr>
+            <tr>
+              <th>Primary Rear Camera</th>
+              <template x-for="p in compareList" :key="p.id">
+                <td x-text="getSpecValue(p, 'Optics & Camera Architecture', 'Rear Main Camera')"></td>
+              </template>
+            </tr>
+            <tr>
+              <th>Telephoto / Zoom</th>
+              <template x-for="p in compareList" :key="p.id">
+                <td x-text="getSpecValue(p, 'Optics & Camera Architecture', 'Periscope Telephoto') || getSpecValue(p, 'Optics & Camera Architecture', 'Telephoto Camera') || 'Standard Digital Zoom'"></td>
+              </template>
+            </tr>
+            <tr>
+              <th>Battery & Charging</th>
+              <template x-for="p in compareList" :key="p.id">
+                <td x-text="getSpecValue(p, 'Battery & Charging', 'Battery Capacity') + ' • ' + getSpecValue(p, 'Battery & Charging', 'Wired Charging')"></td>
+              </template>
+            </tr>
+            <tr>
+              <th>Build Materials</th>
+              <template x-for="p in compareList" :key="p.id">
+                <td x-text="getSpecValue(p, 'Design & Dimensions', 'Materials') + ' • ' + getSpecValue(p, 'Design & Dimensions', 'Protection')"></td>
+              </template>
+            </tr>
+            <tr>
+              <th>Operating System</th>
+              <template x-for="p in compareList" :key="p.id">
+                <td x-text="getSpecValue(p, 'Connectivity & Software', 'Operating System')"></td>
+              </template>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Technical Specifications Modal Page (Photo-Free, Price-Free, Stylish UI UX) -->
+  <div class="details-overlay" x-show="showDetailsModal" x-transition>
+    <div class="details-modal" @click.away="closeDetails()">
+      <!-- Modal Top Header -->
+      <div class="details-header">
+        <div class="details-header-brand-wrap">
+          <span class="modal-brand-badge" x-text="activePhone?.brandName"></span>
+          <h3 class="details-title" x-text="activePhone?.model"></h3>
+        </div>
+        <button class="btn-close-modal" @click="closeDetails()">✕</button>
+      </div>
+
+      <div class="details-body" x-show="activePhone">
+        <!-- Modern Clean Overview Card (No Photo, No Price) -->
+        <div class="details-model-overview-card">
+          <div class="overview-tags-row">
+            <span class="overview-series-tag" x-show="activePhone?.seriesName" x-text="activePhone?.seriesName"></span>
+            <span class="overview-year-badge" x-show="activePhone?.releaseDate || activePhone?.releaseYear" x-text="'Release: ' + (activePhone?.releaseDate || activePhone?.releaseYear)"></span>
+          </div>
+
+          <p class="details-overview-tagline" x-text="activePhone?.tagline"></p>
+
+          <div class="overview-actions-row">
+            <button class="btn-modal-compare" :class="{ 'in-compare': isInCompare(activePhone?.id) }" @click="toggleCompare(activePhone)">
+              <span x-text="isInCompare(activePhone?.id) ? '✓ In Comparison Drawer' : '+ Add to Comparison'"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Highlights Clean Section (Subtle Rose Accent) -->
+        <div x-show="activePhone?.highlights && activePhone.highlights.length > 0">
+          <h4 class="specs-section-title">Key Architectural Highlights</h4>
+          <div class="highlights-list">
+            <template x-for="h in activePhone?.highlights || []" :key="h">
+              <div class="highlight-pill-subtle" x-text="h"></div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Categorized Hardware Specifications (Modern Clean Sub-sections, No Harsh Full Red) -->
+        <div>
+          <h4 class="specs-section-title">Detailed Hardware Specifications</h4>
+          
+          <template x-for="(specGroup, groupName) in (activePhone?.specs || {})" :key="groupName">
+            <div class="modern-spec-group">
+              <!-- Elegant Slate Sub-section Header with Subtle Left Red Accent Line -->
+              <div class="modern-spec-header">
+                <span class="spec-header-bullet"></span>
+                <span class="spec-header-text" x-text="groupName"></span>
+              </div>
+              <table class="specs-table">
+                <tbody>
+                  <template x-for="(val, param) in specGroup" :key="param">
+                    <tr>
+                      <td class="spec-param" x-text="param"></td>
+                      <td class="spec-val" x-text="val"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- App Owner Add/Edit Phone Modal -->
+  <div class="form-modal-overlay" x-show="showFormModal" x-transition>
+    <div class="form-modal" @click.away="showFormModal = false">
+      <div class="details-header">
+        <h3 class="details-title" x-text="formTitle"></h3>
+        <button class="btn-close-modal" @click="showFormModal = false">✕</button>
+      </div>
+
+      <form @submit.prevent="savePhone()">
+        <div class="form-modal-body">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Phone Model Name *</label>
+              <input type="text" class="form-input" x-model="formData.model" required placeholder="e.g. iPhone 16 Pro Max">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Manufacturer Brand *</label>
+              <select class="form-select-control" x-model="formData.brandId">
+                <template x-for="b in brands" :key="b.id">
+                  <option :value="b.id" x-text="b.name"></option>
+                </template>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Release Year</label>
+              <input type="number" class="form-input" x-model="formData.releaseYear">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Release Date (YYYY-MM)</label>
+              <input type="text" class="form-input" x-model="formData.releaseDate" placeholder="e.g. 2024-09">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Tagline Summary *</label>
+            <input type="text" class="form-input" x-model="formData.tagline" required placeholder="Short overview of the phone">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Key Features (1 per line)</label>
+            <textarea class="form-textarea" x-model="formData.highlightsRaw" placeholder="Feature 1&#10;Feature 2"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Technical Specifications (JSON Format) *</label>
+            <textarea class="form-textarea" style="min-height: 140px; font-family: monospace; font-size: 0.85rem;" x-model="formData.specsRawJson" required></textarea>
+          </div>
+        </div>
+
+        <div class="form-modal-footer">
+          <button type="button" class="btn-secondary" @click="showFormModal = false">Cancel</button>
+          <button type="submit" class="btn-red-action">Save Phone</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container">
+    <template x-for="t in toasts" :key="t.id">
+      <div class="toast" :class="'toast-' + t.type">
+        <span x-text="t.message"></span>
+      </div>
+    </template>
+  </div>
+
+</body>
+</html>
