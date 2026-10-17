@@ -1,0 +1,17 @@
+PhoneSpecs
+Copyright 2026 thanoojgithub
+
+This product is licensed under the Apache License, Version 2.0.
+See the LICENSE file for details.
+
+This product includes or connects to third-party open source components:
+
+1. Alpine.js
+   License: MIT License
+   Copyright (c) 2019-2024 Caleb Porzio
+   Homepage: https://alpinejs.dev
+   Repository: https://github.com/alpinejs/alpine
+
+2. Google Fonts (Outfit & Plus Jakarta Sans)
+   Outfit: Copyright 2021 The Outfit Project Authors (SIL Open Font License, Version 1.1)
+   Plus Jakarta Sans: Copyright 2020 The Plus Jakarta Sans Project Authors (SIL Open Font License, Version 1.1)
