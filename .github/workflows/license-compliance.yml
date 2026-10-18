@@ -1,0 +1,111 @@
+#
+# Copyright 2026 Thanooj Kalathuru
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+name: Apache 2.0 License Compliance Audit
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  license-audit:
+    name: Audit 100% Apache License 2.0 Compliance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Audit Repository Apache 2.0 Documents & Headers
+        run: node scripts/check_license_compliance.js
+
+      - name: Audit Newly Pushed or Modified Files in PR / Commit
+        run: |
+          echo "=================================================="
+          echo " Auditing Newly Pushed / Modified Files in Git    "
+          echo "=================================================="
+
+          REQUIRED_PHRASE="Licensed under the Apache License, Version 2.0"
+          FAILED=0
+
+          # Identify changed files relative to base or previous commit
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_REF="origin/${{ github.base_ref }}"
+            echo "Inspecting pull request changed files against $BASE_REF..."
+            CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR "$BASE_REF"...HEAD)
+          else
+            if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+              echo "Inspecting pushed commit changed files against HEAD~1..."
+              CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR HEAD~1 HEAD)
+            else
+              echo "Initial commit detected, inspecting all tracked files..."
+              CHANGED_FILES=$(git ls-files)
+            fi
+          fi
+
+          echo "Changed files to check:"
+          echo "$CHANGED_FILES"
+          echo ""
+
+          for FILE in $CHANGED_FILES; do
+            # Skip exempt documentation, data, config, and git files
+            case "$FILE" in
+              LICENSE|NOTICE|README.md|.gitignore|.dockerignore|data/*.json|*.md|*.txt)
+                echo "Skipping exempt file: $FILE"
+                continue
+                ;;
+            esac
+
+            # Check source files (js, html, css, yml, yaml, sh, Dockerfile)
+            case "$FILE" in
+              *.js|*.html|*.css|*.yml|*.yaml|*.sh|Dockerfile|*.dockerfile)
+                if [ -f "$FILE" ]; then
+                  if ! grep -q "$REQUIRED_PHRASE" "$FILE"; then
+                    echo "::error file=$FILE::Missing Apache License 2.0 header in newly pushed/committed file: $FILE"
+                    FAILED=1
+                  else
+                    echo "✓ Verified Apache 2.0 header in newly changed file: $FILE"
+                  fi
+                fi
+                ;;
+              *)
+                echo "Non-source extension: $FILE (verified)"
+                ;;
+            esac
+          done
+
+          if [ $FAILED -ne 0 ]; then
+            echo ""
+            echo "❌ Error: One or more newly pushed/committed files lack the required Apache License 2.0 header."
+            exit 1
+          fi
+
+          echo ""
+          echo "✅ All newly pushed and committed code files comply with Apache License 2.0."
