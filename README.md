@@ -98,32 +98,28 @@ Because PhoneSpecs is a pure static client application, no complex installation 
 ### Option 1: Direct File Open
 Double-click [`index.html`](index.html) in your browser. (The application includes bundled fallback data for direct `file://` protocol usage).
 
-### Option 2: Using Docker (No Local Node.js or Setup Required)
-If you have Docker Desktop installed, you can serve the site with zero local dependencies using an official lightweight Nginx container:
+### Option 2: Local HTTP Server using Docker (Recommended)
+Run the Node.js HTTP server (`serve` or `http-server`) inside an official, zero-install Node container without installing Node.js on your computer:
 
-**PowerShell (Windows):**
-```powershell
-docker run --rm -p 8000:80 -v ${PWD}:/usr/share/nginx/html:ro nginx:alpine
-```
-
-**Command Prompt (cmd.exe):**
-```cmd
-docker run --rm -p 8000:80 -v "%cd%":/usr/share/nginx/html:ro nginx:alpine
-```
-
-**Bash (Linux / macOS / WSL):**
 ```bash
-docker run --rm -p 8000:80 -v "$(pwd)":/usr/share/nginx/html:ro nginx:alpine
+docker run --rm -it -p 8000:8000 -v ${PWD}:/app -w /app node:alpine npx http-server . -p 8000
+# or with serve:
+docker run --rm -it -p 3000:3000 -v ${PWD}:/app -w /app node:alpine npx serve .
 ```
 
-Once running, navigate to:
+> **Note on OS shells:**
+> - **PowerShell (Windows)**: Use `${PWD}` as shown above.
+> - **Command Prompt (CMD)**: Replace `${PWD}` with `"%cd%"`.
+> - **Linux / macOS / WSL**: Replace `${PWD}` with `"$(pwd)"`.
+
+Open your browser at:
 ```
 http://localhost:8000
 ```
-*(Press `Ctrl + C` in your terminal to stop the container).*
+*(Press `Ctrl + C` in your terminal to stop the server).*
 
-### Option 3: Local HTTP Server (Node.js)
-Using Node.js (if installed on your host machine):
+### Option 3: Local HTTP Server using Host Node.js
+If you have Node.js installed directly on your machine:
 ```bash
 npx serve .
 # or
