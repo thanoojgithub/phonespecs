@@ -2284,7 +2284,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     getSpecValue(phone, category, key) {
-      return phone?.specs?.[category]?.[key] || 'Ã¢â‚¬â€';
+      return phone?.specs?.[category]?.[key] || '—';
     },
 
     getCardSpecs(phone) {
@@ -2293,14 +2293,14 @@ document.addEventListener('alpine:init', () => {
       const ds = phone?.specs?.['Display System'] || {};
 
       // Clean Processor/CPU extraction
-      let cpu = ps['CPU'] || ps['SoC'] || 'Ã¢â‚¬â€';
+      let cpu = ps['CPU'] || ps['SoC'] || '—';
       if (cpu.length > 40) {
         // e.g. "Octa-core up to 3.39GHz Cortex-X4" -> "Octa-core up to 3.39GHz"
         cpu = cpu.split('+')[0].trim();
       }
 
       // GPU extraction
-      let gpu = ps['GPU'] || 'Ã¢â‚¬â€';
+      let gpu = ps['GPU'] || '—';
       if (gpu.length > 28) {
         gpu = gpu.split(' with ')[0].trim();
       }
@@ -2309,13 +2309,13 @@ document.addEventListener('alpine:init', () => {
       let bit = ps['Architecture'] || ps['Bit'] || '64-bit';
 
       // RAM
-      let ram = ms['RAM'] || 'Ã¢â‚¬â€';
+      let ram = ms['RAM'] || '—';
 
       // Storage
-      let storage = ms['Internal Storage'] || ms['Storage'] || 'Ã¢â‚¬â€';
+      let storage = ms['Internal Storage'] || ms['Storage'] || '—';
 
       // Display
-      let display = ds['Display Size'] || ds['Screen'] || 'Ã¢â‚¬â€';
+      let display = ds['Display Size'] || ds['Screen'] || '—';
       if (display.includes('inches')) {
         const parts = display.split('inches');
         display = `${parts[0].trim()}" ${parts[1] ? parts[1].replace('Super Retina XDR OLED', 'OLED').replace('Dynamic LTPO AMOLED 2X', 'AMOLED').trim() : ''}`.trim();
