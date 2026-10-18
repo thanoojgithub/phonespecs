@@ -1,0 +1,55 @@
+name: Quality & License Compliance CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    name: Validate Data Integrity & License Compliance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Validate Catalog JSON Integrity
+        run: |
+          python -c "
+          import json
+          with open('data/catalog.json', 'r', encoding='utf-8') as f:
+              data = json.load(f)
+          assert isinstance(data.get('brands'), list), 'brands must be a list'
+          assert isinstance(data.get('phones'), list), 'phones must be a list'
+          print(f'✓ Valid catalog.json: {len(data[\"brands\"])} brands, {len(data[\"phones\"])} phones loaded.')
+          "
+
+      - name: Check Apache 2.0 Compliance Files
+        run: |
+          if [ ! -f "LICENSE" ]; then
+            echo "✗ Missing LICENSE file"
+            exit 1
+          fi
+          if [ ! -f "NOTICE" ]; then
+            echo "✗ Missing NOTICE file"
+            exit 1
+          fi
+          echo "✓ LICENSE and NOTICE files present."
+
+      - name: Verify Apache License Headers
+        run: |
+          for file in index.html css/styles.css js/app.js; do
+            if ! grep -q "Licensed under the Apache License, Version 2.0" "$file"; then
+              echo "✗ Missing Apache 2.0 header in $file"
+              exit 1
+            fi
+            echo "✓ Apache 2.0 header found in $file"
+          done
