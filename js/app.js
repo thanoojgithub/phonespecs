@@ -2337,156 +2337,270 @@ document.addEventListener('alpine:init', () => {
       }
     },
 
+    get currentBrandSeries() {
+      const brand = this.brands.find(b => b.id === this.formData.brandId);
+      return Array.isArray(brand?.series) ? brand.series : [];
+    },
+
+    onBrandChange() {
+      const series = this.currentBrandSeries;
+      this.formData.seriesId = series.length > 0 ? series[0].id : '';
+    },
+
     openAddModal() {
-      this.formTitle = 'Add New Mobile Phone';
-      const defaultBrand = this.brands[0] ? this.brands[0].id : 'apple';
-      const defaultSeries = this.brands[0]?.series?.[0]?.id || '';
+      try {
+        this.formTitle = 'Add New Mobile Phone';
+        const defaultBrand = this.brands[0] ? this.brands[0].id : 'apple';
+        const brandObj = this.brands.find(b => b.id === defaultBrand);
+        const defaultSeries = brandObj?.series?.[0]?.id || '';
 
-      this.formData = {
-        id: '',
-        brandId: defaultBrand,
-        seriesId: defaultSeries,
-        model: '',
-        tagline: '',
-        releaseYear: 2024,
-        releaseDate: '2024-09',
-        specsRawJson: JSON.stringify({
-          "Display System": {
-            "Display Size": "6.7\" AMOLED 120Hz",
-            "Resolution": "2778 x 1284 pixels"
-          },
-          "Processor & Silicon": {
-            "SoC": "Snapdragon 8 Gen 3 (4nm)",
-            "RAM": "12GB RAM"
-          },
-          "Optics & Camera Architecture": {
-            "Rear Main Camera": "50MP OIS",
-            "Front Selfie Camera": "32MP"
-          },
-          "Battery & Charging": {
-            "Battery Capacity": "5000 mAh",
-            "Wired Charging": "65W Wired Fast Charging"
-          }
-        }, null, 2),
-        highlightsRaw: "Feature Specification 1\nFeature Specification 2"
-      };
+        this.formData = {
+          id: '',
+          brandId: defaultBrand,
+          seriesId: defaultSeries,
+          model: '',
+          tagline: '',
+          releaseYear: new Date().getFullYear(),
+          releaseDate: `${new Date().getFullYear()}-01`,
+          specsRawJson: JSON.stringify({
+            "Display System": {
+              "Display Size": "6.7\" AMOLED 120Hz",
+              "Resolution": "2778 x 1284 pixels"
+            },
+            "Processor & Silicon": {
+              "SoC": "Snapdragon 8 Gen 3 (4nm)",
+              "RAM": "12GB RAM"
+            },
+            "Optics & Camera Architecture": {
+              "Rear Main Camera": "50MP OIS",
+              "Front Selfie Camera": "32MP"
+            },
+            "Battery & Charging": {
+              "Battery Capacity": "5000 mAh",
+              "Wired Charging": "65W Wired Fast Charging"
+            }
+          }, null, 2),
+          highlightsRaw: "Feature Specification 1\nFeature Specification 2"
+        };
 
-      this.showFormModal = true;
+        this.showFormModal = true;
+      } catch (err) {
+        console.error('Failed to open add modal:', err);
+        this.showToast('Could not initialize add form. Please try again.', 'error');
+      }
     },
 
     openEditModal(phone) {
-      this.formTitle = `Edit Phone: ${phone.model}`;
-      this.formData = {
-        id: phone.id,
-        brandId: phone.brandId,
-        seriesId: phone.seriesId,
-        model: phone.model,
-        tagline: phone.tagline || '',
-        releaseYear: phone.releaseYear || 2024,
-        releaseDate: phone.releaseDate || `${phone.releaseYear || 2024}-01`,
-        specsRawJson: JSON.stringify(phone.specs || {}, null, 2),
-        highlightsRaw: (phone.highlights || []).join('\n')
-      };
-
-      this.showFormModal = true;
-    },
-
-    savePhone() {
-      let parsedSpecs = {};
-      try {
-        parsedSpecs = JSON.parse(this.formData.specsRawJson);
-      } catch (err) {
-        alert('Invalid JSON in Specifications field. Please verify format.');
+      if (!phone) {
+        this.showToast('Cannot edit: phone record is missing.', 'error');
         return;
       }
 
-      const rawHighlights = this.formData.highlightsRaw
-        .split('\n')
-        .map(h => h.trim())
-        .filter(Boolean);
+      try {
+        this.formTitle = `Edit Phone: ${phone.model || 'Device'}`;
+        this.formData = {
+          id: phone.id || '',
+          brandId: phone.brandId || (this.brands[0]?.id || 'apple'),
+          seriesId: phone.seriesId || '',
+          model: phone.model || '',
+          tagline: phone.tagline || '',
+          releaseYear: phone.releaseYear || new Date().getFullYear(),
+          releaseDate: phone.releaseDate || `${phone.releaseYear || new Date().getFullYear()}-01`,
+          specsRawJson: JSON.stringify(phone.specs || {}, null, 2),
+          highlightsRaw: Array.isArray(phone.highlights) ? phone.highlights.join('\n') : ''
+        };
 
-      const brandObj = this.brands.find(b => b.id === this.formData.brandId);
-      const seriesObj = brandObj?.series?.find(s => s.id === this.formData.seriesId);
-
-      const isEditing = Boolean(this.formData.id);
-      const generatedId = isEditing ? this.formData.id : `${this.formData.brandId}-${this.formData.model.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`;
-
-      const phoneRecord = {
-        id: generatedId,
-        brandId: this.formData.brandId,
-        brandName: brandObj ? brandObj.name : this.formData.brandId,
-        seriesId: this.formData.seriesId,
-        seriesName: seriesObj ? seriesObj.name : this.formData.seriesId,
-        model: this.formData.model.trim(),
-        tagline: this.formData.tagline.trim(),
-        releaseDate: this.formData.releaseDate ? this.formData.releaseDate.trim() : `${this.formData.releaseYear}-01`,
-        releaseYear: parseInt(this.formData.releaseYear, 10) || 2024,
-        specs: parsedSpecs,
-        highlights: rawHighlights
-      };
-
-      if (isEditing) {
-        const idx = this.phones.findIndex(p => p.id === this.formData.id);
-        if (idx !== -1) {
-          this.phones[idx] = phoneRecord;
-          this.showToast(`Updated specs for "${phoneRecord.model}"`, 'success');
-        }
-      } else {
-        this.phones.unshift(phoneRecord);
-        this.showToast(`Added new phone "${phoneRecord.model}"`, 'success');
+        this.showFormModal = true;
+      } catch (err) {
+        console.error('Failed to open edit modal:', err);
+        this.showToast('Failed to load phone data for editing.', 'error');
       }
+    },
 
-      this.persistToLocalStorage();
-      this.showFormModal = false;
+    savePhone() {
+      try {
+        const rawModel = (this.formData.model || '').trim();
+        if (!rawModel) {
+          this.showToast('Phone Model Name is required.', 'error');
+          return;
+        }
+
+        let parsedSpecs = {};
+        try {
+          parsedSpecs = JSON.parse(this.formData.specsRawJson);
+          if (typeof parsedSpecs !== 'object' || parsedSpecs === null || Array.isArray(parsedSpecs)) {
+            throw new Error('Specifications must be a valid JSON object mapping category names to spec details.');
+          }
+        } catch (err) {
+          this.showToast(`Invalid JSON in Specifications: ${err.message}`, 'error');
+          return;
+        }
+
+        const rawHighlights = (this.formData.highlightsRaw || '')
+          .split('\n')
+          .map(h => h.trim())
+          .filter(Boolean);
+
+        const brandObj = this.brands.find(b => b.id === this.formData.brandId);
+        const seriesObj = brandObj?.series?.find(s => s.id === this.formData.seriesId);
+
+        const isEditing = Boolean(this.formData.id);
+        const generatedId = isEditing
+          ? this.formData.id
+          : `${this.formData.brandId || 'phone'}-${rawModel.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}-${Date.now().toString().slice(-4)}`;
+
+        const phoneRecord = {
+          id: generatedId,
+          brandId: this.formData.brandId || 'other',
+          brandName: brandObj ? brandObj.name : (this.formData.brandId || 'Other'),
+          seriesId: this.formData.seriesId || '',
+          seriesName: seriesObj ? seriesObj.name : (this.formData.seriesId || ''),
+          model: rawModel,
+          tagline: (this.formData.tagline || '').trim(),
+          releaseDate: (this.formData.releaseDate || '').trim() || `${this.formData.releaseYear || 2024}-01`,
+          releaseYear: parseInt(this.formData.releaseYear, 10) || new Date().getFullYear(),
+          specs: parsedSpecs,
+          highlights: rawHighlights
+        };
+
+        // Pre-process search indices and card metrics for optimal instant search
+        const processedRecords = this.processPhonesData([phoneRecord]);
+        const processedRecord = processedRecords[0] || phoneRecord;
+
+        const currentPhones = Array.isArray(this.phones) ? [...this.phones] : [];
+
+        if (isEditing) {
+          const idx = currentPhones.findIndex(p => p.id === this.formData.id);
+          if (idx !== -1) {
+            currentPhones[idx] = processedRecord;
+            this.showToast(`Updated specs for "${processedRecord.model}"`, 'success');
+          } else {
+            currentPhones.unshift(processedRecord);
+            this.showToast(`Record updated as "${processedRecord.model}"`, 'success');
+          }
+
+          // If currently viewing activePhone in details modal, update it in-place
+          if (this.activePhone && this.activePhone.id === processedRecord.id) {
+            this.activePhone = processedRecord;
+          }
+        } else {
+          currentPhones.unshift(processedRecord);
+          this.showToast(`Added new phone "${processedRecord.model}"`, 'success');
+        }
+
+        this.phones = Object.freeze(currentPhones);
+        this.persistToLocalStorage();
+        this.showFormModal = false;
+      } catch (err) {
+        console.error('Error saving phone record:', err);
+        this.showToast(`Failed to save record: ${err.message}`, 'error');
+      }
     },
 
     deletePhone(phoneId) {
-      const phone = this.phones.find(p => p.id === phoneId);
-      if (!confirm(`Are you sure you want to delete "${phone ? phone.model : phoneId}"?`)) return;
+      if (!phoneId) return;
 
-      this.phones = this.phones.filter(p => p.id !== phoneId);
-      this.compareList = this.compareList.filter(p => p.id !== phoneId);
-      this.persistToLocalStorage();
-      this.showToast('Phone record deleted.', 'info');
+      try {
+        const phone = this.phones.find(p => p.id === phoneId);
+        const name = phone ? phone.model : phoneId;
+
+        if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
+
+        const currentPhones = Array.isArray(this.phones) ? [...this.phones] : [];
+        this.phones = Object.freeze(currentPhones.filter(p => p.id !== phoneId));
+
+        if (Array.isArray(this.compareList)) {
+          this.compareList = this.compareList.filter(p => p.id !== phoneId);
+        }
+
+        if (this.activePhone && this.activePhone.id === phoneId) {
+          this.showDetailsModal = false;
+          this.activePhone = null;
+        }
+
+        this.persistToLocalStorage();
+        this.showToast(`Deleted phone "${name}".`, 'info');
+      } catch (err) {
+        console.error('Error deleting phone:', err);
+        this.showToast('Failed to delete phone record.', 'error');
+      }
     },
 
     persistToLocalStorage() {
-      const payload = {
-        brands: this.brands,
-        phones: this.phones
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      try {
+        // Strip transient search indices before serialization to conserve storage
+        const cleanPhones = (this.phones || []).map(p => {
+          const { _searchText, _normSearchText, cardSpecs, ...rest } = p;
+          return rest;
+        });
+
+        const payload = {
+          brands: this.brands || [],
+          phones: cleanPhones
+        };
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch (err) {
+        console.error('LocalStorage persistence error:', err);
+        if (err.name === 'QuotaExceededError') {
+          this.showToast('Storage quota exceeded. Please export JSON and clear browser storage.', 'error');
+        }
+      }
     },
 
     exportCatalogJson() {
-      const payload = {
-        brands: this.brands,
-        phones: this.phones
-      };
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", "catalog.json");
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
+      try {
+        const cleanPhones = (this.phones || []).map(p => {
+          const { _searchText, _normSearchText, cardSpecs, ...rest } = p;
+          return rest;
+        });
 
-      this.showToast('catalog.json exported! Save it to your data/catalog.json file to persist in repo.', 'success');
+        const payload = {
+          brands: this.brands || [],
+          phones: cleanPhones
+        };
+
+        const jsonString = JSON.stringify(payload, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.href = url;
+        downloadAnchor.download = 'catalog.json';
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        URL.revokeObjectURL(url);
+
+        this.showToast('catalog.json exported! Save it to your data/catalog.json file to persist in repo.', 'success');
+      } catch (err) {
+        console.error('Failed to export catalog JSON:', err);
+        this.showToast('Failed to export JSON file.', 'error');
+      }
     },
 
     resetToDisk() {
-      if (confirm('Reset catalog back to pristine data/catalog.json file from disk? This clears any local browser edits.')) {
-        localStorage.removeItem(STORAGE_KEY);
+      try {
+        if (confirm('Reset catalog back to pristine data/catalog.json file from disk? This clears any local browser edits.')) {
+          localStorage.removeItem(STORAGE_KEY);
+          window.location.reload();
+        }
+      } catch (err) {
+        console.error('Failed to reset catalog:', err);
         window.location.reload();
       }
     },
 
     showToast(message, type = 'info') {
-      const id = Date.now();
-      this.toasts.push({ id, message, type });
-      setTimeout(() => {
-        this.toasts = this.toasts.filter(t => t.id !== id);
-      }, 4000);
+      try {
+        const id = Date.now() + Math.random();
+        this.toasts.push({ id, message, type });
+        setTimeout(() => {
+          this.toasts = this.toasts.filter(t => t.id !== id);
+        }, 4000);
+      } catch (err) {
+        console.warn('Toast notification error:', err);
+      }
     }
   }));
 });
