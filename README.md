@@ -100,28 +100,39 @@ Double-click [`index.html`](index.html) in your browser. (The application includ
 
 ### Option 2: Local HTTP Server using Docker (Recommended)
 
-#### A. Build & Run with Dockerfile
-You can build and run the production-grade static container:
+#### A. Live Development with Docker (Instant Local File Sync - No Rebuild Required)
+Mount your local workspace into the Nginx container so any code edits appear immediately on page refresh:
+
+**PowerShell (Windows):**
+```powershell
+docker run --rm -p 8000:80 -v ${PWD}:/usr/share/nginx/html:ro nginx:alpine
+```
+
+**Command Prompt (cmd.exe):**
+```cmd
+docker run --rm -p 8000:80 -v "%cd%":/usr/share/nginx/html:ro nginx:alpine
+```
+
+**Bash (Linux / macOS / WSL):**
 ```bash
-# Build the image
+docker run --rm -p 8000:80 -v "$(pwd)":/usr/share/nginx/html:ro nginx:alpine
+```
+
+#### B. Build & Run as Standalone Image
+If you want to bake all files into a self-contained image:
+```bash
+# 1. You MUST re-build the image whenever files are modified:
 docker build -t phonespecs .
 
-# Run the container
+# 2. Run the newly built container:
 docker run --rm -p 8000:80 phonespecs
 ```
 
-#### B. Quick Run without Building (One-Liner)
-Run the Node.js HTTP server directly in a temporary container without local installation:
+#### C. Using Node Container One-Liner
+Run `http-server` or `serve` via Node.js container with live volume mount:
 ```bash
 docker run --rm -it -p 8000:8000 -v ${PWD}:/app -w /app node:alpine npx http-server . -p 8000
-# or with serve:
-docker run --rm -it -p 3000:3000 -v ${PWD}:/app -w /app node:alpine npx serve .
 ```
-
-> **Note on OS shells:**
-> - **PowerShell (Windows)**: Use `${PWD}` as shown above.
-> - **Command Prompt (CMD)**: Replace `${PWD}` with `"%cd%"`.
-> - **Linux / macOS / WSL**: Replace `${PWD}` with `"$(pwd)"`.
 
 Open your browser at:
 ```
