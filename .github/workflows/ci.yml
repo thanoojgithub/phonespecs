@@ -23,14 +23,14 @@ jobs:
 
       - name: Validate Catalog JSON Integrity
         run: |
-          python -c "
+          python - << 'EOF'
           import json
           with open('data/catalog.json', 'r', encoding='utf-8') as f:
               data = json.load(f)
-          assert isinstance(data.get('brands'), list), 'brands must be a list'
-          assert isinstance(data.get('phones'), list), 'phones must be a list'
-          print(f'✓ Valid catalog.json: {len(data[\"brands\"])} brands, {len(data[\"phones\"])} phones loaded.')
-          "
+          assert isinstance(data.get('brands'), list), "brands must be a list"
+          assert isinstance(data.get('phones'), list), "phones must be a list"
+          print(f"✓ Valid catalog.json: {len(data['brands'])} brands, {len(data['phones'])} phones loaded.")
+          EOF
 
       - name: Check Apache 2.0 Compliance Files
         run: |
