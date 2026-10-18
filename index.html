@@ -503,8 +503,14 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">Technical Specifications (JSON Format) *</label>
-            <textarea class="form-textarea" style="min-height: 140px; font-family: monospace; font-size: 0.85rem;" x-model="formData.specsRawJson" required></textarea>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
+              <label class="form-label" style="margin-bottom: 0;">Technical Specifications (JSON Format) *</label>
+              <div style="display: flex; gap: 0.4rem;">
+                <button type="button" @click="formatFormSpecs()" class="btn-banner-action" style="padding: 0.15rem 0.5rem; font-size: 0.72rem;" title="Prettify JSON syntax">Format JSON</button>
+                <button type="button" @click="resetFormSpecsTemplate()" class="btn-banner-action" style="padding: 0.15rem 0.5rem; font-size: 0.72rem; color: #64748b; border-color: #cbd5e1;" title="Insert clean starter schema">Load Starter Template</button>
+              </div>
+            </div>
+            <textarea class="form-textarea" style="min-height: 160px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.82rem; line-height: 1.45;" x-model="formData.specsRawJson" required placeholder="{ ... }"></textarea>
           </div>
         </div>
 

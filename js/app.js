@@ -2351,6 +2351,56 @@ document.addEventListener('alpine:init', () => {
       this.formData.seriesId = series.length > 0 ? series[0].id : '';
     },
 
+    formatFormSpecs() {
+      try {
+        const parsed = JSON.parse(this.formData.specsRawJson);
+        this.formData.specsRawJson = JSON.stringify(parsed, null, 2);
+        this.showToast('JSON formatted cleanly.', 'info');
+      } catch (err) {
+        this.showToast(`Cannot format: ${err.message}`, 'error');
+      }
+    },
+
+    resetFormSpecsTemplate() {
+      const template = {
+        "Display System": {
+          "Display Size": "6.7\" AMOLED 120Hz",
+          "Resolution": "2778 x 1284 pixels",
+          "Peak Brightness": "2500 nits",
+          "Refresh Rate": "120Hz LTPO"
+        },
+        "Processor & Silicon": {
+          "SoC": "Qualcomm Snapdragon 8 Gen 3 (4nm)",
+          "CPU": "Octa-core up to 3.3GHz",
+          "GPU": "Adreno 750",
+          "Architecture": "64-bit"
+        },
+        "Memory & Storage": {
+          "RAM": "12GB LPDDR5X",
+          "Internal Storage": "256GB / 512GB UFS 4.0"
+        },
+        "Optics & Camera Architecture": {
+          "Rear Main Camera": "50MP f/1.7 OIS",
+          "Ultra-Wide Camera": "50MP 120° FOV",
+          "Telephoto Camera": "50MP 3x Optical Zoom",
+          "Front Selfie Camera": "32MP AF"
+        },
+        "Battery & Charging": {
+          "Battery Capacity": "5000 mAh",
+          "Wired Charging": "80W Wired Fast Charging",
+          "Wireless Charging": "50W Wireless"
+        },
+        "Connectivity & Software": {
+          "Operating System": "Android 15",
+          "Network Bands": "5G SA/NSA, 4G LTE",
+          "Wi-Fi & Bluetooth": "Wi-Fi 7, Bluetooth 5.4",
+          "Port": "USB-C 3.2"
+        }
+      };
+      this.formData.specsRawJson = JSON.stringify(template, null, 2);
+      this.showToast('Starter specifications template loaded.', 'info');
+    },
+
     openAddModal() {
       try {
         this.formTitle = 'Add New Mobile Phone';
