@@ -1784,6 +1784,10 @@ document.addEventListener('alpine:init', () => {
     
     compareList: [],
     showCompareModal: false,
+
+    get isAnyModalOpen() {
+      return Boolean(this.showDetailsModal || this.showCompareModal || this.showFormModal);
+    },
     
     adminMode: false,
     showFormModal: false,

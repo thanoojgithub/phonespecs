@@ -84,6 +84,12 @@ body {
   padding-right: env(safe-area-inset-right, 0px);
 }
 
+/* Background scroll lock when any modal is open (Prevents double scrollbars) */
+body.modal-open {
+  overflow: hidden;
+  touch-action: none;
+}
+
 /* Modern Minimalist Scrollbars (Cross-Browser Chrome, Edge, Safari, Firefox) */
 * {
   scrollbar-width: thin;

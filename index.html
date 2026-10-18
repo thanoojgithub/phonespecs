@@ -37,7 +37,7 @@
   <!-- Lightweight Alpine.js (~15KB minified CDN - no install required) -->
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
 </head>
-<body x-data="phoneCatalog" x-cloak>
+<body x-data="phoneCatalog" :class="{ 'modal-open': isAnyModalOpen }" x-cloak>
 
   <!-- Clean Top Header Navigation: Logo on Top Left, Admin Access on Top Right -->
   <header class="app-header">
