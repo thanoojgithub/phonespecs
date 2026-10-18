@@ -87,7 +87,6 @@ body {
 /* Background scroll lock when any modal is open (Prevents double scrollbars) */
 body.modal-open {
   overflow: hidden;
-  touch-action: none;
 }
 
 /* Modern Minimalist Scrollbars (Cross-Browser Chrome, Edge, Safari, Firefox) */
@@ -1572,14 +1571,6 @@ input, select, textarea {
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.35);
-}
-
-.form-modal form {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
 }
 
 .form-modal-body {
