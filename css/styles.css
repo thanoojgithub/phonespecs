@@ -84,7 +84,12 @@ body {
   padding-right: env(safe-area-inset-right, 0px);
 }
 
-/* Modern Minimalist Scrollbars */
+/* Modern Minimalist Scrollbars (Cross-Browser Chrome, Edge, Safari, Firefox) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+
 ::-webkit-scrollbar {
   width: 7px;
   height: 7px;
@@ -1073,6 +1078,8 @@ input, select, textarea {
 .details-body {
   padding: 1.6rem;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -1309,6 +1316,8 @@ input, select, textarea {
 .compare-table-scroll-wrap {
   overflow-x: auto;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 1.25rem 1.5rem 1.75rem 1.5rem;
 }
 
@@ -1561,6 +1570,8 @@ input, select, textarea {
 .form-modal-body {
   padding: 1.5rem;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
