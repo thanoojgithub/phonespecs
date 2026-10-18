@@ -448,76 +448,82 @@
   </div>
 
   <!-- App Owner Add/Edit Phone Modal -->
-  <div class="form-modal-overlay" x-show="showFormModal" x-transition>
-    <form class="form-modal" id="editPhoneForm" @submit.prevent="savePhone()" @click.away="showFormModal = false">
-      <div class="details-header">
+  <div class="details-overlay" x-show="showFormModal" x-transition style="z-index: 1200;">
+    <div class="details-modal" @click.away="showFormModal = false" style="max-width: 820px; border: 2.5px solid var(--red-primary);">
+      <!-- Modal Top Header -->
+      <div class="details-header" style="flex-shrink: 0;">
         <h3 class="details-title" x-text="formTitle"></h3>
         <button type="button" class="btn-close-modal" @click="showFormModal = false">✕</button>
       </div>
 
-      <div class="form-modal-body" style="flex: 1 1 auto; min-height: 0; max-height: calc(85vh - 130px); overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;">
-        <div class="form-grid-2">
-          <div class="form-group">
-            <label class="form-label">Phone Model Name *</label>
-            <input type="text" class="form-input" x-model="formData.model" required placeholder="e.g. iPhone 16 Pro Max">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Manufacturer Brand *</label>
-            <select class="form-select-control" x-model="formData.brandId" @change="onBrandChange()">
-              <template x-for="b in brands" :key="b.id">
-                <option :value="b.id" x-text="b.name"></option>
-              </template>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-grid-2">
-          <div class="form-group">
-            <label class="form-label">Device Series</label>
-            <select class="form-select-control" x-model="formData.seriesId">
-              <template x-for="s in currentBrandSeries" :key="s.id">
-                <option :value="s.id" x-text="s.name"></option>
-              </template>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Release Year</label>
-            <input type="number" class="form-input" x-model="formData.releaseYear" min="2000" max="2035">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Release Date (YYYY-MM)</label>
-          <input type="text" class="form-input" x-model="formData.releaseDate" placeholder="e.g. 2024-09">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Tagline Summary *</label>
-          <input type="text" class="form-input" x-model="formData.tagline" required placeholder="Short overview of the phone">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Key Features (1 per line)</label>
-          <textarea class="form-textarea" x-model="formData.highlightsRaw" placeholder="Feature 1&#10;Feature 2"></textarea>
-        </div>
-
-        <div class="form-group">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
-            <label class="form-label" style="margin-bottom: 0;">Technical Specifications (JSON Format) *</label>
-            <div style="display: flex; gap: 0.4rem;">
-              <button type="button" @click="formatFormSpecs()" class="btn-banner-action" style="padding: 0.15rem 0.5rem; font-size: 0.72rem;" title="Prettify JSON syntax">Format JSON</button>
-              <button type="button" @click="resetFormSpecsTemplate()" class="btn-banner-action" style="padding: 0.15rem 0.5rem; font-size: 0.72rem; color: #64748b; border-color: #cbd5e1;" title="Insert clean starter schema">Load Starter Template</button>
+      <!-- Main Form with Flex Column Filling Entire Modal Height -->
+      <form @submit.prevent="savePhone()" style="display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden; margin: 0; padding: 0;">
+        <!-- Scrollable Form Body Container: identical to details-body -->
+        <div class="details-body" style="flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.15rem;">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Phone Model Name *</label>
+              <input type="text" class="form-input" x-model="formData.model" required placeholder="e.g. iPhone 16 Pro Max">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Manufacturer Brand *</label>
+              <select class="form-select-control" x-model="formData.brandId" @change="onBrandChange()">
+                <template x-for="b in brands" :key="b.id">
+                  <option :value="b.id" x-text="b.name"></option>
+                </template>
+              </select>
             </div>
           </div>
-          <textarea class="form-textarea" style="min-height: 160px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.82rem; line-height: 1.45;" x-model="formData.specsRawJson" required placeholder="{ ... }"></textarea>
-        </div>
-      </div>
 
-      <div class="form-modal-footer">
-        <button type="button" class="btn-secondary" @click="showFormModal = false">Cancel</button>
-        <button type="submit" class="btn-red-action">Save Phone</button>
-      </div>
-    </form>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Device Series</label>
+              <select class="form-select-control" x-model="formData.seriesId">
+                <template x-for="s in currentBrandSeries" :key="s.id">
+                  <option :value="s.id" x-text="s.name"></option>
+                </template>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Release Year</label>
+              <input type="number" class="form-input" x-model="formData.releaseYear" min="2000" max="2035">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Release Date (YYYY-MM)</label>
+            <input type="text" class="form-input" x-model="formData.releaseDate" placeholder="e.g. 2024-09">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Tagline Summary *</label>
+            <input type="text" class="form-input" x-model="formData.tagline" required placeholder="Short overview of the phone">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Key Features (1 per line)</label>
+            <textarea class="form-textarea" x-model="formData.highlightsRaw" placeholder="Feature 1&#10;Feature 2"></textarea>
+          </div>
+
+          <div class="form-group">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
+              <label class="form-label" style="margin-bottom: 0;">Technical Specifications (JSON Format) *</label>
+              <div style="display: flex; gap: 0.4rem;">
+                <button type="button" @click="formatFormSpecs()" class="btn-banner-action" style="padding: 0.15rem 0.5rem; font-size: 0.72rem;" title="Prettify JSON syntax">Format JSON</button>
+                <button type="button" @click="resetFormSpecsTemplate()" class="btn-banner-action" style="padding: 0.15rem 0.5rem; font-size: 0.72rem; color: #64748b; border-color: #cbd5e1;" title="Insert clean starter schema">Load Starter Template</button>
+              </div>
+            </div>
+            <textarea class="form-textarea" style="min-height: 160px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.82rem; line-height: 1.45;" x-model="formData.specsRawJson" required placeholder="{ ... }"></textarea>
+          </div>
+        </div>
+
+        <!-- Pinned Modal Bottom Actions Row -->
+        <div class="form-modal-footer" style="flex-shrink: 0; padding: 1rem 1.5rem; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" class="btn-secondary" @click="showFormModal = false">Cancel</button>
+          <button type="submit" class="btn-red-action">Save Phone</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <!-- Toast Notification Container -->
