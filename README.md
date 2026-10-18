@@ -98,8 +98,32 @@ Because PhoneSpecs is a pure static client application, no complex installation 
 ### Option 1: Direct File Open
 Double-click [`index.html`](index.html) in your browser. (The application includes bundled fallback data for direct `file://` protocol usage).
 
-### Option 2: Local HTTP Server (Recommended)
-Using Node.js (runs immediately without local installation):
+### Option 2: Using Docker (No Local Node.js or Setup Required)
+If you have Docker Desktop installed, you can serve the site with zero local dependencies using an official lightweight Nginx container:
+
+**PowerShell (Windows):**
+```powershell
+docker run --rm -p 8000:80 -v ${PWD}:/usr/share/nginx/html:ro nginx:alpine
+```
+
+**Command Prompt (cmd.exe):**
+```cmd
+docker run --rm -p 8000:80 -v "%cd%":/usr/share/nginx/html:ro nginx:alpine
+```
+
+**Bash (Linux / macOS / WSL):**
+```bash
+docker run --rm -p 8000:80 -v "$(pwd)":/usr/share/nginx/html:ro nginx:alpine
+```
+
+Once running, navigate to:
+```
+http://localhost:8000
+```
+*(Press `Ctrl + C` in your terminal to stop the container).*
+
+### Option 3: Local HTTP Server (Node.js)
+Using Node.js (if installed on your host machine):
 ```bash
 npx serve .
 # or
@@ -108,10 +132,21 @@ npx http-server . -p 8000
 Open your browser at the local URL displayed in your terminal (e.g. `http://localhost:3000` or `http://localhost:8000`).
 
 ### Data Validation
-Run the catalog integrity validator locally using Node.js:
-```bash
-node scripts/validate_catalog.js
-```
+Run the catalog integrity validator using Node.js or Docker:
+
+- **Using local Node.js:**
+  ```bash
+  node scripts/validate_catalog.js
+  ```
+- **Using Docker (if Node is not installed locally):**
+  ```powershell
+  # PowerShell
+  docker run --rm -v ${PWD}:/app -w /app node:alpine node scripts/validate_catalog.js
+  ```
+  ```bash
+  # Linux / macOS / WSL
+  docker run --rm -v "$(pwd)":/app -w /app node:alpine node scripts/validate_catalog.js
+  ```
 
 ---
 
