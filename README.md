@@ -99,16 +99,18 @@ Because PhoneSpecs is a pure static client application, no complex installation 
 Double-click [`index.html`](index.html) in your browser. (The application includes bundled fallback data for direct `file://` protocol usage).
 
 ### Option 2: Local HTTP Server (Recommended)
-Using Python (pre-installed on most systems):
+Using Node.js (runs immediately without local installation):
 ```bash
-python -m http.server 8000
+npx serve .
+# or
+npx http-server . -p 8000
 ```
-Open your browser at `http://localhost:8000`.
+Open your browser at the local URL displayed in your terminal (e.g. `http://localhost:3000` or `http://localhost:8000`).
 
 ### Data Validation
-Run the catalog integrity validator locally:
+Run the catalog integrity validator locally using Node.js:
 ```bash
-python scripts/validate_catalog.py
+node scripts/validate_catalog.js
 ```
 
 ---
@@ -148,6 +150,7 @@ Every source code file in this repository contains the standard Apache 2.0 copyr
 - [`index.html`](index.html)
 - [`css/styles.css`](css/styles.css)
 - [`js/app.js`](js/app.js)
+- [`scripts/validate_catalog.js`](scripts/validate_catalog.js)
 
 Automated license compliance is enforced on every commit and pull request via the [Quality & License Compliance CI](.github/workflows/ci.yml) workflow.
 
@@ -158,6 +161,6 @@ Automated license compliance is enforced on every commit and pull request via th
 1. Fork the repository and create a descriptive branch: `git checkout -b feature/my-new-feature`
 2. Ensure changes comply with the Apache 2.0 license:
    - Preserve or add the Apache 2.0 license header at the top of new source files.
-   - Run `python scripts/validate_catalog.py` to ensure catalog integrity.
+   - Run `node scripts/validate_catalog.js` to ensure catalog integrity.
 3. Commit your changes: `git commit -m "Add new feature"`
 4. Push to your branch and submit a Pull Request.

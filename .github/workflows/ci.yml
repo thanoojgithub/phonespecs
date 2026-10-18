@@ -16,13 +16,8 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
       - name: Validate Catalog JSON Integrity
-        run: python scripts/validate_catalog.py
+        run: node scripts/validate_catalog.js
 
       - name: Check Apache 2.0 Compliance Files
         run: |
