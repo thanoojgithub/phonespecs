@@ -99,8 +99,19 @@ Because PhoneSpecs is a pure static client application, no complex installation 
 Double-click [`index.html`](index.html) in your browser. (The application includes bundled fallback data for direct `file://` protocol usage).
 
 ### Option 2: Local HTTP Server using Docker (Recommended)
-Run the Node.js HTTP server (`serve` or `http-server`) inside an official, zero-install Node container without installing Node.js on your computer:
 
+#### A. Build & Run with Dockerfile
+You can build and run the production-grade static container:
+```bash
+# Build the image
+docker build -t phonespecs .
+
+# Run the container
+docker run --rm -p 8000:80 phonespecs
+```
+
+#### B. Quick Run without Building (One-Liner)
+Run the Node.js HTTP server directly in a temporary container without local installation:
 ```bash
 docker run --rm -it -p 8000:8000 -v ${PWD}:/app -w /app node:alpine npx http-server . -p 8000
 # or with serve:
@@ -116,7 +127,7 @@ Open your browser at:
 ```
 http://localhost:8000
 ```
-*(Press `Ctrl + C` in your terminal to stop the server).*
+*(Press `Ctrl + C` in your terminal to stop the container).*
 
 ### Option 3: Local HTTP Server using Host Node.js
 If you have Node.js installed directly on your machine:
