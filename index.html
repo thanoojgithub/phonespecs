@@ -202,27 +202,27 @@
               <tbody>
                 <tr>
                   <th class="c-key">CPU</th>
-                  <td class="c-val" :title="phone.cardSpecs.cpu" x-text="phone.cardSpecs.cpu"></td>
+                  <td class="c-val" :title="phone.cardSpecs?.cpu || '—'" x-text="phone.cardSpecs?.cpu || '—'"></td>
                 </tr>
                 <tr>
                   <th class="c-key">GPU</th>
-                  <td class="c-val" :title="phone.cardSpecs.gpu" x-text="phone.cardSpecs.gpu"></td>
+                  <td class="c-val" :title="phone.cardSpecs?.gpu || '—'" x-text="phone.cardSpecs?.gpu || '—'"></td>
                 </tr>
                 <tr>
                   <th class="c-key">Bit</th>
-                  <td class="c-val" x-text="phone.cardSpecs.bit"></td>
+                  <td class="c-val" x-text="phone.cardSpecs?.bit || '64-bit'"></td>
                 </tr>
                 <tr>
                   <th class="c-key">RAM</th>
-                  <td class="c-val" x-text="phone.cardSpecs.ram"></td>
+                  <td class="c-val" x-text="phone.cardSpecs?.ram || '—'"></td>
                 </tr>
                 <tr>
                   <th class="c-key">Storage</th>
-                  <td class="c-val" x-text="phone.cardSpecs.storage"></td>
+                  <td class="c-val" x-text="phone.cardSpecs?.storage || '—'"></td>
                 </tr>
                 <tr>
                   <th class="c-key">Display</th>
-                  <td class="c-val" :title="phone.specs?.['Display System']?.['Display Size']" x-text="phone.cardSpecs.display"></td>
+                  <td class="c-val" :title="phone.specs?.['Display System']?.['Display Size'] || ''" x-text="phone.cardSpecs?.display || '—'"></td>
                 </tr>
               </tbody>
             </table>
