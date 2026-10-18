@@ -29,10 +29,10 @@
   <!-- Browser Tab Favicon (Trimmed Sleek Minimalist Black Smartphone Emblem) -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 30' fill='none'%3E%3Crect width='24' height='30' rx='6' fill='%230F172A'/%3E%3Crect x='2.5' y='2.5' width='19' height='25' rx='3.5' stroke='%23FFFFFF' stroke-width='1.8' stroke-linecap='round'/%3E%3Ccircle cx='7.5' cy='7.5' r='1.5' fill='%23E11D48'/%3E%3Ccircle cx='12.5' cy='7.5' r='1.5' fill='%23FFFFFF'/%3E%3Ccircle cx='10' cy='11.5' r='1.5' fill='%23FDA4AF'/%3E%3Cpath d='M6.5 23.5H17.5' stroke='%23FFFFFF' stroke-width='1.6' stroke-linecap='round' stroke-opacity='0.9'/%3E%3C/svg%3E">
   
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=4.0">
 
   <!-- Alpine.js Application Logic -->
-  <script src="js/app.js"></script>
+  <script src="js/app.js?v=4.0"></script>
 
   <!-- Lightweight Alpine.js (~15KB minified CDN - no install required) -->
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
@@ -455,7 +455,7 @@
         <button type="button" class="btn-close-modal" @click="showFormModal = false">✕</button>
       </div>
 
-      <div class="form-modal-body">
+      <div class="form-modal-body" style="flex: 1 1 auto; min-height: 0; max-height: calc(85vh - 130px); overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;">
         <div class="form-grid-2">
           <div class="form-group">
             <label class="form-label">Phone Model Name *</label>
