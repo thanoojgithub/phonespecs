@@ -35,21 +35,23 @@ A clean, high-performance, and modern mobile phone technical specifications cata
 
 ## Features
 
-- **Fast Client-Side Experience**: Instant search and filtering without page reloads.
+- **Modern HTML & Native CSS Grid**: Clean, semantic HTML5 structure with zero inline styles and pure native CSS Grid layouts.
+- **Fast Client-Side Experience**: Instant search, sorting, and brand filtering with zero page reloads.
 - **Deep Technical Specifications**: Detailed breakdowns across Display, Processor, Optics/Camera, Battery/Charging, and Connectivity.
-- **Side-by-Side Comparison Engine**: Compare up to 4 devices simultaneously with aligned spec tables.
-- **App Owner / Admin Mode**: In-browser catalog editor to add, edit, export, or reset device data.
+- **Side-by-Side Comparison Engine**: Compare devices simultaneously with sticky, aligned matrix spec tables.
+- **App Owner / Admin Mode**: In-browser catalog editor with native grid-constrained modal dialogs to add, edit, export, or reset device data.
+- **Zero 3rd-Party UI/UX Frameworks**: Built strictly with [Alpine.js](https://alpinejs.dev/) for declarative reactivity and standard native CSS—no Tailwind, Bootstrap, React, or heavy JS bundles.
 - **Ultra-Lean Footprint**: Zero node build pipelines, zero npm lockfiles, zero server requirements. Runs directly in any web browser.
 
 ---
 
 ## Architecture & Tech Stack
 
-- **HTML5 & Semantic Structure**: [`index.html`](index.html)
-- **Styling**: Vanilla modern CSS design system with custom animations and responsive layout in [`css/styles.css`](css/styles.css)
-- **Reactive UI Engine**: [Alpine.js](https://alpinejs.dev) (~15 KB CDN) for lightweight declarative state
-- **Application Logic**: Vanilla JavaScript in [`js/app.js`](js/app.js)
-- **Data Catalog**: Structured JSON store in [`data/catalog.json`](data/catalog.json)
+- **Modern HTML5 & Semantic Structure**: Pure semantic elements, accessibility-oriented attributes, and zero inline styles in [`index.html`](index.html).
+- **Styling (Modern Native CSS Grid)**: Native CSS Grid layouts, `dvh`-aware viewport dialogs, `scrollbar-gutter: stable`, and a curated red-and-slate design system in [`css/styles.css`](css/styles.css). No CSS frameworks (Tailwind, Bootstrap, etc.) are used.
+- **Reactive UI Engine**: [Alpine.js](https://alpinejs.dev) (~15 KB CDN) for lightweight declarative reactive state management. Strictly no other UI or JavaScript frameworks.
+- **Application Logic**: Vanilla JavaScript in [`js/app.js`](js/app.js).
+- **Data Catalog**: Structured JSON store in [`data/catalog.json`](data/catalog.json).
 
 ---
 

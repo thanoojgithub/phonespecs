@@ -90,6 +90,10 @@ body.modal-open {
 }
 
 /* Modern Minimalist Scrollbars (Cross-Browser Chrome, Edge, Safari, Firefox) */
+html {
+  scrollbar-gutter: stable;
+}
+
 * {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 #f8fafc;
@@ -107,10 +111,16 @@ body.modal-open {
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+::-webkit-scrollbar-corner {
+  background: #f8fafc;
 }
 
 a {
@@ -2139,3 +2149,287 @@ input, select, textarea {
     scroll-behavior: auto !important;
   }
 }
+
+/* ==========================================================================
+   Modern HTML & Native CSS Grid Components & Semantic Classes
+   - Native CSS Grid for catalog, dialogs, form groups, and compare matrix
+   - Strict CSS extraction with zero inline styles
+   - dvh-aware viewport calculations for iOS / Android mobile viewports
+   ========================================================================== */
+
+/* Search Result Clear Badge */
+.btn-search-clear-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-full);
+  padding: 0.22rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-search-clear-badge:hover {
+  background: #fff1f2;
+  border-color: #fecdd3;
+  color: var(--red-primary);
+}
+
+/* Search Results Heading Flex / Grid Group */
+.search-results-heading-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Empty Catalog State Grid Cell */
+.catalog-empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 1.5rem;
+  color: #475569;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.catalog-empty-title {
+  font-size: 1.2rem;
+  color: #0f172a;
+  font-weight: 850;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.catalog-empty-desc {
+  font-size: 0.95rem;
+  color: #64748b;
+  max-width: 480px;
+  margin: 0 auto 1.35rem auto;
+  line-height: 1.55;
+}
+
+/* Application Legal Footer Grid & Styling */
+.app-footer {
+  margin-top: 4rem;
+  padding: 2.5rem 1.5rem;
+  border-top: 1px solid var(--border-light);
+  text-align: center;
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.65;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.footer-copy {
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.15rem;
+}
+
+.footer-link {
+  color: var(--red-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.footer-link:hover {
+  color: var(--red-hover);
+}
+
+.footer-disclaimer {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+/* Compare Drawer Bar Grid Alignment */
+.compare-drawer-bar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.compare-drawer-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.compare-drawer-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+.compare-chips-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.compare-drawer-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.btn-clear-compare {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.8rem;
+}
+
+/* Modal Title Icon Badge */
+.modal-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modal-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--red-subtle-bg);
+  border: 1px solid var(--red-border);
+  flex-shrink: 0;
+}
+
+.modal-icon-svg {
+  color: var(--red-primary);
+}
+
+/* Modern Form Modal Layout: Native Grid Container */
+.form-modal-container {
+  max-width: 840px;
+  border: 2px solid var(--red-primary);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  max-height: min(90vh, 90dvh);
+  height: 100%;
+}
+
+.form-modal-header {
+  flex-shrink: 0;
+  padding: 1.15rem 1.6rem;
+  background: #ffffff;
+  border-bottom: 1.5px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form-modal-content {
+  display: grid;
+  grid-template-rows: 1fr;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.form-modal-scrollable {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  overscroll-behavior: contain;
+}
+
+.form-specs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.form-specs-label {
+  margin-bottom: 0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.form-specs-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.btn-form-specs-action {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.74rem;
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-form-specs-action:hover {
+  background: #0f172a;
+  border-color: #0f172a;
+  color: #ffffff;
+}
+
+.btn-form-specs-action.action-accent {
+  color: var(--red-primary);
+  border-color: var(--red-border);
+}
+
+.btn-form-specs-action.action-accent:hover {
+  background: var(--red-primary);
+  border-color: var(--red-primary);
+  color: #ffffff;
+}
+
+.form-textarea-code {
+  min-height: 170px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  background: #fafbfc;
+  tab-size: 2;
+  white-space: pre;
+}
+
+.form-textarea-code:focus {
+  background: #ffffff;
+}
+
+/* Enhanced Focus-Visible & Accessibility Outline */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--red-primary);
+  outline-offset: 2px;
+}
+

@@ -42,7 +42,7 @@
   <!-- Clean Top Header Navigation: Logo on Top Left, Admin Access on Top Right -->
   <header class="app-header">
     <div class="header-container">
-      <div class="brand-logo" @click="showAllPhones()" style="cursor: pointer;">
+      <div class="brand-logo" @click="showAllPhones()">
         <!-- Sleek Trimmed Minimalist Black PhoneSpecs Emblem (No extra padding) -->
         <div class="ps-brand-emblem">
           <svg viewBox="0 0 24 30" fill="none" xmlns="http://www.w3.org/2000/svg" class="ps-emblem-svg">
@@ -156,9 +156,9 @@
     <div class="catalog-heading-row">
       <h2 class="catalog-heading-title">
         <template x-if="searchQuery.trim() !== ''">
-          <span style="display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+          <span class="search-results-heading-wrap">
             <span>Search Results for "<span class="brand-title-accent" x-text="searchQuery.trim()"></span>"</span>
-            <button @click="searchQuery = ''" style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: var(--radius-full); padding: 0.2rem 0.6rem; font-size: 0.75rem; font-weight: 700; color: #64748b; cursor: pointer;" title="Clear search">✕ Clear Search</button>
+            <button @click="searchQuery = ''" class="btn-search-clear-badge" title="Clear search">✕ Clear Search</button>
           </span>
         </template>
         <template x-if="searchQuery.trim() === ''">
@@ -244,22 +244,22 @@
       </template>
 
       <!-- Empty State -->
-      <div x-show="filteredPhones.length === 0" style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem; color: #475569;">
-        <h4 style="font-size: 1.15rem; color: #0f172a; font-weight: 800; margin-bottom: 0.5rem;">No content to display.</h4>
-        <p style="font-size: 0.95rem; color: #475569; max-width: 480px; margin: 0 auto 1.25rem auto;">Please try adjusting your search terms or selecting another brand.</p>
+      <div x-show="filteredPhones.length === 0" class="catalog-empty-state">
+        <h4 class="catalog-empty-title">No content to display.</h4>
+        <p class="catalog-empty-desc">Please try adjusting your search terms or selecting another brand.</p>
         <button class="btn-header" @click="showAllPhones()">Show All Phones</button>
       </div>
     </div>
 
     <!-- Application Footer & Legal Disclaimers (Trademark, Warranty, Liability) -->
-    <footer style="margin-top: 3.5rem; padding: 2rem 1rem; border-top: 1px solid var(--border-light); text-align: center; font-size: 0.8rem; color: #64748b; line-height: 1.6;">
-      <p style="margin-bottom: 0.4rem; font-weight: 600; color: #334155;">
-        PhoneSpecs &copy; 2026 Thanooj Kalathuru. Licensed under the <a href="LICENSE" style="color: var(--red-primary); text-decoration: underline;" target="_blank">Apache License 2.0</a>.
+    <footer class="app-footer">
+      <p class="footer-copy">
+        PhoneSpecs &copy; 2026 Thanooj Kalathuru. Licensed under the <a href="LICENSE" class="footer-link" target="_blank">Apache License 2.0</a>.
       </p>
-      <p style="max-width: 780px; margin: 0 auto 0.4rem auto;">
+      <p class="footer-disclaimer">
         <strong>Trademark Disclaimer:</strong> All product names, logos, brands, and registered trademarks displayed in this catalog are property of their respective owners. Their use is for informational identification purposes only and does not imply endorsement or affiliation.
       </p>
-      <p style="max-width: 780px; margin: 0 auto;">
+      <p class="footer-disclaimer">
         <strong>Disclaimer of Warranty &amp; Liability:</strong> Provided on an &quot;AS IS&quot; basis, without warranties or conditions of any kind. In no event shall the authors or contributors be liable for any claims or damages arising from use.
       </p>
     </footer>
@@ -267,9 +267,9 @@
 
   <!-- Compare Phones Bottom Drawer Bar -->
   <div class="compare-drawer-bar" x-show="compareList.length > 0" x-transition>
-    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-      <span style="font-size: 0.9rem; font-weight: 800; color: #0f172a;">Compare Models (Max 3):</span>
-      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <div class="compare-drawer-left">
+      <span class="compare-drawer-title">Compare Models (Max 3):</span>
+      <div class="compare-chips-group">
         <template x-for="p in compareList" :key="p.id">
           <div class="compare-chip">
             <span x-text="p.model"></span>
@@ -279,8 +279,8 @@
       </div>
     </div>
 
-    <div style="display: flex; align-items: center; gap: 0.75rem;">
-      <button class="btn-secondary" style="padding: 0.45rem 0.9rem; font-size: 0.8rem;" @click="clearCompare()">Clear All</button>
+    <div class="compare-drawer-right">
+      <button class="btn-secondary btn-clear-compare" @click="clearCompare()">Clear All</button>
       <button class="btn-red-action" @click="openCompareModal()">
         Compare Side-by-Side (<span><span x-text="compareList.length"></span>/3</span>) →
       </button>
@@ -291,9 +291,9 @@
   <div class="compare-modal-overlay" x-show="showCompareModal" x-transition>
     <div class="compare-modal" @click.away="showCompareModal = false">
       <div class="details-header">
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <span class="modal-icon-badge" style="display: inline-flex; align-items: center; justify-content: center;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--red-primary);">
+        <div class="modal-title-wrap">
+          <span class="modal-icon-badge">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="modal-icon-svg">
               <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
               <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
               <path d="M7 21h10"/>
@@ -448,18 +448,18 @@
   </div>
 
   <!-- App Owner Add/Edit Phone Modal -->
-  <div class="details-overlay" x-show="showFormModal" x-transition style="z-index: 1200;">
-    <div class="details-modal" @click.away="showFormModal = false" style="max-width: 820px; border: 2.5px solid var(--red-primary);">
+  <div class="form-modal-overlay" x-show="showFormModal" x-transition>
+    <div class="form-modal form-modal-container" @click.away="showFormModal = false">
       <!-- Modal Top Header -->
-      <div class="details-header" style="flex-shrink: 0;">
+      <div class="form-modal-header">
         <h3 class="details-title" x-text="formTitle"></h3>
         <button type="button" class="btn-close-modal" @click="showFormModal = false">✕</button>
       </div>
 
       <!-- Main Form with Flex Column Filling Entire Modal Height -->
-      <form @submit.prevent="savePhone()" style="display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden; margin: 0; padding: 0;">
-        <!-- Scrollable Form Body Container: identical to details-body -->
-        <div class="details-body" style="flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.15rem;">
+      <form @submit.prevent="savePhone()" class="form-modal-content">
+        <!-- Scrollable Form Body Container -->
+        <div class="form-modal-scrollable">
           <div class="form-grid-2">
             <div class="form-group">
               <label class="form-label">Phone Model Name *</label>
@@ -506,19 +506,19 @@
           </div>
 
           <div class="form-group">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
-              <label class="form-label" style="margin-bottom: 0;">Technical Specifications (JSON Format) *</label>
-              <div style="display: flex; gap: 0.4rem;">
-                <button type="button" @click="formatFormSpecs()" class="btn-banner-action" style="padding: 0.15rem 0.5rem; font-size: 0.72rem;" title="Prettify JSON syntax">Format JSON</button>
-                <button type="button" @click="resetFormSpecsTemplate()" class="btn-banner-action" style="padding: 0.15rem 0.5rem; font-size: 0.72rem; color: #64748b; border-color: #cbd5e1;" title="Insert clean starter schema">Load Starter Template</button>
+            <div class="form-specs-header">
+              <label class="form-specs-label">Technical Specifications (JSON Format) *</label>
+              <div class="form-specs-actions">
+                <button type="button" @click="formatFormSpecs()" class="btn-form-specs-action action-accent" title="Prettify JSON syntax">Format JSON</button>
+                <button type="button" @click="resetFormSpecsTemplate()" class="btn-form-specs-action" title="Insert clean starter schema">Load Starter Template</button>
               </div>
             </div>
-            <textarea class="form-textarea" style="min-height: 160px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.82rem; line-height: 1.45;" x-model="formData.specsRawJson" required placeholder="{ ... }"></textarea>
+            <textarea class="form-textarea form-textarea-code" x-model="formData.specsRawJson" required placeholder="{ ... }"></textarea>
           </div>
         </div>
 
         <!-- Pinned Modal Bottom Actions Row -->
-        <div class="form-modal-footer" style="flex-shrink: 0; padding: 1rem 1.5rem; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <div class="form-modal-footer">
           <button type="button" class="btn-secondary" @click="showFormModal = false">Cancel</button>
           <button type="submit" class="btn-red-action">Save Phone</button>
         </div>
