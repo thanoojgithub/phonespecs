@@ -33,7 +33,7 @@ jobs:
 
       - name: Verify Apache License Headers
         run: |
-          for file in index.html css/styles.css js/app.js; do
+          for file in index.html css/styles.css js/app.js Dockerfile scripts/validate_catalog.js; do
             if ! grep -q "Licensed under the Apache License, Version 2.0" "$file"; then
               echo "✗ Missing Apache 2.0 header in $file"
               exit 1
