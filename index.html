@@ -19,7 +19,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>PhoneSpecs — Mobile Phone Technical Specifications</title>
-  <meta name="description" content="Clean, simple, and modern mobile phone specifications catalog. Built with lightweight Alpine.js, pure GET data rendering, iconic navigation, and side-by-side phone comparison.">
+  <meta name="description" content="Clean, simple, and modern mobile phone specifications catalog. Built with 100% pure native JavaScript, instant search, iconic navigation, and side-by-side phone comparison.">
   
   <!-- Modern Clean Font Outfit & Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,20 +29,20 @@
   <!-- Browser Tab Favicon (Trimmed Sleek Minimalist Black Smartphone Emblem) -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 30' fill='none'%3E%3Crect width='24' height='30' rx='6' fill='%230F172A'/%3E%3Crect x='2.5' y='2.5' width='19' height='25' rx='3.5' stroke='%23FFFFFF' stroke-width='1.8' stroke-linecap='round'/%3E%3Ccircle cx='7.5' cy='7.5' r='1.5' fill='%23E11D48'/%3E%3Ccircle cx='12.5' cy='7.5' r='1.5' fill='%23FFFFFF'/%3E%3Ccircle cx='10' cy='11.5' r='1.5' fill='%23FDA4AF'/%3E%3Cpath d='M6.5 23.5H17.5' stroke='%23FFFFFF' stroke-width='1.6' stroke-linecap='round' stroke-opacity='0.9'/%3E%3C/svg%3E">
   
-  <link rel="stylesheet" href="css/styles.css?v=4.0">
+  <link rel="stylesheet" href="css/styles.css?v=5.0">
 
-  <!-- Alpine.js Application Logic -->
-  <script src="js/app.js?v=4.0"></script>
+  <!-- Native JavaScript Catalog Service (Pure CRUD & Search Engine) -->
+  <script src="js/catalogService.js?v=5.0"></script>
 
-  <!-- Lightweight Alpine.js (~15KB minified CDN - no install required) -->
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
+  <!-- Native JavaScript Application Logic (Pure DOM UI & State Management) -->
+  <script src="js/app.js?v=5.0"></script>
 </head>
-<body x-data="phoneCatalog" :class="{ 'modal-open': isAnyModalOpen }" x-cloak>
+<body id="app-body">
 
   <!-- Clean Top Header Navigation: Logo on Top Left, Admin Access on Top Right -->
   <header class="app-header">
     <div class="header-container">
-      <div class="brand-logo" @click="showAllPhones()">
+      <div class="brand-logo" id="brand-logo-btn" title="View all phones">
         <!-- Sleek Trimmed Minimalist Black PhoneSpecs Emblem (No extra padding) -->
         <div class="ps-brand-emblem">
           <svg viewBox="0 0 24 30" fill="none" xmlns="http://www.w3.org/2000/svg" class="ps-emblem-svg">
@@ -69,27 +69,26 @@
       <!-- Header Action Controls (Top Right) -->
       <div class="header-actions">
         <!-- Compare Tray Trigger in Header -->
-        <button class="btn-compare-header" @click="openCompareModal()" x-show="compareList.length > 0">
-          Compare <span class="compare-badge-num" x-text="compareList.length"></span>
+        <button class="btn-compare-header is-hidden" id="header-compare-btn">
+          Compare <span class="compare-badge-num" id="header-compare-badge">0</span>
         </button>
 
         <!-- Modern Compact Admin Access Button -->
-        <button class="btn-admin-compact" :class="{ 'admin-active': adminMode }" @click="toggleAdmin()" title="Toggle Admin Mode">
+        <button class="btn-admin-compact" id="btn-admin-toggle" title="Toggle Admin Mode">
           <span class="admin-dot"></span>
-          <span x-text="adminMode ? 'Admin Active' : 'Admin Access'"></span>
+          <span id="btn-admin-text">Admin Access</span>
         </button>
       </div>
     </div>
-
   </header>
 
   <!-- App Owner Admin Status Banner -->
-  <div class="admin-banner" x-show="adminMode" x-transition>
+  <div class="admin-banner is-hidden" id="admin-banner">
     <span><strong>App Owner Mode:</strong> Add, edit, or delete mobile phone specifications directly.</span>
     <div class="admin-banner-actions">
-      <button class="btn-banner-action" @click="openAddModal()">+ Add New Phone</button>
-      <button class="btn-banner-action" @click="exportCatalogJson()" title="Download updated catalog.json file">Export JSON</button>
-      <button class="btn-banner-action" @click="resetToDisk()" title="Reset back to disk catalog.json">Reset to Disk</button>
+      <button class="btn-banner-action" id="btn-admin-add">+ Add New Phone</button>
+      <button class="btn-banner-action" id="btn-admin-export" title="Download updated catalog.json file">Export JSON</button>
+      <button class="btn-banner-action" id="btn-admin-reset" title="Reset back to disk catalog.json">Reset to Disk</button>
     </div>
   </div>
 
@@ -99,23 +98,23 @@
     <div class="controls-bar">
       <div class="search-box-wrapper">
         <!-- Modern Sleek Precision Search Vector Icon (Disappears once text is typed in) -->
-        <span class="search-icon-wrap" x-show="!searchQuery || searchQuery.trim() === ''" x-transition:leave.duration.150ms>
+        <span class="search-icon-wrap" id="search-icon-wrap">
           <svg class="modern-search-svg" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="8.5" cy="8.5" r="5.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
             <path d="M12.8 12.8L17.2 17.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
         </span>
-        <input type="text" class="search-input" :class="{ 'has-query': searchQuery && searchQuery.trim() !== '' }" x-model.debounce.120ms="searchQuery" placeholder="Search mobile model, processor, camera, display specs...">
+        <input type="text" id="search-input" class="search-input" placeholder="Search mobile model, processor, camera, display specs...">
         
         <!-- Quick Clear Button inside search bar when text is present -->
-        <button type="button" class="search-clear-inner" x-show="searchQuery && searchQuery.trim() !== ''" @click="searchQuery = ''" title="Clear search text">
+        <button type="button" id="search-clear-inner" class="search-clear-inner is-hidden" title="Clear search text">
           ✕
         </button>
       </div>
 
       <!-- Top Sort By (Disabled ONLY when Search Results are not found) -->
       <div class="filter-group">
-        <select class="filter-select" x-model="searchSortBy" :disabled="filteredPhones.length === 0" title="Sort search results">
+        <select id="search-sort-select" class="filter-select" title="Sort search results">
           <option value="name-asc">Model: A → Z</option>
           <option value="name-desc">Model: Z → A</option>
           <option value="brand-asc">Brand: A → Z</option>
@@ -128,52 +127,25 @@
 
     <!-- Centered Circular Brand Filter Links Across Multiple Lines Below Search Bar -->
     <div class="circular-brands-section">
-      <div class="circular-brands-container">
-        <!-- All Brands Circle -->
-        <button class="circle-brand-pill" :class="{ 'active': selectedBrand === 'all' }" @click="selectBrand('all', 'all')">
-          All
-        </button>
-
-        <!-- Brand Circles -->
-        <template x-for="brand in brands" :key="brand.id">
-          <button class="circle-brand-pill" :class="{ 'active': selectedBrand === brand.id }" @click="selectBrand(brand.id, 'all')">
-            <span x-text="brand.name"></span>
-          </button>
-        </template>
+      <div class="circular-brands-container" id="brands-container">
+        <!-- Rendered dynamically by native JS -->
       </div>
     </div>
 
     <!-- Brand Series Submenu Filter Pills (Only shown when a brand has multiple distinct series) -->
-    <div class="filter-pills" x-show="selectedBrand !== 'all' && activeSeriesList.length > 1">
-      <button class="filter-pill" :class="{ 'active': selectedSeries === 'all' }" @click="selectSeries('all')">
-        All Series
-      </button>
-      <template x-for="s in activeSeriesList" :key="s.id">
-        <button class="filter-pill" :class="{ 'active': selectedSeries === s.id }" @click="selectSeries(s.id)" x-text="s.name">
-        </button>
-      </template>
+    <div class="filter-pills is-hidden" id="series-container">
+      <!-- Rendered dynamically by native JS -->
     </div>
 
     <!-- Active Heading & Dedicated Right-Corner Sort By for All Mobile Models -->
     <div class="catalog-heading-row">
-      <h2 class="catalog-heading-title">
-        <template x-if="searchQuery.trim() !== ''">
-          <span class="search-results-heading-wrap">
-            <span>Search Results for "<span class="brand-title-accent" x-text="searchQuery.trim()"></span>"</span>
-            <button @click="searchQuery = ''" class="btn-search-clear-badge" title="Clear search">✕ Clear Search</button>
-          </span>
-        </template>
-        <template x-if="searchQuery.trim() === ''">
-          <span>
-            <span x-text="selectedBrand === 'all' ? 'All Mobile Models' : activeBrandObject?.name"></span>
-            <span x-show="selectedSeries !== 'all' && activeSeriesList.some(s => s.id === selectedSeries)" x-text="' › ' + activeSeriesList.find(s => s.id === selectedSeries)?.name"></span>
-          </span>
-        </template>
+      <h2 class="catalog-heading-title" id="catalog-heading-title">
+        <!-- Rendered dynamically by native JS -->
       </h2>
 
       <!-- Right Corner Sort By for All Mobile Models (Shown only in normal catalog mode; disabled ONLY when 0 phones match) -->
-      <div class="filter-group" x-show="!searchQuery || searchQuery.trim() === ''">
-        <select class="filter-select" x-model="catalogSortBy" :disabled="filteredPhones.length === 0" title="Sort mobile models">
+      <div class="filter-group" id="catalog-sort-group">
+        <select id="catalog-sort-select" class="filter-select" title="Sort mobile models">
           <option value="name-asc">Model: A → Z</option>
           <option value="name-desc">Model: Z → A</option>
           <option value="brand-asc">Brand: A → Z</option>
@@ -185,74 +157,15 @@
     </div>
 
     <!-- Mobile Phones Cards Grid (Clean, Decluttered, Standard Modern Spec Cards) -->
-    <div class="items-grid">
-      <template x-for="phone in filteredPhones" :key="phone.id">
-        <div class="phone-banner-card" @click="openDetails(phone)">
-          <!-- Top Row: Brand Name Tag -->
-          <div class="banner-top-row">
-            <span class="banner-brand-pill" x-text="phone.brandName"></span>
-          </div>
+    <div class="items-grid" id="items-grid">
+      <!-- Rendered dynamically by native JS -->
+    </div>
 
-          <!-- Model Name Row: Model Title with Release Year Parallel on the Right -->
-          <div class="banner-model-row">
-            <h3 class="banner-model-title" x-text="phone.model"></h3>
-            <span class="banner-year-pill" x-show="phone.releaseYear" x-text="phone.releaseYear"></span>
-          </div>
-
-          <!-- Clean Standard Specifications Table (Compact Fixed Keys, Maximum Data Width) -->
-          <div class="card-table-wrapper">
-            <table class="card-specs-table">
-              <tbody>
-                <tr>
-                  <th class="c-key">CPU</th>
-                  <td class="c-val" :title="phone.cardSpecs?.cpu || '—'" x-text="phone.cardSpecs?.cpu || '—'"></td>
-                </tr>
-                <tr>
-                  <th class="c-key">GPU</th>
-                  <td class="c-val" :title="phone.cardSpecs?.gpu || '—'" x-text="phone.cardSpecs?.gpu || '—'"></td>
-                </tr>
-                <tr>
-                  <th class="c-key">Bit</th>
-                  <td class="c-val" x-text="phone.cardSpecs?.bit || '64-bit'"></td>
-                </tr>
-                <tr>
-                  <th class="c-key">RAM</th>
-                  <td class="c-val" x-text="phone.cardSpecs?.ram || '—'"></td>
-                </tr>
-                <tr>
-                  <th class="c-key">Storage</th>
-                  <td class="c-val" x-text="phone.cardSpecs?.storage || '—'"></td>
-                </tr>
-                <tr>
-                  <th class="c-key">Display</th>
-                  <td class="c-val" :title="phone.specs?.['Display System']?.['Display Size'] || ''" x-text="phone.cardSpecs?.display || '—'"></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Bottom Action Row -->
-          <div class="banner-bottom-row">
-            <span class="btn-banner-view">Full Specs →</span>
-            <button class="btn-banner-compare" :class="{ 'in-compare': isInCompare(phone.id) }" @click.stop="toggleCompare(phone)">
-              <span x-text="isInCompare(phone.id) ? '✓ In Compare' : '+ Compare'"></span>
-            </button>
-          </div>
-
-          <!-- App Owner Admin Buttons (Only displayed if Admin Mode is on) -->
-          <div class="item-card-admin-bar" x-show="adminMode" @click.stop>
-            <button class="btn-card-edit" @click="openEditModal(phone)">Edit</button>
-            <button class="btn-card-delete" @click="deletePhone(phone.id)">Delete</button>
-          </div>
-        </div>
-      </template>
-
-      <!-- Empty State -->
-      <div x-show="filteredPhones.length === 0" class="catalog-empty-state">
-        <h4 class="catalog-empty-title">No content to display.</h4>
-        <p class="catalog-empty-desc">Please try adjusting your search terms or selecting another brand.</p>
-        <button class="btn-header" @click="showAllPhones()">Show All Phones</button>
-      </div>
+    <!-- Empty State Message -->
+    <div class="catalog-empty-state is-hidden" id="empty-state">
+      <h4 class="catalog-empty-title">No content to display.</h4>
+      <p class="catalog-empty-desc">Please try adjusting your search terms or selecting another brand.</p>
+      <button class="btn-header" id="btn-empty-reset">Show All Phones</button>
     </div>
 
     <!-- Application Footer & Legal Disclaimers (Trademark, Warranty, Liability) -->
@@ -270,30 +183,25 @@
   </main>
 
   <!-- Compare Phones Bottom Drawer Bar -->
-  <div class="compare-drawer-bar" x-show="compareList.length > 0" x-transition>
+  <div class="compare-drawer-bar is-hidden" id="compare-drawer">
     <div class="compare-drawer-left">
       <span class="compare-drawer-title">Compare Models (Max 3):</span>
-      <div class="compare-chips-group">
-        <template x-for="p in compareList" :key="p.id">
-          <div class="compare-chip">
-            <span x-text="p.model"></span>
-            <span class="compare-chip-remove" @click="removeCompare(p.id)" title="Remove">✕</span>
-          </div>
-        </template>
+      <div class="compare-chips-group" id="compare-chips-container">
+        <!-- Rendered dynamically by native JS -->
       </div>
     </div>
 
     <div class="compare-drawer-right">
-      <button class="btn-secondary btn-clear-compare" @click="clearCompare()">Clear All</button>
-      <button class="btn-red-action" @click="openCompareModal()">
-        Compare Side-by-Side (<span><span x-text="compareList.length"></span>/3</span>) →
+      <button class="btn-secondary btn-clear-compare" id="btn-clear-compare">Clear All</button>
+      <button class="btn-red-action" id="btn-open-compare-drawer">
+        Compare Side-by-Side (<span id="compare-drawer-count">0</span>/3) →
       </button>
     </div>
   </div>
 
   <!-- Side-by-Side Comparison Modal Window (Clean Text-Only Matrix) -->
-  <div class="compare-modal-overlay" x-show="showCompareModal" x-transition>
-    <div class="compare-modal" @click.away="showCompareModal = false">
+  <div class="compare-modal-overlay is-hidden" id="compare-modal">
+    <div class="compare-modal" id="compare-modal-card">
       <div class="details-header">
         <div class="modal-title-wrap">
           <span class="modal-icon-badge">
@@ -307,223 +215,103 @@
           </span>
           <h3 class="details-title">Mobile Phone Comparison</h3>
         </div>
-        <button class="btn-close-modal" @click="showCompareModal = false">✕</button>
+        <button class="btn-close-modal" id="btn-close-compare">✕</button>
       </div>
 
-      <div class="compare-table-scroll-wrap">
-        <table class="compare-table">
-          <thead>
-            <tr>
-              <th class="compare-corner-header">
-                <span class="compare-param-corner-badge">Specs</span>
-              </th>
-              <template x-for="phone in compareList" :key="phone.id">
-                <td class="compare-model-header-cell">
-                  <div class="compare-header-card">
-                    <button class="compare-remove-btn" @click="removeCompare(phone.id)" title="Remove phone">✕ Remove</button>
-                    <span class="banner-brand-pill" x-text="phone.brandName"></span>
-                    <h4 class="compare-model-name" x-text="phone.model"></h4>
-                    <span class="compare-year-chip" x-show="phone.releaseYear" x-text="phone.releaseYear"></span>
-                  </div>
-                </td>
-              </template>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th>Processor & Silicon</th>
-              <template x-for="p in compareList" :key="p.id">
-                <td x-text="getSpecValue(p, 'Processor & Silicon', 'SoC')"></td>
-              </template>
-            </tr>
-            <tr>
-              <th>Display & Refresh Rate</th>
-              <template x-for="p in compareList" :key="p.id">
-                <td x-text="getSpecValue(p, 'Display System', 'Display Size') + ' • ' + getSpecValue(p, 'Display System', 'Refresh Rate')"></td>
-              </template>
-            </tr>
-            <tr>
-              <th>Peak Brightness</th>
-              <template x-for="p in compareList" :key="p.id">
-                <td x-text="getSpecValue(p, 'Display System', 'Peak Brightness')"></td>
-              </template>
-            </tr>
-            <tr>
-              <th>Primary Rear Camera</th>
-              <template x-for="p in compareList" :key="p.id">
-                <td x-text="getSpecValue(p, 'Optics & Camera Architecture', 'Rear Main Camera')"></td>
-              </template>
-            </tr>
-            <tr>
-              <th>Telephoto / Zoom</th>
-              <template x-for="p in compareList" :key="p.id">
-                <td x-text="getSpecValue(p, 'Optics & Camera Architecture', 'Periscope Telephoto') || getSpecValue(p, 'Optics & Camera Architecture', 'Telephoto Camera') || 'Standard Digital Zoom'"></td>
-              </template>
-            </tr>
-            <tr>
-              <th>Battery & Charging</th>
-              <template x-for="p in compareList" :key="p.id">
-                <td x-text="getSpecValue(p, 'Battery & Charging', 'Battery Capacity') + ' • ' + getSpecValue(p, 'Battery & Charging', 'Wired Charging')"></td>
-              </template>
-            </tr>
-            <tr>
-              <th>Build Materials</th>
-              <template x-for="p in compareList" :key="p.id">
-                <td x-text="getSpecValue(p, 'Design & Dimensions', 'Materials') + ' • ' + getSpecValue(p, 'Design & Dimensions', 'Protection')"></td>
-              </template>
-            </tr>
-            <tr>
-              <th>Operating System</th>
-              <template x-for="p in compareList" :key="p.id">
-                <td x-text="getSpecValue(p, 'Connectivity & Software', 'Operating System')"></td>
-              </template>
-            </tr>
-          </tbody>
-        </table>
+      <div class="compare-table-scroll-wrap" id="compare-table-container">
+        <!-- Rendered dynamically by native JS -->
       </div>
     </div>
   </div>
 
   <!-- Detailed Technical Specifications Modal Page (Photo-Free, Price-Free, Stylish UI UX) -->
-  <div class="details-overlay" x-show="showDetailsModal" x-transition>
-    <div class="details-modal" @click.away="closeDetails()">
+  <div class="details-overlay is-hidden" id="details-modal">
+    <div class="details-modal" id="details-modal-card">
       <!-- Modal Top Header -->
       <div class="details-header">
         <div class="details-header-brand-wrap">
-          <span class="modal-brand-badge" x-text="activePhone?.brandName"></span>
-          <h3 class="details-title" x-text="activePhone?.model"></h3>
+          <span class="modal-brand-badge" id="details-brand-badge"></span>
+          <h3 class="details-title" id="details-model-title"></h3>
         </div>
-        <button class="btn-close-modal" @click="closeDetails()">✕</button>
+        <button class="btn-close-modal" id="btn-close-details">✕</button>
       </div>
 
-      <div class="details-body" x-show="activePhone">
-        <!-- Modern Clean Overview Card (No Photo, No Price) -->
-        <div class="details-model-overview-card">
-          <div class="overview-tags-row">
-            <span class="overview-series-tag" x-show="activePhone?.seriesName" x-text="activePhone?.seriesName"></span>
-            <span class="overview-year-badge" x-show="activePhone?.releaseDate || activePhone?.releaseYear" x-text="'Release: ' + (activePhone?.releaseDate || activePhone?.releaseYear)"></span>
-          </div>
-
-          <p class="details-overview-tagline" x-text="activePhone?.tagline"></p>
-
-          <div class="overview-actions-row">
-            <button class="btn-modal-compare" :class="{ 'in-compare': isInCompare(activePhone?.id) }" @click="toggleCompare(activePhone)">
-              <span x-text="isInCompare(activePhone?.id) ? '✓ In Comparison Drawer' : '+ Add to Comparison'"></span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Highlights Clean Section (Subtle Rose Accent) -->
-        <div x-show="activePhone?.highlights && activePhone.highlights.length > 0">
-          <h4 class="specs-section-title">Key Architectural Highlights</h4>
-          <div class="highlights-list">
-            <template x-for="h in activePhone?.highlights || []" :key="h">
-              <div class="highlight-pill-subtle" x-text="h"></div>
-            </template>
-          </div>
-        </div>
-
-        <!-- Categorized Hardware Specifications (Modern Clean Sub-sections, No Harsh Full Red) -->
-        <div>
-          <h4 class="specs-section-title">Detailed Hardware Specifications</h4>
-          
-          <template x-for="(specGroup, groupName) in (activePhone?.specs || {})" :key="groupName">
-            <div class="modern-spec-group">
-              <!-- Elegant Slate Sub-section Header with Subtle Left Red Accent Line -->
-              <div class="modern-spec-header">
-                <span class="spec-header-bullet"></span>
-                <span class="spec-header-text" x-text="groupName"></span>
-              </div>
-              <table class="specs-table">
-                <tbody>
-                  <template x-for="(val, param) in specGroup" :key="param">
-                    <tr>
-                      <td class="spec-param" x-text="param"></td>
-                      <td class="spec-val" x-text="val"></td>
-                    </tr>
-                  </template>
-                </tbody>
-              </table>
-            </div>
-          </template>
-        </div>
+      <div class="details-body" id="details-body-content">
+        <!-- Rendered dynamically by native JS -->
       </div>
     </div>
   </div>
 
   <!-- App Owner Add/Edit Phone Modal -->
-  <div class="form-modal-overlay" x-show="showFormModal" x-transition>
-    <div class="form-modal form-modal-container" @click.away="showFormModal = false">
+  <div class="form-modal-overlay is-hidden" id="form-modal">
+    <div class="form-modal form-modal-container" id="form-modal-card">
       <!-- Modal Top Header -->
       <div class="form-modal-header">
-        <h3 class="details-title" x-text="formTitle"></h3>
-        <button type="button" class="btn-close-modal" @click="showFormModal = false">✕</button>
+        <h3 class="details-title" id="form-modal-title">Add New Mobile Phone</h3>
+        <button type="button" class="btn-close-modal" id="btn-close-form">✕</button>
       </div>
 
       <!-- Main Form with Flex Column Filling Entire Modal Height -->
-      <form @submit.prevent="savePhone()" class="form-modal-content">
+      <form id="phone-crud-form" class="form-modal-content">
+        <input type="hidden" id="form-phone-id">
         <!-- Scrollable Form Body Container -->
         <div class="form-modal-scrollable">
           <div class="form-grid-2">
             <div class="form-group">
-              <label class="form-label">Phone Model Name *</label>
-              <input type="text" class="form-input" x-model="formData.model" required placeholder="e.g. iPhone 16 Pro Max">
+              <label class="form-label" for="form-model">Phone Model Name *</label>
+              <input type="text" id="form-model" class="form-input" required placeholder="e.g. iPhone 16 Pro Max">
             </div>
             <div class="form-group">
-              <label class="form-label">Manufacturer Brand *</label>
-              <select class="form-select-control" x-model="formData.brandId" @change="onBrandChange()">
-                <template x-for="b in brands" :key="b.id">
-                  <option :value="b.id" x-text="b.name"></option>
-                </template>
+              <label class="form-label" for="form-brand-id">Manufacturer Brand *</label>
+              <select id="form-brand-id" class="form-select-control">
+                <!-- Populated dynamically by native JS -->
               </select>
             </div>
           </div>
 
           <div class="form-grid-2">
             <div class="form-group">
-              <label class="form-label">Device Series</label>
-              <select class="form-select-control" x-model="formData.seriesId">
-                <template x-for="s in currentBrandSeries" :key="s.id">
-                  <option :value="s.id" x-text="s.name"></option>
-                </template>
+              <label class="form-label" for="form-series-id">Device Series</label>
+              <select id="form-series-id" class="form-select-control">
+                <!-- Populated dynamically based on brand selection -->
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">Release Year</label>
-              <input type="number" class="form-input" x-model="formData.releaseYear" min="2000" max="2035">
+              <label class="form-label" for="form-release-year">Release Year</label>
+              <input type="number" id="form-release-year" class="form-input" min="2000" max="2035">
             </div>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Release Date (YYYY-MM)</label>
-            <input type="text" class="form-input" x-model="formData.releaseDate" placeholder="e.g. 2024-09">
+            <label class="form-label" for="form-release-date">Release Date (YYYY-MM)</label>
+            <input type="text" id="form-release-date" class="form-input" placeholder="e.g. 2024-09">
           </div>
 
           <div class="form-group">
-            <label class="form-label">Tagline Summary *</label>
-            <input type="text" class="form-input" x-model="formData.tagline" required placeholder="Short overview of the phone">
+            <label class="form-label" for="form-tagline">Tagline Summary *</label>
+            <input type="text" id="form-tagline" class="form-input" required placeholder="Short overview of the phone">
           </div>
 
           <div class="form-group">
-            <label class="form-label">Key Features (1 per line)</label>
-            <textarea class="form-textarea" x-model="formData.highlightsRaw" placeholder="Feature 1&#10;Feature 2"></textarea>
+            <label class="form-label" for="form-highlights">Key Features (1 per line)</label>
+            <textarea id="form-highlights" class="form-textarea" placeholder="Feature 1&#10;Feature 2"></textarea>
           </div>
 
           <div class="form-group">
             <div class="form-specs-header">
-              <label class="form-specs-label">Technical Specifications (JSON Format) *</label>
+              <label class="form-specs-label" for="form-specs-json">Technical Specifications (JSON Format) *</label>
               <div class="form-specs-actions">
-                <button type="button" @click="formatFormSpecs()" class="btn-form-specs-action action-accent" title="Prettify JSON syntax">Format JSON</button>
-                <button type="button" @click="resetFormSpecsTemplate()" class="btn-form-specs-action" title="Insert clean starter schema">Load Starter Template</button>
+                <button type="button" id="btn-form-format-json" class="btn-form-specs-action action-accent" title="Prettify JSON syntax">Format JSON</button>
+                <button type="button" id="btn-form-load-template" class="btn-form-specs-action" title="Insert clean starter schema">Load Starter Template</button>
               </div>
             </div>
-            <textarea class="form-textarea form-textarea-code" x-model="formData.specsRawJson" required placeholder="{ ... }"></textarea>
+            <textarea id="form-specs-json" class="form-textarea form-textarea-code" required placeholder="{ ... }"></textarea>
           </div>
         </div>
 
         <!-- Pinned Modal Bottom Actions Row -->
         <div class="form-modal-footer">
-          <button type="button" class="btn-secondary" @click="showFormModal = false">Cancel</button>
+          <button type="button" class="btn-secondary" id="btn-cancel-form">Cancel</button>
           <button type="submit" class="btn-red-action">Save Phone</button>
         </div>
       </form>
@@ -531,13 +319,7 @@
   </div>
 
   <!-- Toast Notification Container -->
-  <div class="toast-container">
-    <template x-for="t in toasts" :key="t.id">
-      <div class="toast" :class="'toast-' + t.type">
-        <span x-text="t.message"></span>
-      </div>
-    </template>
-  </div>
+  <div class="toast-container" id="toast-container"></div>
 
 </body>
 </html>

@@ -35,6 +35,9 @@ jobs:
       - name: Validate Catalog JSON Integrity
         run: node scripts/validate_catalog.js
 
+      - name: Run Native JS Catalog CRUD Test Suite
+        run: node scripts/test_catalog_crud.js
+
       - name: Check Apache 2.0 Compliance Files
         run: |
           if [ ! -f "LICENSE" ]; then

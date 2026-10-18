@@ -1787,909 +1787,1227 @@ const DEFAULT_CATALOG_DATA = {
 const STORAGE_KEY = 'phonespecs_catalog_v3';
 const ADMIN_PASS_KEY = 'phonespecs_admin_session_active';
 
-document.addEventListener('alpine:init', () => {
-  Alpine.data('phoneCatalog', () => ({
-    brands: [],
-    phones: [],
-    
-    selectedBrand: 'all',
-    selectedSeries: 'all',
-    searchQuery: '',
-    searchSortBy: 'name-asc',
-    catalogSortBy: 'name-asc',
-    
-    activePhone: null,
-    showDetailsModal: false,
-    
-    compareList: [],
-    showCompareModal: false,
+/**
+ * PhoneSpecsApp — Pure Native JavaScript UI Controller & DOM Engine
+ * Zero Alpine.js, zero external runtime.
+ */
+class PhoneSpecsApp {
+  constructor() {
+    this.catalogService = new CatalogService(DEFAULT_CATALOG_DATA);
 
-    get isAnyModalOpen() {
-      return Boolean(this.showDetailsModal || this.showCompareModal || this.showFormModal);
-    },
-    
-    adminMode: false,
-    showFormModal: false,
-    formTitle: '',
-    formData: {
-      id: '',
-      brandId: 'apple',
-      seriesId: '',
-      model: '',
-      tagline: '',
-      releaseYear: 2024,
-      releaseDate: '2024-09',
-      specsRawJson: '',
-      highlightsRaw: ''
-    },
-    
-    toasts: [],
+    // Reactive State
+    this.selectedBrand = 'all';
+    this.selectedSeries = 'all';
+    this.searchQuery = '';
+    this.searchSortBy = 'name-asc';
+    this.catalogSortBy = 'name-asc';
 
-    async init() {
-      if (sessionStorage.getItem(ADMIN_PASS_KEY) === 'true') {
-        this.adminMode = true;
+    this.activePhone = null;
+    this.showDetailsModal = false;
+
+    this.compareList = [];
+    this.showCompareModal = false;
+
+    this.adminMode = false;
+    this.showFormModal = false;
+    this.formTitle = 'Add New Mobile Phone';
+
+    this.toasts = [];
+    this.searchDebounceTimer = null;
+
+    // Cache DOM Elements
+    this.dom = {};
+  }
+
+  get isAnyModalOpen() {
+    return Boolean(this.showDetailsModal || this.showCompareModal || this.showFormModal);
+  }
+
+  async init() {
+    this.cacheDomElements();
+
+    if (sessionStorage.getItem(ADMIN_PASS_KEY) === 'true') {
+      this.adminMode = true;
+    }
+
+    this.bindEvents();
+    await this.loadCatalogData();
+    this.handleHashRoute();
+
+    window.addEventListener('hashchange', () => this.handleHashRoute());
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        this.closeAllModals();
       }
+    });
 
-      await this.loadCatalogData();
-      this.handleHashRoute();
+    this.render();
+  }
 
-      window.addEventListener('hashchange', () => this.handleHashRoute());
+  cacheDomElements() {
+    this.dom.body = document.getElementById('app-body');
+    this.dom.brandLogoBtn = document.getElementById('brand-logo-btn');
+    this.dom.headerCompareBtn = document.getElementById('header-compare-btn');
+    this.dom.headerCompareBadge = document.getElementById('header-compare-badge');
+    this.dom.btnAdminToggle = document.getElementById('btn-admin-toggle');
+    this.dom.btnAdminText = document.getElementById('btn-admin-text');
 
-      window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-          this.showDetailsModal = false;
-          this.showCompareModal = false;
-          this.showFormModal = false;
-        }
-      });
-    },
+    this.dom.adminBanner = document.getElementById('admin-banner');
+    this.dom.btnAdminAdd = document.getElementById('btn-admin-add');
+    this.dom.btnAdminExport = document.getElementById('btn-admin-export');
+    this.dom.btnAdminReset = document.getElementById('btn-admin-reset');
 
-    /**
-     * Pure GET call loading JSON content from file.
-     * Pre-indexes search tokens & card specs at ingestion time so rendering and typing are 100% instantaneous.
-     */
-    async loadCatalogData() {
-      try {
-        const cached = localStorage.getItem(STORAGE_KEY);
-        let rawBrands = [];
-        let rawPhones = [];
+    this.dom.searchInput = document.getElementById('search-input');
+    this.dom.searchIconWrap = document.getElementById('search-icon-wrap');
+    this.dom.searchClearInner = document.getElementById('search-clear-inner');
+    this.dom.searchSortSelect = document.getElementById('search-sort-select');
 
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          rawBrands = parsed.brands || [];
-          rawPhones = parsed.phones || [];
-        } else {
-          // Pure GET API HTTP fetch to static JSON file
-          const res = await fetch('./data/catalog.json');
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const data = await res.json();
-          rawBrands = data.brands || [];
-          rawPhones = data.phones || [];
-        }
+    this.dom.brandsContainer = document.getElementById('brands-container');
+    this.dom.seriesContainer = document.getElementById('series-container');
 
-        // Sort brand pills in clean A-Z alphabetical order
-        rawBrands.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
+    this.dom.catalogHeadingTitle = document.getElementById('catalog-heading-title');
+    this.dom.catalogSortGroup = document.getElementById('catalog-sort-group');
+    this.dom.catalogSortSelect = document.getElementById('catalog-sort-select');
 
-        this.brands = Object.freeze(rawBrands);
-        this.phones = Object.freeze(this.processPhonesData(rawPhones));
-      } catch (err) {
-        // Fallback allows instant opening directly via double-click on index.html
-        const fallbackBrands = [...DEFAULT_CATALOG_DATA.brands].sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
-        this.brands = Object.freeze(fallbackBrands);
-        this.phones = Object.freeze(this.processPhonesData(DEFAULT_CATALOG_DATA.phones));
-      }
-    },
+    this.dom.itemsGrid = document.getElementById('items-grid');
+    this.dom.emptyState = document.getElementById('empty-state');
+    this.dom.btnEmptyReset = document.getElementById('btn-empty-reset');
 
-    /**
-     * High-Performance Pre-Processor:
-     * 1. Precomputes cardSpecs once so x-for does not re-extract strings on every keystroke
-     * 2. Builds a 100% comprehensive inverted search buffer (_searchText & _normSearchText) covering:
-     *    - Brand names, Brand IDs, and Origins
-     *    - Model names, series names, release years, release dates, taglines
-     *    - Banner card table items (all keys & values): Processor/CPU, GPU, Architecture bit, Memory/RAM, Storage, Display
-     *    - Full spec detailed popup page (all category titles, parameter keys, parameter values, key:value pairs)
-     *    - Highlights and technical architectural features
-     */
-    processPhonesData(phoneList) {
-      return (phoneList || []).map(phone => {
-        const ps = phone?.specs?.['Processor & Silicon'] || {};
-        const ms = phone?.specs?.['Memory & Storage'] || {};
-        const ds = phone?.specs?.['Display System'] || {};
+    this.dom.compareDrawer = document.getElementById('compare-drawer');
+    this.dom.compareChipsContainer = document.getElementById('compare-chips-container');
+    this.dom.compareDrawerCount = document.getElementById('compare-drawer-count');
+    this.dom.btnClearCompare = document.getElementById('btn-clear-compare');
+    this.dom.btnOpenCompareDrawer = document.getElementById('btn-open-compare-drawer');
 
-        // Clean Processor/CPU extraction
-        let cpu = ps['CPU'] || ps['SoC'] || '—';
-        if (cpu.length > 40) {
-          cpu = cpu.split('+')[0].trim();
-        }
+    this.dom.compareModal = document.getElementById('compare-modal');
+    this.dom.compareModalCard = document.getElementById('compare-modal-card');
+    this.dom.btnCloseCompare = document.getElementById('btn-close-compare');
+    this.dom.compareTableContainer = document.getElementById('compare-table-container');
 
-        // GPU extraction
-        let gpu = ps['GPU'] || '—';
-        if (gpu.length > 28) {
-          gpu = gpu.split(' with ')[0].trim();
-        }
+    this.dom.detailsModal = document.getElementById('details-modal');
+    this.dom.detailsModalCard = document.getElementById('details-modal-card');
+    this.dom.detailsBrandBadge = document.getElementById('details-brand-badge');
+    this.dom.detailsModelTitle = document.getElementById('details-model-title');
+    this.dom.btnCloseDetails = document.getElementById('btn-close-details');
+    this.dom.detailsBodyContent = document.getElementById('details-body-content');
 
-        // Architecture bit
-        const bit = ps['Architecture'] || ps['Bit'] || '64-bit';
+    this.dom.formModal = document.getElementById('form-modal');
+    this.dom.formModalCard = document.getElementById('form-modal-card');
+    this.dom.formModalTitle = document.getElementById('form-modal-title');
+    this.dom.btnCloseForm = document.getElementById('btn-close-form');
+    this.dom.btnCancelForm = document.getElementById('btn-cancel-form');
+    this.dom.phoneCrudForm = document.getElementById('phone-crud-form');
+    this.dom.formPhoneId = document.getElementById('form-phone-id');
+    this.dom.formModel = document.getElementById('form-model');
+    this.dom.formBrandId = document.getElementById('form-brand-id');
+    this.dom.formSeriesId = document.getElementById('form-series-id');
+    this.dom.formReleaseYear = document.getElementById('form-release-year');
+    this.dom.formReleaseDate = document.getElementById('form-release-date');
+    this.dom.formTagline = document.getElementById('form-tagline');
+    this.dom.formHighlights = document.getElementById('form-highlights');
+    this.dom.formSpecsJson = document.getElementById('form-specs-json');
+    this.dom.btnFormFormatJson = document.getElementById('btn-form-format-json');
+    this.dom.btnFormLoadTemplate = document.getElementById('btn-form-load-template');
 
-        // RAM
-        const ram = ms['RAM'] || '—';
+    this.dom.toastContainer = document.getElementById('toast-container');
+  }
 
-        // Storage
-        const storage = ms['Internal Storage'] || ms['Storage'] || '—';
+  bindEvents() {
+    this.dom.brandLogoBtn.addEventListener('click', () => this.showAllPhones());
+    this.dom.headerCompareBtn.addEventListener('click', () => this.openCompareModal());
 
-        // Display
-        let display = ds['Display Size'] || ds['Screen'] || '—';
-        if (display.includes('inches')) {
-          const parts = display.split('inches');
-          display = `${parts[0].trim()}" ${parts[1] ? parts[1].replace('Super Retina XDR OLED', 'OLED').replace('Dynamic LTPO AMOLED 2X', 'AMOLED').trim() : ''}`.trim();
-        }
+    this.dom.btnAdminToggle.addEventListener('click', () => this.toggleAdmin());
+    this.dom.btnAdminAdd.addEventListener('click', () => this.openAddModal());
+    this.dom.btnAdminExport.addEventListener('click', () => this.exportCatalogJson());
+    this.dom.btnAdminReset.addEventListener('click', () => this.resetToDisk());
 
-        // Pre-calculated card specs object (re-used directly by Alpine templates)
-        const cardSpecs = Object.freeze({ cpu, gpu, bit, ram, storage, display });
+    // Instant Search with 120ms debounce
+    this.dom.searchInput.addEventListener('input', (e) => {
+      clearTimeout(this.searchDebounceTimer);
+      this.searchDebounceTimer = setTimeout(() => {
+        this.searchQuery = e.target.value;
+        this.render();
+      }, 120);
+    });
 
-        // 100% Comprehensive Inverted Search Buffer
-        const parts = [];
-
-        // 1. Brand Names & Aliases
-        if (phone.brandName) parts.push(phone.brandName, 'brand ' + phone.brandName, 'brand: ' + phone.brandName);
-        if (phone.brandId) parts.push(phone.brandId);
-        if (phone.origin) parts.push(phone.origin);
-
-        // 2. Model Names, Series, Release Info & Taglines
-        if (phone.model) parts.push(phone.model, 'model ' + phone.model, 'model: ' + phone.model);
-        if (phone.seriesName) parts.push(phone.seriesName, 'series ' + phone.seriesName, 'series: ' + phone.seriesName);
-        if (phone.seriesId) parts.push(phone.seriesId);
-        if (phone.tagline) parts.push(phone.tagline);
-        if (phone.releaseYear) parts.push(String(phone.releaseYear), 'year ' + phone.releaseYear, 'year: ' + phone.releaseYear, 'release year ' + phone.releaseYear);
-        if (phone.releaseDate) parts.push(phone.releaseDate);
-
-        // 3. Banner Items (All Keys & Values)
-        parts.push(
-          'processor cpu soc chipset silicon',
-          'processor: ' + cpu, 'cpu: ' + cpu, 'soc: ' + cpu, cpu,
-          'gpu graphics adreno mali immence ray tracing',
-          'gpu: ' + gpu, 'graphics: ' + gpu, gpu,
-          'architecture bit 64-bit 64bit',
-          'architecture: ' + bit, 'bit: ' + bit, bit,
-          'memory ram lpddr lpddr5x lpddr5',
-          'memory: ' + ram, 'ram: ' + ram, ram,
-          'storage rom internal storage ufs nvme flash',
-          'storage: ' + storage, 'rom: ' + storage, storage,
-          'display screen oled amoled ltpo retina resolution refresh rate',
-          'display: ' + display, 'screen: ' + display, display
-        );
-
-        // 4. Highlights
-        if (Array.isArray(phone.highlights)) {
-          phone.highlights.forEach(h => {
-            if (h) parts.push(h);
-          });
-        }
-
-        // 5. Full Spec Detailed Popup Page: All Categories, Parameter Keys, and Parameter Values
-        if (phone.specs && typeof phone.specs === 'object') {
-          Object.entries(phone.specs).forEach(([catTitle, group]) => {
-            if (catTitle) parts.push(catTitle);
-            if (group && typeof group === 'object') {
-              Object.entries(group).forEach(([specKey, specVal]) => {
-                if (specKey) parts.push(specKey);
-                if (specVal !== undefined && specVal !== null) {
-                  const valStr = String(specVal);
-                  parts.push(valStr);
-                  // Explicit key:value pairings for targeted queries
-                  parts.push(`${specKey}: ${valStr}`, `${specKey} = ${valStr}`);
-                }
-              });
-            }
-          });
-        }
-
-        // 6. Filter keys
-        if (phone.filterKeys && typeof phone.filterKeys === 'object') {
-          Object.entries(phone.filterKeys).forEach(([fk, fv]) => {
-            parts.push(fk, String(fv));
-          });
-        }
-
-        const _searchText = parts.join(' ').toLowerCase();
-        const _normSearchText = _searchText.replace(/[^a-z0-9]/g, ' ');
-
-        return Object.freeze({
-          ...phone,
-          cardSpecs,
-          _searchText,
-          _normSearchText
-        });
-      });
-    },
-
-    get filteredPhones() {
-      const rawQuery = (this.searchQuery || '').trim();
-      const allPhones = this.phones;
-
-      // When NO search query is entered, filter strictly by selected brand & series
-      if (!rawQuery) {
-        const currentBrand = this.selectedBrand;
-        const currentSeries = this.selectedSeries;
-        
-        const list = [];
-        for (let i = 0; i < allPhones.length; i++) {
-          const p = allPhones[i];
-          if (currentBrand !== 'all' && p.brandId !== currentBrand) continue;
-          if (currentSeries !== 'all' && p.seriesId !== currentSeries) continue;
-          list.push(p);
-        }
-        return this.sortPhoneList(list, this.catalogSortBy);
-      }
-
-      // SEARCH QUERY IS ACTIVE:
-      // Searches across ALL phones regardless of previously selected brand
-      // Supports:
-      // 1. True RegEx evaluation (native regular expression pattern matching)
-      // 2. Multi-token smart matching (each token evaluated against all searchable fields)
-      // 3. Punctuation & alphanumeric normalization
-      // Works consistently on all browsers (Chrome, Edge, Safari, Firefox) and OS (Windows, macOS, Linux, iOS, Android)
-
-      let fullRegex = null;
-      // Check for /pattern/flags syntax
-      const slashMatch = rawQuery.match(/^\/(.+)\/([a-z]*)$/);
-      if (slashMatch) {
-        try {
-          const flags = slashMatch[2] ? (slashMatch[2].includes('i') ? slashMatch[2] : slashMatch[2] + 'i') : 'i';
-          fullRegex = new RegExp(slashMatch[1], flags);
-        } catch (e) {
-          fullRegex = null;
-        }
-      } else if (/[|*+?()\[\]\\^$]/.test(rawQuery)) {
-        // Raw query contains regex metacharacters
-        try {
-          fullRegex = new RegExp(rawQuery, 'i');
-        } catch (e) {
-          fullRegex = null;
-        }
-      }
-
-      // Tokenize query for smart multi-word matching
-      const tokens = rawQuery.split(/\s+/).filter(Boolean);
-      const tokenMatchers = tokens.map(token => {
-        const lower = token.toLowerCase();
-        const clean = lower.replace(/[^a-z0-9]/g, '');
-        let tokenRegex = null;
-        try {
-          tokenRegex = new RegExp(token, 'i');
-        } catch (e) {
-          tokenRegex = null;
-        }
-        return { lower, clean, tokenRegex };
-      });
-
-      const matchedPhones = [];
-      for (let i = 0; i < allPhones.length; i++) {
-        const phone = allPhones[i];
-        const searchStr = phone._searchText;
-        const normStr = phone._normSearchText;
-
-        // Strategy A: If whole-query RegEx matches
-        if (fullRegex && fullRegex.test(searchStr)) {
-          matchedPhones.push(phone);
-          continue;
-        }
-
-        // Strategy B: All tokens must match (via RegExp, literal substring, or normalized alphanumeric)
-        let allTokensMatch = true;
-        for (let j = 0; j < tokenMatchers.length; j++) {
-          const tm = tokenMatchers[j];
-          let tokenPass = false;
-
-          // 1. Literal substring match
-          if (searchStr.includes(tm.lower)) {
-            tokenPass = true;
-          }
-          // 2. Normalized alphanumeric match
-          else if (tm.clean && normStr.includes(tm.clean)) {
-            tokenPass = true;
-          }
-          // 3. Token-level regex match
-          else if (tm.tokenRegex && tm.tokenRegex.test(searchStr)) {
-            tokenPass = true;
-          }
-
-          if (!tokenPass) {
-            allTokensMatch = false;
-            break;
-          }
-        }
-
-        if (allTokensMatch) {
-          matchedPhones.push(phone);
-        }
-      }
-
-      // Relevance Ranking: prioritize direct model and brand matches, then apply user-selected sort
-      const qLower = rawQuery.toLowerCase();
-      const getScore = (p) => {
-        const mLower = (p.model || '').toLowerCase();
-        const bLower = (p.brandName || '').toLowerCase();
-        if (mLower === qLower) return 100;
-        if (mLower.startsWith(qLower)) return 90;
-        if (mLower.includes(qLower)) return 80;
-        if (bLower === qLower) return 70;
-        if (bLower.startsWith(qLower)) return 60;
-        if (bLower.includes(qLower)) return 50;
-        return 10;
-      };
-
-      return matchedPhones.sort((a, b) => {
-        const scoreDiff = getScore(b) - getScore(a);
-        if (scoreDiff !== 0) return scoreDiff;
-
-        if (this.searchSortBy === 'name-asc') {
-          return (a.model || '').localeCompare(b.model || '', undefined, { numeric: true, sensitivity: 'base' });
-        }
-        if (this.searchSortBy === 'name-desc') {
-          return (b.model || '').localeCompare(a.model || '', undefined, { numeric: true, sensitivity: 'base' });
-        }
-        if (this.searchSortBy === 'brand-asc') {
-          const brandComp = (a.brandName || '').localeCompare(b.brandName || '', undefined, { numeric: true, sensitivity: 'base' });
-          return brandComp !== 0 ? brandComp : (a.model || '').localeCompare(b.model || '', undefined, { numeric: true, sensitivity: 'base' });
-        }
-        if (this.searchSortBy === 'brand-desc') {
-          const brandComp = (b.brandName || '').localeCompare(a.brandName || '', undefined, { numeric: true, sensitivity: 'base' });
-          return brandComp !== 0 ? brandComp : (b.model || '').localeCompare(a.model || '', undefined, { numeric: true, sensitivity: 'base' });
-        }
-        if (this.searchSortBy === 'year-desc') {
-          const yearDiff = (b.releaseYear || 0) - (a.releaseYear || 0);
-          return yearDiff !== 0 ? yearDiff : (b.releaseDate || '').localeCompare(a.releaseDate || '');
-        }
-        if (this.searchSortBy === 'year-asc') {
-          const yearDiff = (a.releaseYear || 0) - (b.releaseYear || 0);
-          return yearDiff !== 0 ? yearDiff : (a.releaseDate || '').localeCompare(b.releaseDate || '');
-        }
-        return 0;
-      });
-    },
-
-    sortPhoneList(list, sortBy) {
-      const copy = [...list];
-      copy.sort((a, b) => {
-        if (sortBy === 'name-asc') {
-          return (a.model || '').localeCompare(b.model || '', undefined, { numeric: true, sensitivity: 'base' });
-        }
-        if (sortBy === 'name-desc') {
-          return (b.model || '').localeCompare(a.model || '', undefined, { numeric: true, sensitivity: 'base' });
-        }
-        if (sortBy === 'brand-asc') {
-          const brandComp = (a.brandName || '').localeCompare(b.brandName || '', undefined, { numeric: true, sensitivity: 'base' });
-          return brandComp !== 0 ? brandComp : (a.model || '').localeCompare(b.model || '', undefined, { numeric: true, sensitivity: 'base' });
-        }
-        if (sortBy === 'brand-desc') {
-          const brandComp = (b.brandName || '').localeCompare(a.brandName || '', undefined, { numeric: true, sensitivity: 'base' });
-          return brandComp !== 0 ? brandComp : (b.model || '').localeCompare(a.model || '', undefined, { numeric: true, sensitivity: 'base' });
-        }
-        if (sortBy === 'year-desc') {
-          const yearDiff = (b.releaseYear || 0) - (a.releaseYear || 0);
-          return yearDiff !== 0 ? yearDiff : (b.releaseDate || '').localeCompare(a.releaseDate || '');
-        }
-        if (sortBy === 'year-asc') {
-          const yearDiff = (a.releaseYear || 0) - (b.releaseYear || 0);
-          return yearDiff !== 0 ? yearDiff : (a.releaseDate || '').localeCompare(b.releaseDate || '');
-        }
-        return 0;
-      });
-      return copy;
-    },
-
-    get activeBrandObject() {
-      return this.brands.find(b => b.id === this.selectedBrand) || null;
-    },
-
-    /**
-     * Return only series that actually contain phone models in the catalog.
-     * Prevents displaying series pills that lead to empty pages.
-     */
-    get activeSeriesList() {
-      const b = this.activeBrandObject;
-      if (!b || !Array.isArray(b.series)) return [];
-
-      const currentBrandPhones = this.phones.filter(p => p.brandId === b.id);
-      return b.series.filter(s => currentBrandPhones.some(p => p.seriesId === s.id));
-    },
-
-    showAllPhones() {
+    this.dom.searchClearInner.addEventListener('click', () => {
+      this.dom.searchInput.value = '';
       this.searchQuery = '';
+      this.render();
+    });
+
+    this.dom.searchSortSelect.addEventListener('change', (e) => {
+      this.searchSortBy = e.target.value;
+      this.render();
+    });
+
+    this.dom.catalogSortSelect.addEventListener('change', (e) => {
+      this.catalogSortBy = e.target.value;
+      this.render();
+    });
+
+    this.dom.btnEmptyReset.addEventListener('click', () => this.showAllPhones());
+
+    // Compare Drawer
+    this.dom.btnClearCompare.addEventListener('click', () => this.clearCompare());
+    this.dom.btnOpenCompareDrawer.addEventListener('click', () => this.openCompareModal());
+
+    // Compare Modal
+    this.dom.btnCloseCompare.addEventListener('click', () => this.closeCompareModal());
+    this.dom.compareModal.addEventListener('click', (e) => {
+      if (e.target === this.dom.compareModal) this.closeCompareModal();
+    });
+
+    // Details Modal
+    this.dom.btnCloseDetails.addEventListener('click', () => this.closeDetails());
+    this.dom.detailsModal.addEventListener('click', (e) => {
+      if (e.target === this.dom.detailsModal) this.closeDetails();
+    });
+
+    // Add/Edit Form Modal
+    this.dom.btnCloseForm.addEventListener('click', () => this.closeFormModal());
+    this.dom.btnCancelForm.addEventListener('click', () => this.closeFormModal());
+    this.dom.formModal.addEventListener('click', (e) => {
+      if (e.target === this.dom.formModal) this.closeFormModal();
+    });
+
+    this.dom.formBrandId.addEventListener('change', () => this.onBrandChange());
+    this.dom.btnFormFormatJson.addEventListener('click', () => this.formatFormSpecs());
+    this.dom.btnFormLoadTemplate.addEventListener('click', () => this.resetFormSpecsTemplate());
+
+    this.dom.phoneCrudForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.savePhone();
+    });
+  }
+
+  async loadCatalogData() {
+    try {
+      const cached = localStorage.getItem(STORAGE_KEY);
+      let rawData = null;
+
+      if (cached) {
+        rawData = JSON.parse(cached);
+      } else {
+        const res = await fetch('./data/catalog.json');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        rawData = await res.json();
+      }
+
+      this.catalogService.initData(rawData);
+    } catch (err) {
+      this.catalogService.initData(DEFAULT_CATALOG_DATA);
+    }
+  }
+
+  handleHashRoute() {
+    const hash = window.location.hash.replace(/^#\/?/, '');
+    if (!hash || hash === 'all') {
       this.selectedBrand = 'all';
       this.selectedSeries = 'all';
-      this.showDetailsModal = false;
-      this.showCompareModal = false;
+      if (window.location.hash) history.replaceState(null, '', window.location.pathname);
+      this.render();
+      return;
+    }
+
+    if (hash.startsWith('phone/')) {
+      const phoneId = hash.replace('phone/', '');
+      const found = this.catalogService.getPhoneById(phoneId);
+      if (found) this.openDetails(found);
+      return;
+    }
+
+    const parts = hash.split('/');
+    const brandId = parts[0] || 'all';
+    const seriesId = parts[1] || 'all';
+
+    const brandExists = brandId === 'all' || this.catalogService.brands.some(b => b.id === brandId);
+    this.selectedBrand = brandExists ? brandId : 'all';
+
+    if (this.selectedBrand !== 'all' && seriesId !== 'all') {
+      const hasSeriesPhones = this.catalogService.phones.some(p => p.brandId === this.selectedBrand && p.seriesId === seriesId);
+      this.selectedSeries = hasSeriesPhones ? seriesId : 'all';
+    } else {
+      this.selectedSeries = 'all';
+    }
+
+    this.render();
+  }
+
+  selectBrand(brandId, seriesId = 'all') {
+    this.searchQuery = '';
+    this.dom.searchInput.value = '';
+    this.selectedBrand = brandId;
+
+    if (seriesId !== 'all') {
+      const hasSeriesPhones = this.catalogService.phones.some(p => p.brandId === brandId && p.seriesId === seriesId);
+      this.selectedSeries = hasSeriesPhones ? seriesId : 'all';
+    } else {
+      this.selectedSeries = 'all';
+    }
+
+    if (brandId === 'all') {
       window.location.hash = '';
-      if (window.location.hash) {
-        history.replaceState(null, '', window.location.pathname);
-      }
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    },
+      if (window.location.hash) history.replaceState(null, '', window.location.pathname);
+    } else if (this.selectedSeries === 'all') {
+      window.location.hash = brandId;
+    } else {
+      window.location.hash = `${brandId}/${this.selectedSeries}`;
+    }
 
-    selectBrand(brandId, seriesId = 'all') {
-      this.searchQuery = '';
-      this.selectedBrand = brandId;
-      
-      // Guard: if requested series has 0 phones in catalog, fallback cleanly to 'all'
-      if (seriesId !== 'all') {
-        const hasSeriesPhones = this.phones.some(p => p.brandId === brandId && p.seriesId === seriesId);
-        this.selectedSeries = hasSeriesPhones ? seriesId : 'all';
-      } else {
-        this.selectedSeries = 'all';
-      }
-      
-      if (brandId === 'all') {
-        this.searchQuery = '';
-        window.location.hash = '';
-        if (window.location.hash) {
-          history.replaceState(null, '', window.location.pathname);
-        }
-      } else if (this.selectedSeries === 'all') {
-        window.location.hash = brandId;
-      } else {
-        window.location.hash = `${brandId}/${this.selectedSeries}`;
-      }
-    },
+    this.render();
+  }
 
-    selectSeries(seriesId) {
-      this.selectBrand(this.selectedBrand, seriesId);
-    },
+  selectSeries(seriesId) {
+    this.selectBrand(this.selectedBrand, seriesId);
+  }
 
-    handleHashRoute() {
-      const hash = window.location.hash.replace(/^#\/?/, '');
-      if (!hash || hash === 'all') {
-        this.selectedBrand = 'all';
-        this.selectedSeries = 'all';
-        if (window.location.hash) history.replaceState(null, '', window.location.pathname);
+  showAllPhones() {
+    this.searchQuery = '';
+    this.dom.searchInput.value = '';
+    this.selectedBrand = 'all';
+    this.selectedSeries = 'all';
+    this.closeAllModals();
+    window.location.hash = '';
+    if (window.location.hash) history.replaceState(null, '', window.location.pathname);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.render();
+  }
+
+  openDetails(phone) {
+    this.activePhone = phone;
+    this.showDetailsModal = true;
+    window.location.hash = `phone/${phone.id}`;
+    this.render();
+  }
+
+  closeDetails() {
+    this.showDetailsModal = false;
+    this.activePhone = null;
+    if (this.selectedBrand !== 'all') {
+      window.location.hash = this.selectedSeries !== 'all' ? `${this.selectedBrand}/${this.selectedSeries}` : this.selectedBrand;
+    } else {
+      window.location.hash = '';
+    }
+    this.render();
+  }
+
+  isInCompare(phoneId) {
+    return this.compareList.some(p => p.id === phoneId);
+  }
+
+  toggleCompare(phone) {
+    if (!phone) return;
+    if (this.isInCompare(phone.id)) {
+      this.compareList = this.compareList.filter(p => p.id !== phone.id);
+    } else {
+      if (this.compareList.length >= 3) {
+        this.showToast('You can compare a maximum of 3 phones at once.', 'error');
         return;
       }
+      this.compareList.push(phone);
+    }
+    this.render();
+  }
 
-      if (hash.startsWith('phone/')) {
-        const phoneId = hash.replace('phone/', '');
-        const found = this.phones.find(p => p.id === phoneId);
-        if (found) this.openDetails(found);
-        return;
-      }
+  removeCompare(phoneId) {
+    this.compareList = this.compareList.filter(p => p.id !== phoneId);
+    if (this.compareList.length < 2 && this.showCompareModal) {
+      this.closeCompareModal();
+    }
+    this.render();
+  }
 
-      const parts = hash.split('/');
-      const brandId = parts[0] || 'all';
-      let seriesId = parts[1] || 'all';
+  clearCompare() {
+    this.compareList = [];
+    if (this.showCompareModal) this.closeCompareModal();
+    this.render();
+  }
 
-      // Validate brand exists
-      const brandExists = brandId === 'all' || this.brands.some(b => b.id === brandId);
-      this.selectedBrand = brandExists ? brandId : 'all';
+  openCompareModal() {
+    if (this.compareList.length < 2) {
+      this.showToast('Please select at least 2 phones to compare.', 'info');
+      return;
+    }
+    this.showCompareModal = true;
+    this.render();
+  }
 
-      // Validate series has phones
-      if (this.selectedBrand !== 'all' && seriesId !== 'all') {
-        const hasSeriesPhones = this.phones.some(p => p.brandId === this.selectedBrand && p.seriesId === seriesId);
-        this.selectedSeries = hasSeriesPhones ? seriesId : 'all';
-      } else {
-        this.selectedSeries = 'all';
-      }
-    },
+  closeCompareModal() {
+    this.showCompareModal = false;
+    this.render();
+  }
 
-    openDetails(phone) {
-      this.activePhone = phone;
-      this.showDetailsModal = true;
-      window.location.hash = `phone/${phone.id}`;
-    },
+  closeAllModals() {
+    this.showDetailsModal = false;
+    this.showCompareModal = false;
+    this.showFormModal = false;
+    this.activePhone = null;
+    this.render();
+  }
 
-    closeDetails() {
-      this.showDetailsModal = false;
-      this.activePhone = null;
-      if (this.selectedBrand !== 'all') {
-        window.location.hash = this.selectedSeries !== 'all' ? `${this.selectedBrand}/${this.selectedSeries}` : this.selectedBrand;
-      } else {
-        window.location.hash = '';
-      }
-    },
-
-    isInCompare(phoneId) {
-      return this.compareList.some(p => p.id === phoneId);
-    },
-
-    toggleCompare(phone) {
-      if (this.isInCompare(phone.id)) {
-        this.compareList = this.compareList.filter(p => p.id !== phone.id);
-      } else {
-        if (this.compareList.length >= 3) {
-          this.showToast('You can compare a maximum of 3 phones at once.', 'error');
-          return;
-        }
-        this.compareList.push(phone);
-      }
-    },
-
-    removeCompare(phoneId) {
-      this.compareList = this.compareList.filter(p => p.id !== phoneId);
-    },
-
-    clearCompare() {
-      this.compareList = [];
-    },
-
-    openCompareModal() {
-      if (this.compareList.length < 2) {
-        this.showToast('Please select at least 2 phones to compare.', 'info');
-        return;
-      }
-      this.showCompareModal = true;
-    },
-
-    getSpecValue(phone, category, key) {
-      return phone?.specs?.[category]?.[key] || '—';
-    },
-
-    getCardSpecs(phone) {
-      const ps = phone?.specs?.['Processor & Silicon'] || {};
-      const ms = phone?.specs?.['Memory & Storage'] || {};
-      const ds = phone?.specs?.['Display System'] || {};
-
-      // Clean Processor/CPU extraction
-      let cpu = ps['CPU'] || ps['SoC'] || '—';
-      if (cpu.length > 40) {
-        // e.g. "Octa-core up to 3.39GHz Cortex-X4" -> "Octa-core up to 3.39GHz"
-        cpu = cpu.split('+')[0].trim();
-      }
-
-      // GPU extraction
-      let gpu = ps['GPU'] || '—';
-      if (gpu.length > 28) {
-        gpu = gpu.split(' with ')[0].trim();
-      }
-
-      // Architecture bit
-      let bit = ps['Architecture'] || ps['Bit'] || '64-bit';
-
-      // RAM
-      let ram = ms['RAM'] || '—';
-
-      // Storage
-      let storage = ms['Internal Storage'] || ms['Storage'] || '—';
-
-      // Display
-      let display = ds['Display Size'] || ds['Screen'] || '—';
-      if (display.includes('inches')) {
-        const parts = display.split('inches');
-        display = `${parts[0].trim()}" ${parts[1] ? parts[1].replace('Super Retina XDR OLED', 'OLED').replace('Dynamic LTPO AMOLED 2X', 'AMOLED').trim() : ''}`.trim();
-      }
-
-      return { cpu, gpu, bit, ram, storage, display };
-    },
-
-    toggleAdmin() {
-      if (this.adminMode) {
-        this.adminMode = false;
-        sessionStorage.removeItem(ADMIN_PASS_KEY);
-        this.showToast('Exited Admin Mode. Webpage is now in read-only public view.', 'info');
-      } else {
-        const pass = prompt('Enter App Owner Passcode (default is: admin123):');
-        if (pass === 'admin123' || pass === 'owner') {
-          this.adminMode = true;
-          sessionStorage.setItem(ADMIN_PASS_KEY, 'true');
-          this.showToast('Admin Mode Active! You can now Add, Edit, Delete, and Export JSON.', 'success');
-        } else if (pass !== null) {
-          this.showToast('Incorrect passcode. Access denied.', 'error');
-        }
-      }
-    },
-
-    get currentBrandSeries() {
-      const brand = this.brands.find(b => b.id === this.formData.brandId);
-      return Array.isArray(brand?.series) ? brand.series : [];
-    },
-
-    onBrandChange() {
-      const series = this.currentBrandSeries;
-      this.formData.seriesId = series.length > 0 ? series[0].id : '';
-    },
-
-    formatFormSpecs() {
-      try {
-        const parsed = JSON.parse(this.formData.specsRawJson);
-        this.formData.specsRawJson = JSON.stringify(parsed, null, 2);
-        this.showToast('JSON formatted cleanly.', 'info');
-      } catch (err) {
-        this.showToast(`Cannot format: ${err.message}`, 'error');
-      }
-    },
-
-    resetFormSpecsTemplate() {
-      const template = {
-        "Display System": {
-          "Display Size": "6.7\" AMOLED 120Hz",
-          "Resolution": "2778 x 1284 pixels",
-          "Peak Brightness": "2500 nits",
-          "Refresh Rate": "120Hz LTPO"
-        },
-        "Processor & Silicon": {
-          "SoC": "Qualcomm Snapdragon 8 Gen 3 (4nm)",
-          "CPU": "Octa-core up to 3.3GHz",
-          "GPU": "Adreno 750",
-          "Architecture": "64-bit"
-        },
-        "Memory & Storage": {
-          "RAM": "12GB LPDDR5X",
-          "Internal Storage": "256GB / 512GB UFS 4.0"
-        },
-        "Optics & Camera Architecture": {
-          "Rear Main Camera": "50MP f/1.7 OIS",
-          "Ultra-Wide Camera": "50MP 120 deg FOV",
-          "Telephoto Camera": "50MP 3x Optical Zoom",
-          "Front Selfie Camera": "32MP AF"
-        },
-        "Battery & Charging": {
-          "Battery Capacity": "5000 mAh",
-          "Wired Charging": "80W Wired Fast Charging",
-          "Wireless Charging": "50W Wireless"
-        },
-        "Connectivity & Software": {
-          "Operating System": "Android 15",
-          "Network Bands": "5G SA/NSA, 4G LTE",
-          "Wi-Fi & Bluetooth": "Wi-Fi 7, Bluetooth 5.4",
-          "Port": "USB-C 3.2"
-        }
-      };
-      this.formData.specsRawJson = JSON.stringify(template, null, 2);
-      this.showToast('Starter specifications template loaded.', 'info');
-    },
-
-    openAddModal() {
-      try {
-        this.formTitle = 'Add New Mobile Phone';
-        const defaultBrand = this.brands[0] ? this.brands[0].id : 'apple';
-        const brandObj = this.brands.find(b => b.id === defaultBrand);
-        const defaultSeries = brandObj?.series?.[0]?.id || '';
-
-        this.formData = {
-          id: '',
-          brandId: defaultBrand,
-          seriesId: defaultSeries,
-          model: '',
-          tagline: '',
-          releaseYear: new Date().getFullYear(),
-          releaseDate: `${new Date().getFullYear()}-01`,
-          specsRawJson: JSON.stringify({
-            "Display System": {
-              "Display Size": "6.7\" AMOLED 120Hz",
-              "Resolution": "2778 x 1284 pixels"
-            },
-            "Processor & Silicon": {
-              "SoC": "Snapdragon 8 Gen 3 (4nm)",
-              "RAM": "12GB RAM"
-            },
-            "Optics & Camera Architecture": {
-              "Rear Main Camera": "50MP OIS",
-              "Front Selfie Camera": "32MP"
-            },
-            "Battery & Charging": {
-              "Battery Capacity": "5000 mAh",
-              "Wired Charging": "65W Wired Fast Charging"
-            }
-          }, null, 2),
-          highlightsRaw: "Feature Specification 1\nFeature Specification 2"
-        };
-
-        this.showFormModal = true;
-      } catch (err) {
-        console.error('Failed to open add modal:', err);
-        this.showToast('Could not initialize add form. Please try again.', 'error');
-      }
-    },
-
-    openEditModal(phone) {
-      if (!phone) {
-        this.showToast('Cannot edit: phone record is missing.', 'error');
-        return;
-      }
-
-      try {
-        this.formTitle = `Edit Phone: ${phone.model || 'Device'}`;
-        this.formData = {
-          id: phone.id || '',
-          brandId: phone.brandId || (this.brands[0]?.id || 'apple'),
-          seriesId: phone.seriesId || '',
-          model: phone.model || '',
-          tagline: phone.tagline || '',
-          releaseYear: phone.releaseYear || new Date().getFullYear(),
-          releaseDate: phone.releaseDate || `${phone.releaseYear || new Date().getFullYear()}-01`,
-          specsRawJson: JSON.stringify(phone.specs || {}, null, 2),
-          highlightsRaw: Array.isArray(phone.highlights) ? phone.highlights.join('\n') : ''
-        };
-
-        this.showFormModal = true;
-      } catch (err) {
-        console.error('Failed to open edit modal:', err);
-        this.showToast('Failed to load phone data for editing.', 'error');
-      }
-    },
-
-    savePhone() {
-      try {
-        const rawModel = (this.formData.model || '').trim();
-        if (!rawModel) {
-          this.showToast('Phone Model Name is required.', 'error');
-          return;
-        }
-
-        let parsedSpecs = {};
-        try {
-          parsedSpecs = JSON.parse(this.formData.specsRawJson);
-          if (typeof parsedSpecs !== 'object' || parsedSpecs === null || Array.isArray(parsedSpecs)) {
-            throw new Error('Specifications must be a valid JSON object mapping category names to spec details.');
-          }
-        } catch (err) {
-          this.showToast(`Invalid JSON in Specifications: ${err.message}`, 'error');
-          return;
-        }
-
-        const rawHighlights = (this.formData.highlightsRaw || '')
-          .split('\n')
-          .map(h => h.trim())
-          .filter(Boolean);
-
-        const brandObj = this.brands.find(b => b.id === this.formData.brandId);
-        const seriesObj = brandObj?.series?.find(s => s.id === this.formData.seriesId);
-
-        const isEditing = Boolean(this.formData.id);
-        const generatedId = isEditing
-          ? this.formData.id
-          : `${this.formData.brandId || 'phone'}-${rawModel.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}-${Date.now().toString().slice(-4)}`;
-
-        const phoneRecord = {
-          id: generatedId,
-          brandId: this.formData.brandId || 'other',
-          brandName: brandObj ? brandObj.name : (this.formData.brandId || 'Other'),
-          seriesId: this.formData.seriesId || '',
-          seriesName: seriesObj ? seriesObj.name : (this.formData.seriesId || ''),
-          model: rawModel,
-          tagline: (this.formData.tagline || '').trim(),
-          releaseDate: (this.formData.releaseDate || '').trim() || `${this.formData.releaseYear || 2024}-01`,
-          releaseYear: parseInt(this.formData.releaseYear, 10) || new Date().getFullYear(),
-          specs: parsedSpecs,
-          highlights: rawHighlights
-        };
-
-        // Pre-process search indices and card metrics for optimal instant search
-        const processedRecords = this.processPhonesData([phoneRecord]);
-        const processedRecord = processedRecords[0] || phoneRecord;
-
-        const currentPhones = Array.isArray(this.phones) ? [...this.phones] : [];
-
-        if (isEditing) {
-          const idx = currentPhones.findIndex(p => p.id === this.formData.id);
-          if (idx !== -1) {
-            currentPhones[idx] = processedRecord;
-            this.showToast(`Updated specs for "${processedRecord.model}"`, 'success');
-          } else {
-            currentPhones.unshift(processedRecord);
-            this.showToast(`Record updated as "${processedRecord.model}"`, 'success');
-          }
-
-          // If currently viewing activePhone in details modal, update it in-place
-          if (this.activePhone && this.activePhone.id === processedRecord.id) {
-            this.activePhone = processedRecord;
-          }
-        } else {
-          currentPhones.unshift(processedRecord);
-          this.showToast(`Added new phone "${processedRecord.model}"`, 'success');
-        }
-
-        this.phones = Object.freeze(currentPhones);
-        this.persistToLocalStorage();
-        this.showFormModal = false;
-      } catch (err) {
-        console.error('Error saving phone record:', err);
-        this.showToast(`Failed to save record: ${err.message}`, 'error');
-      }
-    },
-
-    deletePhone(phoneId) {
-      if (!phoneId) return;
-
-      try {
-        const phone = this.phones.find(p => p.id === phoneId);
-        const name = phone ? phone.model : phoneId;
-
-        if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
-
-        const currentPhones = Array.isArray(this.phones) ? [...this.phones] : [];
-        this.phones = Object.freeze(currentPhones.filter(p => p.id !== phoneId));
-
-        if (Array.isArray(this.compareList)) {
-          this.compareList = this.compareList.filter(p => p.id !== phoneId);
-        }
-
-        if (this.activePhone && this.activePhone.id === phoneId) {
-          this.showDetailsModal = false;
-          this.activePhone = null;
-        }
-
-        this.persistToLocalStorage();
-        this.showToast(`Deleted phone "${name}".`, 'info');
-      } catch (err) {
-        console.error('Error deleting phone:', err);
-        this.showToast('Failed to delete phone record.', 'error');
-      }
-    },
-
-    persistToLocalStorage() {
-      try {
-        // Strip transient search indices before serialization to conserve storage
-        const cleanPhones = (this.phones || []).map(p => {
-          const { _searchText, _normSearchText, cardSpecs, ...rest } = p;
-          return rest;
-        });
-
-        const payload = {
-          brands: this.brands || [],
-          phones: cleanPhones
-        };
-
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-      } catch (err) {
-        console.error('LocalStorage persistence error:', err);
-        if (err.name === 'QuotaExceededError') {
-          this.showToast('Storage quota exceeded. Please export JSON and clear browser storage.', 'error');
-        }
-      }
-    },
-
-    exportCatalogJson() {
-      try {
-        const cleanPhones = (this.phones || []).map(p => {
-          const { _searchText, _normSearchText, cardSpecs, ...rest } = p;
-          return rest;
-        });
-
-        const payload = {
-          brands: this.brands || [],
-          phones: cleanPhones
-        };
-
-        const jsonString = JSON.stringify(payload, null, 2);
-        const blob = new Blob([jsonString], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-
-        const downloadAnchor = document.createElement('a');
-        downloadAnchor.href = url;
-        downloadAnchor.download = 'catalog.json';
-        document.body.appendChild(downloadAnchor);
-        downloadAnchor.click();
-        downloadAnchor.remove();
-        URL.revokeObjectURL(url);
-
-        this.showToast('catalog.json exported! Save it to your data/catalog.json file to persist in repo.', 'success');
-      } catch (err) {
-        console.error('Failed to export catalog JSON:', err);
-        this.showToast('Failed to export JSON file.', 'error');
-      }
-    },
-
-    resetToDisk() {
-      try {
-        if (confirm('Reset catalog back to pristine data/catalog.json file from disk? This clears any local browser edits.')) {
-          localStorage.removeItem(STORAGE_KEY);
-          window.location.reload();
-        }
-      } catch (err) {
-        console.error('Failed to reset catalog:', err);
-        window.location.reload();
-      }
-    },
-
-    showToast(message, type = 'info') {
-      try {
-        const id = Date.now() + Math.random();
-        this.toasts.push({ id, message, type });
-        setTimeout(() => {
-          this.toasts = this.toasts.filter(t => t.id !== id);
-        }, 4000);
-      } catch (err) {
-        console.warn('Toast notification error:', err);
+  toggleAdmin() {
+    if (this.adminMode) {
+      this.adminMode = false;
+      sessionStorage.removeItem(ADMIN_PASS_KEY);
+      this.showToast('Exited Admin Mode. Webpage is now in read-only public view.', 'info');
+    } else {
+      const pass = prompt('Enter App Owner Passcode (default is: admin123):');
+      if (pass === 'admin123' || pass === 'owner') {
+        this.adminMode = true;
+        sessionStorage.setItem(ADMIN_PASS_KEY, 'true');
+        this.showToast('Admin Mode Active! You can now Add, Edit, Delete, and Export JSON.', 'success');
+      } else if (pass !== null) {
+        this.showToast('Incorrect passcode. Access denied.', 'error');
       }
     }
-  }));
+    this.render();
+  }
+
+  openAddModal() {
+    try {
+      this.formTitle = 'Add New Mobile Phone';
+      const defaultBrand = this.catalogService.brands[0] ? this.catalogService.brands[0].id : 'apple';
+      const brandObj = this.catalogService.brands.find(b => b.id === defaultBrand);
+      const defaultSeries = brandObj?.series?.[0]?.id || '';
+
+      this.populateFormFields({
+        id: '',
+        brandId: defaultBrand,
+        seriesId: defaultSeries,
+        model: '',
+        tagline: '',
+        releaseYear: new Date().getFullYear(),
+        releaseDate: `${new Date().getFullYear()}-01`,
+        specsRawJson: JSON.stringify({
+          "Display System": {
+            "Display Size": "6.7\" AMOLED 120Hz",
+            "Resolution": "2778 x 1284 pixels"
+          },
+          "Processor & Silicon": {
+            "SoC": "Snapdragon 8 Gen 3 (4nm)",
+            "RAM": "12GB RAM"
+          },
+          "Optics & Camera Architecture": {
+            "Rear Main Camera": "50MP OIS",
+            "Front Selfie Camera": "32MP"
+          },
+          "Battery & Charging": {
+            "Battery Capacity": "5000 mAh",
+            "Wired Charging": "65W Wired Fast Charging"
+          }
+        }, null, 2),
+        highlightsRaw: "Feature Specification 1\nFeature Specification 2"
+      });
+
+      this.showFormModal = true;
+      this.render();
+    } catch (err) {
+      this.showToast('Could not initialize add form. Please try again.', 'error');
+    }
+  }
+
+  openEditModal(phone) {
+    if (!phone) {
+      this.showToast('Cannot edit: phone record is missing.', 'error');
+      return;
+    }
+
+    try {
+      this.formTitle = `Edit Phone: ${phone.model || 'Device'}`;
+      this.populateFormFields({
+        id: phone.id || '',
+        brandId: phone.brandId || (this.catalogService.brands[0]?.id || 'apple'),
+        seriesId: phone.seriesId || '',
+        model: phone.model || '',
+        tagline: phone.tagline || '',
+        releaseYear: phone.releaseYear || new Date().getFullYear(),
+        releaseDate: phone.releaseDate || `${phone.releaseYear || new Date().getFullYear()}-01`,
+        specsRawJson: JSON.stringify(phone.specs || {}, null, 2),
+        highlightsRaw: Array.isArray(phone.highlights) ? phone.highlights.join('\n') : ''
+      });
+
+      this.showFormModal = true;
+      this.render();
+    } catch (err) {
+      this.showToast('Failed to load phone data for editing.', 'error');
+    }
+  }
+
+  closeFormModal() {
+    this.showFormModal = false;
+    this.render();
+  }
+
+  populateFormFields(formData) {
+    this.dom.formModalTitle.textContent = this.formTitle;
+    this.dom.formPhoneId.value = formData.id;
+    this.dom.formModel.value = formData.model;
+    this.dom.formReleaseYear.value = formData.releaseYear;
+    this.dom.formReleaseDate.value = formData.releaseDate;
+    this.dom.formTagline.value = formData.tagline;
+    this.dom.formHighlights.value = formData.highlightsRaw;
+    this.dom.formSpecsJson.value = formData.specsRawJson;
+
+    // Populate Brand select dropdown
+    this.dom.formBrandId.innerHTML = this.catalogService.brands.map(b =>
+      `<option value="${b.id}" ${b.id === formData.brandId ? 'selected' : ''}>${this.escapeHtml(b.name)}</option>`
+    ).join('');
+
+    // Populate Series select dropdown
+    this.updateFormSeriesDropdown(formData.brandId, formData.seriesId);
+  }
+
+  updateFormSeriesDropdown(brandId, selectedSeriesId) {
+    const brand = this.catalogService.brands.find(b => b.id === brandId);
+    const seriesList = Array.isArray(brand?.series) ? brand.series : [];
+
+    this.dom.formSeriesId.innerHTML = seriesList.map(s =>
+      `<option value="${s.id}" ${s.id === selectedSeriesId ? 'selected' : ''}>${this.escapeHtml(s.name)}</option>`
+    ).join('');
+  }
+
+  onBrandChange() {
+    const selectedBrandId = this.dom.formBrandId.value;
+    const brand = this.catalogService.brands.find(b => b.id === selectedBrandId);
+    const defaultSeries = brand?.series?.[0]?.id || '';
+    this.updateFormSeriesDropdown(selectedBrandId, defaultSeries);
+  }
+
+  formatFormSpecs() {
+    try {
+      const parsed = JSON.parse(this.dom.formSpecsJson.value);
+      this.dom.formSpecsJson.value = JSON.stringify(parsed, null, 2);
+      this.showToast('JSON formatted cleanly.', 'info');
+    } catch (err) {
+      this.showToast(`Cannot format: ${err.message}`, 'error');
+    }
+  }
+
+  resetFormSpecsTemplate() {
+    const template = {
+      "Display System": {
+        "Display Size": "6.7\" AMOLED 120Hz",
+        "Resolution": "2778 x 1284 pixels",
+        "Peak Brightness": "2500 nits",
+        "Refresh Rate": "120Hz LTPO"
+      },
+      "Processor & Silicon": {
+        "SoC": "Qualcomm Snapdragon 8 Gen 3 (4nm)",
+        "CPU": "Octa-core up to 3.3GHz",
+        "GPU": "Adreno 750",
+        "Architecture": "64-bit"
+      },
+      "Memory & Storage": {
+        "RAM": "12GB LPDDR5X",
+        "Internal Storage": "256GB / 512GB UFS 4.0"
+      },
+      "Optics & Camera Architecture": {
+        "Rear Main Camera": "50MP f/1.7 OIS",
+        "Ultra-Wide Camera": "50MP 120 deg FOV",
+        "Telephoto Camera": "50MP 3x Optical Zoom",
+        "Front Selfie Camera": "32MP AF"
+      },
+      "Battery & Charging": {
+        "Battery Capacity": "5000 mAh",
+        "Wired Charging": "80W Wired Fast Charging",
+        "Wireless Charging": "50W Wireless"
+      },
+      "Connectivity & Software": {
+        "Operating System": "Android 15",
+        "Network Bands": "5G SA/NSA, 4G LTE",
+        "Wi-Fi & Bluetooth": "Wi-Fi 7, Bluetooth 5.4",
+        "Port": "USB-C 3.2"
+      }
+    };
+    this.dom.formSpecsJson.value = JSON.stringify(template, null, 2);
+    this.showToast('Starter specifications template loaded.', 'info');
+  }
+
+  savePhone() {
+    try {
+      const rawModel = this.dom.formModel.value.trim();
+      if (!rawModel) {
+        this.showToast('Phone Model Name is required.', 'error');
+        return;
+      }
+
+      let parsedSpecs = {};
+      try {
+        parsedSpecs = JSON.parse(this.dom.formSpecsJson.value);
+        if (typeof parsedSpecs !== 'object' || parsedSpecs === null || Array.isArray(parsedSpecs)) {
+          throw new Error('Specifications must be a valid JSON object mapping category names to spec details.');
+        }
+      } catch (err) {
+        this.showToast(`Invalid JSON in Specifications: ${err.message}`, 'error');
+        return;
+      }
+
+      const rawHighlights = this.dom.formHighlights.value
+        .split('\n')
+        .map(h => h.trim())
+        .filter(Boolean);
+
+      const phoneId = this.dom.formPhoneId.value.trim();
+      const isEditing = Boolean(phoneId);
+
+      const phoneData = {
+        id: phoneId,
+        brandId: this.dom.formBrandId.value,
+        seriesId: this.dom.formSeriesId.value,
+        model: rawModel,
+        tagline: this.dom.formTagline.value.trim(),
+        releaseDate: this.dom.formReleaseDate.value.trim() || `${this.dom.formReleaseYear.value || 2024}-01`,
+        releaseYear: parseInt(this.dom.formReleaseYear.value, 10) || new Date().getFullYear(),
+        specs: parsedSpecs,
+        highlights: rawHighlights
+      };
+
+      let savedRecord = null;
+      if (isEditing) {
+        savedRecord = this.catalogService.updatePhone(phoneData);
+        this.showToast(`Updated specs for "${savedRecord.model}"`, 'success');
+        if (this.activePhone && this.activePhone.id === savedRecord.id) {
+          this.activePhone = savedRecord;
+        }
+      } else {
+        savedRecord = this.catalogService.addPhone(phoneData);
+        this.showToast(`Added new phone "${savedRecord.model}"`, 'success');
+      }
+
+      this.persistToLocalStorage();
+      this.closeFormModal();
+    } catch (err) {
+      this.showToast(`Failed to save record: ${err.message}`, 'error');
+    }
+  }
+
+  deletePhone(phoneId) {
+    if (!phoneId) return;
+
+    try {
+      const phone = this.catalogService.getPhoneById(phoneId);
+      const name = phone ? phone.model : phoneId;
+
+      if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
+
+      this.catalogService.deletePhone(phoneId);
+      this.compareList = this.compareList.filter(p => p.id !== phoneId);
+
+      if (this.activePhone && this.activePhone.id === phoneId) {
+        this.closeDetails();
+      }
+
+      this.persistToLocalStorage();
+      this.showToast(`Deleted phone "${name}".`, 'info');
+      this.render();
+    } catch (err) {
+      this.showToast('Failed to delete phone record.', 'error');
+    }
+  }
+
+  persistToLocalStorage() {
+    try {
+      const payload = this.catalogService.getCleanExportPayload();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch (err) {
+      if (err.name === 'QuotaExceededError') {
+        this.showToast('Storage quota exceeded. Please export JSON and clear browser storage.', 'error');
+      }
+    }
+  }
+
+  exportCatalogJson() {
+    try {
+      const payload = this.catalogService.getCleanExportPayload();
+      const jsonString = JSON.stringify(payload, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.href = url;
+      downloadAnchor.download = 'catalog.json';
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      URL.revokeObjectURL(url);
+
+      this.showToast('catalog.json exported! Save it to your data/catalog.json file to persist in repo.', 'success');
+    } catch (err) {
+      this.showToast('Failed to export JSON file.', 'error');
+    }
+  }
+
+  resetToDisk() {
+    try {
+      if (confirm('Reset catalog back to pristine data/catalog.json file from disk? This clears any local browser edits.')) {
+        localStorage.removeItem(STORAGE_KEY);
+        window.location.reload();
+      }
+    } catch (err) {
+      window.location.reload();
+    }
+  }
+
+  showToast(message, type = 'info') {
+    const id = Date.now() + Math.random();
+    this.toasts.push({ id, message, type });
+    this.renderToasts();
+
+    setTimeout(() => {
+      this.toasts = this.toasts.filter(t => t.id !== id);
+      this.renderToasts();
+    }, 4000);
+  }
+
+  escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  getSpecValue(phone, category, key) {
+    return phone?.specs?.[category]?.[key] || '—';
+  }
+
+  // ==========================================
+  // PURE NATIVE DOM RENDERING
+  // ==========================================
+  render() {
+    // 1. Modal Open Body Scroll Lock
+    if (this.isAnyModalOpen) {
+      this.dom.body.classList.add('modal-open');
+    } else {
+      this.dom.body.classList.remove('modal-open');
+    }
+
+    // 2. Admin Header Controls & Banner
+    if (this.adminMode) {
+      this.dom.btnAdminToggle.classList.add('admin-active');
+      this.dom.btnAdminText.textContent = 'Admin Active';
+      this.dom.adminBanner.classList.remove('is-hidden');
+    } else {
+      this.dom.btnAdminToggle.classList.remove('admin-active');
+      this.dom.btnAdminText.textContent = 'Admin Access';
+      this.dom.adminBanner.classList.add('is-hidden');
+    }
+
+    // 3. Search Controls
+    const hasSearch = Boolean(this.searchQuery && this.searchQuery.trim() !== '');
+    if (hasSearch) {
+      this.dom.searchIconWrap.classList.add('is-hidden');
+      this.dom.searchClearInner.classList.remove('is-hidden');
+      this.dom.searchInput.classList.add('has-query');
+    } else {
+      this.dom.searchIconWrap.classList.remove('is-hidden');
+      this.dom.searchClearInner.classList.add('is-hidden');
+      this.dom.searchInput.classList.remove('has-query');
+    }
+
+    // 4. Query filtered phones via CatalogService
+    const filteredPhones = this.catalogService.filterAndSortPhones({
+      brandId: this.selectedBrand,
+      seriesId: this.selectedSeries,
+      searchQuery: this.searchQuery,
+      catalogSortBy: this.catalogSortBy,
+      searchSortBy: this.searchSortBy
+    });
+
+    // 5. Header Compare Button
+    if (this.compareList.length > 0) {
+      this.dom.headerCompareBtn.classList.remove('is-hidden');
+      this.dom.headerCompareBadge.textContent = this.compareList.length;
+    } else {
+      this.dom.headerCompareBtn.classList.add('is-hidden');
+    }
+
+    // 6. Sort Select states
+    this.dom.searchSortSelect.disabled = filteredPhones.length === 0;
+    this.dom.searchSortSelect.value = this.searchSortBy;
+    this.dom.catalogSortSelect.disabled = filteredPhones.length === 0;
+    this.dom.catalogSortSelect.value = this.catalogSortBy;
+
+    if (hasSearch) {
+      this.dom.catalogSortGroup.classList.add('is-hidden');
+    } else {
+      this.dom.catalogSortGroup.classList.remove('is-hidden');
+    }
+
+    // 7. Render Brand Pills
+    this.renderBrandPills();
+
+    // 8. Render Series Pills
+    this.renderSeriesPills();
+
+    // 9. Render Catalog Heading
+    this.renderCatalogHeading();
+
+    // 10. Render Items Grid or Empty State
+    this.renderItemsGrid(filteredPhones);
+
+    // 11. Render Compare Drawer Bar
+    this.renderCompareDrawer();
+
+    // 12. Render Compare Modal
+    this.renderCompareModal();
+
+    // 13. Render Details Modal
+    this.renderDetailsModal();
+
+    // 14. Render Form Modal Visibility
+    if (this.showFormModal) {
+      this.dom.formModal.classList.remove('is-hidden');
+    } else {
+      this.dom.formModal.classList.add('is-hidden');
+    }
+
+    // 15. Render Toasts
+    this.renderToasts();
+  }
+
+  renderBrandPills() {
+    let html = `
+      <button class="circle-brand-pill ${this.selectedBrand === 'all' ? 'active' : ''}" data-brand-id="all">
+        All
+      </button>
+    `;
+
+    this.catalogService.brands.forEach(brand => {
+      const activeClass = this.selectedBrand === brand.id ? 'active' : '';
+      html += `
+        <button class="circle-brand-pill ${activeClass}" data-brand-id="${brand.id}">
+          ${this.escapeHtml(brand.name)}
+        </button>
+      `;
+    });
+
+    this.dom.brandsContainer.innerHTML = html;
+
+    // Attach click listeners
+    const buttons = this.dom.brandsContainer.querySelectorAll('.circle-brand-pill');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const bId = btn.getAttribute('data-brand-id');
+        this.selectBrand(bId, 'all');
+      });
+    });
+  }
+
+  renderSeriesPills() {
+    const activeSeriesList = this.catalogService.getActiveSeriesList(this.selectedBrand);
+
+    if (this.selectedBrand !== 'all' && activeSeriesList.length > 1) {
+      this.dom.seriesContainer.classList.remove('is-hidden');
+      let html = `
+        <button class="filter-pill ${this.selectedSeries === 'all' ? 'active' : ''}" data-series-id="all">
+          All Series
+        </button>
+      `;
+
+      activeSeriesList.forEach(s => {
+        const activeClass = this.selectedSeries === s.id ? 'active' : '';
+        html += `
+          <button class="filter-pill ${activeClass}" data-series-id="${s.id}">
+            ${this.escapeHtml(s.name)}
+          </button>
+        `;
+      });
+
+      this.dom.seriesContainer.innerHTML = html;
+
+      const buttons = this.dom.seriesContainer.querySelectorAll('.filter-pill');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const sId = btn.getAttribute('data-series-id');
+          this.selectSeries(sId);
+        });
+      });
+    } else {
+      this.dom.seriesContainer.classList.add('is-hidden');
+      this.dom.seriesContainer.innerHTML = '';
+    }
+  }
+
+  renderCatalogHeading() {
+    const hasSearch = Boolean(this.searchQuery && this.searchQuery.trim() !== '');
+
+    if (hasSearch) {
+      this.dom.catalogHeadingTitle.innerHTML = `
+        <span class="search-results-heading-wrap">
+          <span>Search Results for "<span class="brand-title-accent">${this.escapeHtml(this.searchQuery.trim())}</span>"</span>
+          <button id="btn-search-heading-clear" class="btn-search-clear-badge" title="Clear search">✕ Clear Search</button>
+        </span>
+      `;
+      const clearBtn = document.getElementById('btn-search-heading-clear');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          this.dom.searchInput.value = '';
+          this.searchQuery = '';
+          this.render();
+        });
+      }
+    } else {
+      const brandObj = this.catalogService.brands.find(b => b.id === this.selectedBrand);
+      const brandTitle = this.selectedBrand === 'all' ? 'All Mobile Models' : (brandObj ? brandObj.name : 'Mobile Models');
+      const activeSeriesList = this.catalogService.getActiveSeriesList(this.selectedBrand);
+      const activeSeries = activeSeriesList.find(s => s.id === this.selectedSeries);
+      const seriesTitle = (this.selectedSeries !== 'all' && activeSeries) ? ` › ${activeSeries.name}` : '';
+
+      this.dom.catalogHeadingTitle.innerHTML = `
+        <span>${this.escapeHtml(brandTitle)}${this.escapeHtml(seriesTitle)}</span>
+      `;
+    }
+  }
+
+  renderItemsGrid(phones) {
+    if (phones.length === 0) {
+      this.dom.itemsGrid.innerHTML = '';
+      this.dom.emptyState.classList.remove('is-hidden');
+      return;
+    }
+
+    this.dom.emptyState.classList.add('is-hidden');
+
+    let html = '';
+    phones.forEach(phone => {
+      const inCompare = this.isInCompare(phone.id);
+      const compareBtnClass = inCompare ? 'in-compare' : '';
+      const compareBtnText = inCompare ? '✓ In Compare' : '+ Compare';
+      const displaySize = phone.specs?.['Display System']?.['Display Size'] || '';
+
+      html += `
+        <div class="phone-banner-card" data-phone-id="${phone.id}">
+          <div class="banner-top-row">
+            <span class="banner-brand-pill">${this.escapeHtml(phone.brandName)}</span>
+          </div>
+
+          <div class="banner-model-row">
+            <h3 class="banner-model-title">${this.escapeHtml(phone.model)}</h3>
+            ${phone.releaseYear ? `<span class="banner-year-pill">${phone.releaseYear}</span>` : ''}
+          </div>
+
+          <div class="card-table-wrapper">
+            <table class="card-specs-table">
+              <tbody>
+                <tr>
+                  <th class="c-key">CPU</th>
+                  <td class="c-val" title="${this.escapeHtml(phone.cardSpecs?.cpu || '—')}">${this.escapeHtml(phone.cardSpecs?.cpu || '—')}</td>
+                </tr>
+                <tr>
+                  <th class="c-key">GPU</th>
+                  <td class="c-val" title="${this.escapeHtml(phone.cardSpecs?.gpu || '—')}">${this.escapeHtml(phone.cardSpecs?.gpu || '—')}</td>
+                </tr>
+                <tr>
+                  <th class="c-key">Bit</th>
+                  <td class="c-val">${this.escapeHtml(phone.cardSpecs?.bit || '64-bit')}</td>
+                </tr>
+                <tr>
+                  <th class="c-key">RAM</th>
+                  <td class="c-val">${this.escapeHtml(phone.cardSpecs?.ram || '—')}</td>
+                </tr>
+                <tr>
+                  <th class="c-key">Storage</th>
+                  <td class="c-val">${this.escapeHtml(phone.cardSpecs?.storage || '—')}</td>
+                </tr>
+                <tr>
+                  <th class="c-key">Display</th>
+                  <td class="c-val" title="${this.escapeHtml(displaySize)}">${this.escapeHtml(phone.cardSpecs?.display || '—')}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="banner-bottom-row">
+            <span class="btn-banner-view">Full Specs →</span>
+            <button class="btn-banner-compare ${compareBtnClass}" data-action="compare" data-phone-id="${phone.id}">
+              ${compareBtnText}
+            </button>
+          </div>
+
+          <div class="item-card-admin-bar ${this.adminMode ? '' : 'is-hidden'}" data-admin-bar="true">
+            <button class="btn-card-edit" data-action="edit" data-phone-id="${phone.id}">Edit</button>
+            <button class="btn-card-delete" data-action="delete" data-phone-id="${phone.id}">Delete</button>
+          </div>
+        </div>
+      `;
+    });
+
+    this.dom.itemsGrid.innerHTML = html;
+
+    // Delegate clicks on cards
+    const cards = this.dom.itemsGrid.querySelectorAll('.phone-banner-card');
+    cards.forEach(card => {
+      card.addEventListener('click', (e) => {
+        const phoneId = card.getAttribute('data-phone-id');
+        const phone = this.catalogService.getPhoneById(phoneId);
+
+        // Check if an action button was clicked
+        const compareBtn = e.target.closest('[data-action="compare"]');
+        if (compareBtn) {
+          e.stopPropagation();
+          this.toggleCompare(phone);
+          return;
+        }
+
+        const editBtn = e.target.closest('[data-action="edit"]');
+        if (editBtn) {
+          e.stopPropagation();
+          this.openEditModal(phone);
+          return;
+        }
+
+        const deleteBtn = e.target.closest('[data-action="delete"]');
+        if (deleteBtn) {
+          e.stopPropagation();
+          this.deletePhone(phoneId);
+          return;
+        }
+
+        if (e.target.closest('[data-admin-bar]')) {
+          e.stopPropagation();
+          return;
+        }
+
+        if (phone) {
+          this.openDetails(phone);
+        }
+      });
+    });
+  }
+
+  renderCompareDrawer() {
+    if (this.compareList.length > 0) {
+      this.dom.compareDrawer.classList.remove('is-hidden');
+      this.dom.compareDrawerCount.textContent = this.compareList.length;
+
+      let html = '';
+      this.compareList.forEach(p => {
+        html += `
+          <div class="compare-chip">
+            <span>${this.escapeHtml(p.model)}</span>
+            <span class="compare-chip-remove" data-remove-id="${p.id}" title="Remove">✕</span>
+          </div>
+        `;
+      });
+
+      this.dom.compareChipsContainer.innerHTML = html;
+
+      const removeButtons = this.dom.compareChipsContainer.querySelectorAll('.compare-chip-remove');
+      removeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const pId = btn.getAttribute('data-remove-id');
+          this.removeCompare(pId);
+        });
+      });
+    } else {
+      this.dom.compareDrawer.classList.add('is-hidden');
+      this.dom.compareChipsContainer.innerHTML = '';
+    }
+  }
+
+  renderCompareModal() {
+    if (!this.showCompareModal) {
+      this.dom.compareModal.classList.add('is-hidden');
+      this.dom.compareTableContainer.innerHTML = '';
+      return;
+    }
+
+    this.dom.compareModal.classList.remove('is-hidden');
+
+    let theadCells = `
+      <th class="compare-corner-header">
+        <span class="compare-param-corner-badge">Specs</span>
+      </th>
+    `;
+
+    this.compareList.forEach(phone => {
+      theadCells += `
+        <td class="compare-model-header-cell">
+          <div class="compare-header-card">
+            <button class="compare-remove-btn" data-remove-compare="${phone.id}" title="Remove phone">✕ Remove</button>
+            <span class="banner-brand-pill">${this.escapeHtml(phone.brandName)}</span>
+            <h4 class="compare-model-name">${this.escapeHtml(phone.model)}</h4>
+            ${phone.releaseYear ? `<span class="compare-year-chip">${phone.releaseYear}</span>` : ''}
+          </div>
+        </td>
+      `;
+    });
+
+    const rows = [
+      {
+        label: 'Processor & Silicon',
+        valFn: (p) => this.getSpecValue(p, 'Processor & Silicon', 'SoC')
+      },
+      {
+        label: 'Display & Refresh Rate',
+        valFn: (p) => `${this.getSpecValue(p, 'Display System', 'Display Size')} • ${this.getSpecValue(p, 'Display System', 'Refresh Rate')}`
+      },
+      {
+        label: 'Peak Brightness',
+        valFn: (p) => this.getSpecValue(p, 'Display System', 'Peak Brightness')
+      },
+      {
+        label: 'Primary Rear Camera',
+        valFn: (p) => this.getSpecValue(p, 'Optics & Camera Architecture', 'Rear Main Camera')
+      },
+      {
+        label: 'Telephoto / Zoom',
+        valFn: (p) => this.getSpecValue(p, 'Optics & Camera Architecture', 'Periscope Telephoto') || this.getSpecValue(p, 'Optics & Camera Architecture', 'Telephoto Camera') || 'Standard Digital Zoom'
+      },
+      {
+        label: 'Battery & Charging',
+        valFn: (p) => `${this.getSpecValue(p, 'Battery & Charging', 'Battery Capacity')} • ${this.getSpecValue(p, 'Battery & Charging', 'Wired Charging')}`
+      },
+      {
+        label: 'Build Materials',
+        valFn: (p) => `${this.getSpecValue(p, 'Design & Dimensions', 'Materials')} • ${this.getSpecValue(p, 'Design & Dimensions', 'Protection')}`
+      },
+      {
+        label: 'Operating System',
+        valFn: (p) => this.getSpecValue(p, 'Connectivity & Software', 'Operating System')
+      }
+    ];
+
+    let tbodyRows = '';
+    rows.forEach(r => {
+      tbodyRows += `<tr><th>${this.escapeHtml(r.label)}</th>`;
+      this.compareList.forEach(p => {
+        tbodyRows += `<td>${this.escapeHtml(r.valFn(p))}</td>`;
+      });
+      tbodyRows += '</tr>';
+    });
+
+    this.dom.compareTableContainer.innerHTML = `
+      <table class="compare-table">
+        <thead>
+          <tr>${theadCells}</tr>
+        </thead>
+        <tbody>
+          ${tbodyRows}
+        </tbody>
+      </table>
+    `;
+
+    const removeBtns = this.dom.compareTableContainer.querySelectorAll('[data-remove-compare]');
+    removeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-remove-compare');
+        this.removeCompare(id);
+      });
+    });
+  }
+
+  renderDetailsModal() {
+    if (!this.showDetailsModal || !this.activePhone) {
+      this.dom.detailsModal.classList.add('is-hidden');
+      this.dom.detailsBodyContent.innerHTML = '';
+      return;
+    }
+
+    this.dom.detailsModal.classList.remove('is-hidden');
+    const phone = this.activePhone;
+
+    this.dom.detailsBrandBadge.textContent = phone.brandName || '';
+    this.dom.detailsModelTitle.textContent = phone.model || '';
+
+    const inCompare = this.isInCompare(phone.id);
+    const compareBtnClass = inCompare ? 'in-compare' : '';
+    const compareBtnText = inCompare ? '✓ In Comparison Drawer' : '+ Add to Comparison';
+    const releaseText = phone.releaseDate || phone.releaseYear || '';
+
+    let highlightsHtml = '';
+    if (Array.isArray(phone.highlights) && phone.highlights.length > 0) {
+      const pills = phone.highlights.map(h => `<div class="highlight-pill-subtle">${this.escapeHtml(h)}</div>`).join('');
+      highlightsHtml = `
+        <div>
+          <h4 class="specs-section-title">Key Architectural Highlights</h4>
+          <div class="highlights-list">
+            ${pills}
+          </div>
+        </div>
+      `;
+    }
+
+    let specsHtml = '';
+    if (phone.specs && typeof phone.specs === 'object') {
+      let groups = '';
+      Object.entries(phone.specs).forEach(([groupName, groupObj]) => {
+        let paramRows = '';
+        if (groupObj && typeof groupObj === 'object') {
+          Object.entries(groupObj).forEach(([param, val]) => {
+            paramRows += `
+              <tr>
+                <td class="spec-param">${this.escapeHtml(param)}</td>
+                <td class="spec-val">${this.escapeHtml(String(val))}</td>
+              </tr>
+            `;
+          });
+        }
+        groups += `
+          <div class="modern-spec-group">
+            <div class="modern-spec-header">
+              <span class="spec-header-bullet"></span>
+              <span class="spec-header-text">${this.escapeHtml(groupName)}</span>
+            </div>
+            <table class="specs-table">
+              <tbody>
+                ${paramRows}
+              </tbody>
+            </table>
+          </div>
+        `;
+      });
+
+      specsHtml = `
+        <div>
+          <h4 class="specs-section-title">Detailed Hardware Specifications</h4>
+          ${groups}
+        </div>
+      `;
+    }
+
+    this.dom.detailsBodyContent.innerHTML = `
+      <div class="details-model-overview-card">
+        <div class="overview-tags-row">
+          ${phone.seriesName ? `<span class="overview-series-tag">${this.escapeHtml(phone.seriesName)}</span>` : ''}
+          ${releaseText ? `<span class="overview-year-badge">Release: ${this.escapeHtml(releaseText)}</span>` : ''}
+        </div>
+
+        <p class="details-overview-tagline">${this.escapeHtml(phone.tagline || '')}</p>
+
+        <div class="overview-actions-row">
+          <button id="btn-modal-compare-toggle" class="btn-modal-compare ${compareBtnClass}">
+            ${compareBtnText}
+          </button>
+        </div>
+      </div>
+
+      ${highlightsHtml}
+      ${specsHtml}
+    `;
+
+    const compareBtn = document.getElementById('btn-modal-compare-toggle');
+    if (compareBtn) {
+      compareBtn.addEventListener('click', () => {
+        this.toggleCompare(phone);
+      });
+    }
+  }
+
+  renderToasts() {
+    this.dom.toastContainer.innerHTML = this.toasts.map(t =>
+      `<div class="toast toast-${t.type}"><span>${this.escapeHtml(t.message)}</span></div>`
+    ).join('');
+  }
+}
+
+// Instantiate and initialize when DOM is ready
+window.addEventListener('DOMContentLoaded', () => {
+  window.phoneSpecsApp = new PhoneSpecsApp();
+  window.phoneSpecsApp.init();
 });
+

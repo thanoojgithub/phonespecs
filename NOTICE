@@ -6,16 +6,10 @@ See the LICENSE file for details.
 
 This product includes or connects to third-party open source components:
 
-1. Alpine.js
-   License: MIT License
-   Copyright (c) 2019-2024 Caleb Porzio
-   Homepage: https://alpinejs.dev
-   Repository: https://github.com/alpinejs/alpine
-
-2. Google Fonts (Outfit & Plus Jakarta Sans)
+1. Google Fonts (Outfit & Plus Jakarta Sans)
    Outfit: Copyright 2021 The Outfit Project Authors (SIL Open Font License, Version 1.1)
    Plus Jakarta Sans: Copyright 2020 The Plus Jakarta Sans Project Authors (SIL Open Font License, Version 1.1)
 
-3. Legal Limitations & Disclaimers:
+2. Legal Limitations & Disclaimers:
    - Trademark: All product names, logos, brands, and trademarks displayed in the specifications catalog (e.g., Apple, Samsung, Google, Asus, OnePlus, Xiaomi) are the property of their respective trademark holders. Use of these names does not imply affiliation or endorsement.
    - Warranty & Liability: The software is provided "AS IS", without warranties of any kind. In no event shall the authors or contributors be liable for any claim, damages, or other liability.

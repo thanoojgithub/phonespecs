@@ -41,8 +41,8 @@ A clean, high-performance, and modern mobile phone technical specifications cata
 - **Deep Technical Specifications**: Detailed breakdowns across Display, Processor, Optics/Camera, Battery/Charging, and Connectivity.
 - **Side-by-Side Comparison Engine**: Compare devices simultaneously with sticky, aligned matrix spec tables.
 - **App Owner / Admin Mode**: In-browser catalog editor with native grid-constrained modal dialogs to add, edit, export, or reset device data.
-- **Zero 3rd-Party UI/UX Frameworks**: Built strictly with [Alpine.js](https://alpinejs.dev/) for declarative reactivity and standard native CSS—no Tailwind, Bootstrap, React, or heavy JS bundles.
-- **Ultra-Lean Footprint**: Zero node build pipelines, zero npm lockfiles, zero server requirements. Runs directly in any web browser.
+- **Zero 3rd-Party UI/UX Frameworks**: Built strictly with pure Native JavaScript (ES6+ standard APIs) and standard native CSS—no Alpine.js, Tailwind, Bootstrap, React, or external JS bundles.
+- **Ultra-Lean Footprint**: Zero node build pipelines, zero npm lockfiles, zero runtime dependencies. Runs directly in any web browser.
 
 ---
 
@@ -50,8 +50,8 @@ A clean, high-performance, and modern mobile phone technical specifications cata
 
 - **Modern HTML5 & Semantic Structure**: Pure semantic elements, accessibility-oriented attributes, and zero inline styles in [`index.html`](index.html).
 - **Styling (Modern Native CSS Grid)**: Native CSS Grid layouts, `dvh`-aware viewport dialogs, `scrollbar-gutter: stable`, and a curated red-and-slate design system in [`css/styles.css`](css/styles.css). No CSS frameworks (Tailwind, Bootstrap, etc.) are used.
-- **Reactive UI Engine**: [Alpine.js](https://alpinejs.dev) (~15 KB CDN) for lightweight declarative reactive state management. Strictly no other UI or JavaScript frameworks.
-- **Application Logic**: Vanilla JavaScript in [`js/app.js`](js/app.js).
+- **Catalog CRUD Service**: Dedicated pure Native JavaScript domain engine in [`js/catalogService.js`](js/catalogService.js) managing phone entity validation, schema enforcement, filtering, inverted full-text search, regex search, multi-field sorting, and sanitized JSON export.
+- **Application Controller**: Pure Native JavaScript UI controller in [`js/app.js`](js/app.js) handling DOM events, view rendering, comparison trays, and modal dialogs.
 - **Data Catalog**: Structured JSON store in [`data/catalog.json`](data/catalog.json).
 
 ---
@@ -154,21 +154,27 @@ npx http-server . -p 8000
 ```
 Open your browser at the local URL displayed in your terminal (e.g. `http://localhost:3000` or `http://localhost:8000`).
 
-### Data Validation
-Run the catalog integrity validator using Node.js or Docker:
+### Data Validation & Automated Tests
+Run the catalog integrity validator and Native JS CRUD test suite using Node.js or Docker:
 
 - **Using local Node.js:**
   ```bash
+  # Validate catalog JSON format, schema, and reference integrity
   node scripts/validate_catalog.js
+
+  # Run the pure Native JS CatalogService test suite (57+ unit & corner-case tests)
+  node scripts/test_catalog_crud.js
   ```
 - **Using Docker (if Node is not installed locally):**
   ```powershell
   # PowerShell
   docker run --rm -v ${PWD}:/app -w /app node:alpine node scripts/validate_catalog.js
+  docker run --rm -v ${PWD}:/app -w /app node:alpine node scripts/test_catalog_crud.js
   ```
   ```bash
   # Linux / macOS / WSL
   docker run --rm -v "$(pwd)":/app -w /app node:alpine node scripts/validate_catalog.js
+  docker run --rm -v "$(pwd)":/app -w /app node:alpine node scripts/test_catalog_crud.js
   ```
 
 ---
@@ -219,16 +225,18 @@ Yes, our application's `catalog` is 100% compliant with the Apache License 2.0 b
 ### Attributions & Dependencies
 
 In accordance with Section 4(d) of the Apache License 2.0, all third-party open-source components and font licenses are documented in the **[NOTICE](NOTICE)** file:
-- **Alpine.js**: Licensed under the MIT License. Copyright (c) Caleb Porzio.
 - **Google Fonts (Outfit & Plus Jakarta Sans)**: Licensed under the SIL Open Font License, Version 1.1.
 
 Every source code file in this repository contains the standard Apache 2.0 copyright and license boilerplate header:
 - [`index.html`](index.html)
 - [`css/styles.css`](css/styles.css)
+- [`js/catalogService.js`](js/catalogService.js)
 - [`js/app.js`](js/app.js)
 - [`scripts/validate_catalog.js`](scripts/validate_catalog.js)
+- [`scripts/test_catalog_crud.js`](scripts/test_catalog_crud.js)
+- [`scripts/check_license_compliance.js`](scripts/check_license_compliance.js)
 
-Automated license compliance is enforced on every commit and pull request via the [Quality & License Compliance CI](.github/workflows/ci.yml) workflow.
+Automated license compliance and test suites are enforced on every commit and pull request via the [Quality & License Compliance CI](.github/workflows/ci.yml) workflow.
 
 ---
 
