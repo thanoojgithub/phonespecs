@@ -118,6 +118,8 @@
         <select class="filter-select" x-model="searchSortBy" :disabled="filteredPhones.length === 0" title="Sort search results">
           <option value="name-asc">Model: A → Z</option>
           <option value="name-desc">Model: Z → A</option>
+          <option value="brand-asc">Brand: A → Z</option>
+          <option value="brand-desc">Brand: Z → A</option>
           <option value="year-desc">Year: Newest</option>
           <option value="year-asc">Year: Oldest</option>
         </select>
@@ -174,6 +176,8 @@
         <select class="filter-select" x-model="catalogSortBy" :disabled="filteredPhones.length === 0" title="Sort mobile models">
           <option value="name-asc">Model: A → Z</option>
           <option value="name-desc">Model: Z → A</option>
+          <option value="brand-asc">Brand: A → Z</option>
+          <option value="brand-desc">Brand: Z → A</option>
           <option value="year-desc">Year: Newest</option>
           <option value="year-asc">Year: Oldest</option>
         </select>

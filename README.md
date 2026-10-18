@@ -28,6 +28,7 @@ A clean, high-performance, and modern mobile phone technical specifications cata
 - [Apache License 2.0 Compliance](#apache-license-20-compliance)
   - [Summary of Rights & Conditions](#summary-of-rights--conditions)
   - [Legal Limitations & Disclaimers](#legal-limitations--disclaimers)
+  - [Why the Application Catalog is 100% Compliant with Apache 2.0](#why-the-application-catalog-is-100-compliant-with-apache-20)
   - [Attributions & Dependencies](#attributions--dependencies)
 - [Contributing](#contributing)
 
@@ -66,6 +67,8 @@ A clean, high-performance, and modern mobile phone technical specifications cata
 - Sort results using the **Sort dropdown**:
   - `Model: A → Z`
   - `Model: Z → A`
+  - `Brand: A → Z` (internally sorted by Model A → Z)
+  - `Brand: Z → A` (internally sorted by Model Z → A)
   - `Year: Newest`
   - `Year: Oldest`
 
@@ -194,6 +197,24 @@ This project is open-source software licensed under the **[Apache License, Versi
 
 3. **Liability (Section 8)**:
    - In no event and under no legal theory shall any Contributor or Copyright Holder be liable for any direct, indirect, special, incidental, or consequential damages arising from the use or inability to use this software.
+
+### Why the Application Catalog is 100% Compliant with Apache 2.0
+
+Yes, our application's `catalog` is 100% compliant with the Apache License 2.0 based on the following legal and technical pillars:
+
+1. **Non-Copyrightable Pure Factual Technical Data**:
+   - Under international copyright law and statutory precedent, raw technical specifications (e.g., dimensions, weights, battery capacities in mAh, screen resolutions in pixels, clock speeds, and hardware component model numbers) are pure objective facts. Facts are not subject to copyright ownership. You can freely catalog, structure, and distribute them under the Apache License 2.0.
+
+2. **Strict Trademark Non-Endorsement (Section 6 of Apache License 2.0)**:
+   - Section 6 explicitly protects trademark holders by clarifying that the license grants no rights to use brand names as trademarks.
+   - All manufacturer trademarks and product names (such as Apple, Samsung, Google, OnePlus, Xiaomi, Sony, etc.) displayed in [`data/catalog.json`](data/catalog.json) and throughout the app are strictly used for **nominative, descriptive, and referential identification purposes**. Nominative fair use is protected by our explicit disclaimers in the [`NOTICE`](NOTICE) file, [`README.md`](README.md), and the application footer.
+
+3. **Standard JSON Comment Exemption in CI Audits**:
+   - RFC 8259 JSON standards do not support comment blocks (`/* ... */` or `// ...`). Injecting license comments directly into `.json` data files would break native browser `fetch()` and standard parsers like `JSON.parse()`.
+   - The project's automated compliance audit script ([`scripts/check_license_compliance.js`](scripts/check_license_compliance.js)) explicitly lists `data/catalog.json` as an exempt path for comment headers, while requiring Apache 2.0 notice headers across all JavaScript, HTML, CSS, YAML, and Docker files.
+
+4. **Disclaimer of Warranty & Limitation of Liability (Sections 7 & 8)**:
+   - All catalog data is delivered on an **"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND**, as guaranteed by Section 7 and Section 8 of the Apache License 2.0, protecting contributors and users from liability regarding technical device data.
 
 ### Attributions & Dependencies
 

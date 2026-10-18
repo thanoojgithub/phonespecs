@@ -45,7 +45,8 @@ const DEFAULT_CATALOG_DATA = {
                                           "id":  "rog-phone",
                                           "name":  "ROG Phone Series"
                                       }
-                                  ]
+                                  ],
+                       "origin":  "Taiwan"
                    },
                    {
                        "id":  "google",
@@ -70,7 +71,8 @@ const DEFAULT_CATALOG_DATA = {
                                           "id":  "magic-series",
                                           "name":  "Magic Series"
                                       }
-                                  ]
+                                  ],
+                       "origin":  "China"
                    },
                    {
                        "id":  "huawei",
@@ -80,7 +82,8 @@ const DEFAULT_CATALOG_DATA = {
                                           "id":  "pura-series",
                                           "name":  "Pura Series"
                                       }
-                                  ]
+                                  ],
+                       "origin":  "China"
                    },
                    {
                        "id":  "motorola",
@@ -90,7 +93,8 @@ const DEFAULT_CATALOG_DATA = {
                                           "id":  "razr-series",
                                           "name":  "Razr Series"
                                       }
-                                  ]
+                                  ],
+                       "origin":  "USA / Global"
                    },
                    {
                        "id":  "nothing",
@@ -100,7 +104,8 @@ const DEFAULT_CATALOG_DATA = {
                                           "id":  "phone-series",
                                           "name":  "Phone Series"
                                       }
-                                  ]
+                                  ],
+                       "origin":  "United Kingdom"
                    },
                    {
                        "id":  "oneplus",
@@ -114,7 +119,8 @@ const DEFAULT_CATALOG_DATA = {
                                           "id":  "oneplus-open",
                                           "name":  "OnePlus Foldable Series"
                                       }
-                                  ]
+                                  ],
+                       "origin":  "China"
                    },
                    {
                        "id":  "oppo",
@@ -124,7 +130,8 @@ const DEFAULT_CATALOG_DATA = {
                                           "id":  "find-x",
                                           "name":  "Find X Series"
                                       }
-                                  ]
+                                  ],
+                       "origin":  "China"
                    },
                    {
                        "id":  "realme",
@@ -134,7 +141,8 @@ const DEFAULT_CATALOG_DATA = {
                                           "id":  "gt-series",
                                           "name":  "GT Series"
                                       }
-                                  ]
+                                  ],
+                       "origin":  "China"
                    },
                    {
                        "id":  "samsung",
@@ -174,7 +182,8 @@ const DEFAULT_CATALOG_DATA = {
                                           "id":  "x-series",
                                           "name":  "X Series"
                                       }
-                                  ]
+                                  ],
+                       "origin":  "China"
                    },
                    {
                        "id":  "xiaomi",
@@ -188,7 +197,8 @@ const DEFAULT_CATALOG_DATA = {
                                           "id":  "xiaomi-pro",
                                           "name":  "Xiaomi Series"
                                       }
-                                  ]
+                                  ],
+                       "origin":  "China"
                    }
                ],
     "segregations":  {
@@ -348,7 +358,7 @@ const DEFAULT_CATALOG_DATA = {
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
                                                                                "Rear Main Camera":  "48MP Fusion Camera, 24mm, f/1.78, 2nd-gen Sensor-shift OIS, 100% Focus Pixels",
-                                                                               "Ultra-Wide Camera":  "48MP Ultra-Wide, 13mm, f/2.2, 120° FOV, Hybrid Focus Pixels, Macro mode",
+                                                                               "Ultra-Wide Camera":  "48MP Ultra-Wide, 13mm, f/2.2, 120 deg FOV, Hybrid Focus Pixels, Macro mode",
                                                                                "Telephoto Camera":  "12MP 5x Tetraprism Periscope Telephoto, 120mm, f/2.8, 3D sensor-shift OIS",
                                                                                "Optical Zoom":  "5x Optical Zoom in, 2x Optical Zoom out; 10x Optical zoom range; Digital zoom up to 25x",
                                                                                "Video Capability":  "4K 120 fps Dolby Vision, ProRes 4K 120 fps to external drive, Spatial Video",
@@ -426,7 +436,7 @@ const DEFAULT_CATALOG_DATA = {
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
                                                                                "Rear Main Camera":  "48MP Fusion Camera, 24mm, f/1.78, 2nd-gen Sensor-shift OIS, 100% Focus Pixels",
-                                                                               "Ultra-Wide Camera":  "48MP Ultra-Wide, 13mm, f/2.2, 120° FOV, Hybrid Focus Pixels, Macro mode",
+                                                                               "Ultra-Wide Camera":  "48MP Ultra-Wide, 13mm, f/2.2, 120 deg FOV, Hybrid Focus Pixels, Macro mode",
                                                                                "Telephoto Camera":  "12MP 5x Tetraprism Periscope Telephoto, 120mm, f/2.8, 3D sensor-shift OIS",
                                                                                "Optical Zoom":  "5x Optical Zoom in, 2x Optical Zoom out; 10x Optical zoom range",
                                                                                "Video Capability":  "4K 120 fps Dolby Vision, ProRes 4K 120 fps to external drive, Spatial Audio",
@@ -504,12 +514,13 @@ const DEFAULT_CATALOG_DATA = {
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
                                                                                "Rear Main Camera":  "200MP Wide Sensor, 1/1.3\", f/1.7, 24mm, multi-directional PDAF, Laser AF, OIS",
-                                                                               "Ultra-Wide Camera":  "12MP Ultra-Wide, 1/2.55\", f/2.2, 13mm, 120° FOV, Dual Pixel PDAF, Super Steady",
+                                                                               "Ultra-Wide Camera":  "12MP Ultra-Wide, 1/2.55\", f/2.2, 13mm, 120 deg FOV, Dual Pixel PDAF, Super Steady",
                                                                                "Telephoto 1":  "10MP 3x Optical Telephoto, f/2.4, 67mm, Dual Pixel PDAF, OIS",
                                                                                "Periscope Telephoto 2":  "50MP 5x Optical Periscope (10x Optical Quality), f/3.4, 111mm, PDAF, OIS",
                                                                                "Optical Zoom":  "3x and 5x optical zoom, 100x Space Zoom with AI Super Resolution",
                                                                                "Video Capability":  "8K at 24/30fps, 4K at 30/60/120fps, 1080p at 240fps, HDR10+, stereo audio",
-                                                                               "Front Selfie Camera":  "12MP Dual Pixel PDAF, f/2.2, 26mm, 4K video recording up to 60fps"
+                                                                               "Front Selfie Camera":  "12MP Dual Pixel PDAF, f/2.2, 26mm, 4K video recording up to 60fps",
+                                                                               "Telephoto Camera":  "50MP 5x Optical Periscope (f/3.4, 111mm, OIS) + 10MP 3x Optical (f/2.4, 67mm, OIS)"
                                                                            },
                                      "Battery \u0026 Charging":  {
                                                                      "Battery Capacity":  "5000 mAh typical lithium-ion battery",
@@ -583,10 +594,11 @@ const DEFAULT_CATALOG_DATA = {
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
                                                                                "Rear Main Camera":  "50MP Octa PD Main Camera, 1/1.31\", f/1.68, 25mm, multi-zone LDAF, dual OIS",
-                                                                               "Ultra-Wide Camera":  "48MP Quad PD Ultra-Wide with Macro Focus, 1/2.55\", f/1.7, 123° FOV",
+                                                                               "Ultra-Wide Camera":  "48MP Quad PD Ultra-Wide with Macro Focus, 1/2.55\", f/1.7, 123 deg FOV",
                                                                                "Periscope Telephoto":  "48MP Quad PD 5x Optical Periscope Telephoto, f/2.8, 110mm, OIS, Super Res Zoom 30x",
                                                                                "Video Capability":  "8K video with Video Boost AI at 30fps, 4K at 24/30/60fps, Night Sight Video",
-                                                                               "Front Selfie Camera":  "42MP Dual PD Ultra-Wide with autofocus, f/2.2, 103° ultrawide FOV, 4K60"
+                                                                               "Front Selfie Camera":  "42MP Dual PD Ultra-Wide with autofocus, f/2.2, 103 deg ultrawide FOV, 4K60",
+                                                                               "Telephoto Camera":  "48MP Quad PD 5x Optical Periscope Telephoto, f/2.8, 110mm, OIS, Super Res Zoom 30x"
                                                                            },
                                      "Battery \u0026 Charging":  {
                                                                      "Battery Capacity":  "5060 mAh typical lithium-ion battery",
@@ -643,7 +655,11 @@ const DEFAULT_CATALOG_DATA = {
                                      "Display System":  {
                                                             "Main Inner Screen":  "7.6 inches Dynamic AMOLED 2X, 2160 x 1856, 1-120Hz LTPO, 2600 nits peak",
                                                             "Cover Outer Screen":  "6.3 inches Dynamic AMOLED 2X, 2376 x 968, 1-120Hz LTPO, 22.1:9 aspect ratio",
-                                                            "Features":  "Under-Display Camera on inner panel, S-Pen Fold Edition digitizer layer, HDR10+"
+                                                            "Features":  "Under-Display Camera on inner panel, S-Pen Fold Edition digitizer layer, HDR10+",
+                                                            "Display Size":  "Main: 7.6 inches Dynamic AMOLED 2X; Cover: 6.3 inches Dynamic AMOLED 2X",
+                                                            "Resolution":  "Main: 2160 x 1856 (374 ppi); Cover: 2376 x 968 (410 ppi, 22.1:9)",
+                                                            "Refresh Rate":  "1-120Hz LTPO adaptive variable refresh rate on both screens",
+                                                            "Peak Brightness":  "2600 nits peak brightness on both inner and cover displays"
                                                         },
                                      "Processor \u0026 Silicon":  {
                                                                       "SoC":  "Snapdragon 8 Gen 3 for Galaxy (4nm customized octa-core)",
@@ -658,7 +674,7 @@ const DEFAULT_CATALOG_DATA = {
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
                                                                                "Rear Main Camera":  "50MP Dual Pixel AF, f/1.8, 23mm, OIS",
-                                                                               "Ultra-Wide Camera":  "12MP Ultra-Wide, f/2.2, 12mm, 123° FOV",
+                                                                               "Ultra-Wide Camera":  "12MP Ultra-Wide, f/2.2, 12mm, 123 deg FOV",
                                                                                "Telephoto Camera":  "10MP 3x Optical Zoom, f/2.4, 66mm, PDAF, OIS",
                                                                                "Cover Front Camera":  "10MP Cover Camera, f/2.2, 24mm",
                                                                                "Under Display Camera":  "4MP Under Display Camera, f/1.8 (concealed beneath inner screen pixels)"
@@ -673,7 +689,8 @@ const DEFAULT_CATALOG_DATA = {
                                                                           "Cellular":  "5G SA/NSA/Sub6/mmWave",
                                                                           "Wi-Fi":  "Wi-Fi 7 (802.11be)",
                                                                           "Bluetooth":  "Bluetooth 5.3",
-                                                                          "Special Hardware":  "Dual-rail zero-gap hinge tested for 200,000+ folds, S-Pen stylus support"
+                                                                          "Special Hardware":  "Dual-rail zero-gap hinge tested for 200,000+ folds, S-Pen stylus support",
+                                                                          "Ports":  "USB-C 3.2 Gen 1 (supports DisplayPort and Samsung DeX)"
                                                                       }
                                  },
                        "highlights":  [
@@ -723,7 +740,7 @@ const DEFAULT_CATALOG_DATA = {
                                      "Processor \u0026 Silicon":  {
                                                                       "SoC":  "Qualcomm Snapdragon 8 Gen 3 (4nm)",
                                                                       "CPU":  "Octa-core up to 3.3GHz with Trinity Engine performance optimization",
-                                                                      "GPU":  "Adreno 750 with Dual Cryo-velocity Vapor Chamber (9140mm² heat dissipation)",
+                                                                      "GPU":  "Adreno 750 with Dual Cryo-velocity Vapor Chamber (9140mm^2 heat dissipation)",
                                                                       "NPU":  "Qualcomm AI Engine with 98% faster generative text and image rendering"
                                                                   },
                                      "Memory \u0026 Storage":  {
@@ -733,10 +750,11 @@ const DEFAULT_CATALOG_DATA = {
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
                                                                                "Rear Main Camera":  "50MP Sony LYT-808 Dual-layer Transistor Pixel sensor, 1/1.4\", f/1.6, 23mm, OIS",
-                                                                               "Ultra-Wide Camera":  "48MP Sony IMX581, 1/2.0\", f/2.2, 14mm, 114° FOV, 3.5cm Macro mode",
+                                                                               "Ultra-Wide Camera":  "48MP Sony IMX581, 1/2.0\", f/2.2, 14mm, 114 deg FOV, 3.5cm Macro mode",
                                                                                "Periscope Telephoto":  "64MP OmniVision OV64B 3x Optical Periscope, 1/2.0\", f/2.6, 70mm, OIS, 120x digital",
                                                                                "Color Calibration":  "4th Generation Hasselblad Camera for Mobile Natural Color Solution",
-                                                                               "Front Selfie Camera":  "32MP Sony IMX615, f/2.4, 21mm, 4K30 video recording"
+                                                                               "Front Selfie Camera":  "32MP Sony IMX615, f/2.4, 21mm, 4K30 video recording",
+                                                                               "Telephoto Camera":  "64MP OmniVision OV64B 3x Optical Periscope, 1/2.0\", f/2.6, 70mm, OIS, 120x digital"
                                                                            },
                                      "Battery \u0026 Charging":  {
                                                                      "Battery Capacity":  "5400 mAh dual-cell monster battery",
@@ -795,7 +813,7 @@ const DEFAULT_CATALOG_DATA = {
                                                             "Resolution":  "3200 x 1440 pixels (WQHD+), 522 ppi",
                                                             "Refresh Rate":  "1-120Hz LTPO dynamic refresh rate, 240Hz touch sampling rate",
                                                             "Peak Brightness":  "3000 nits peak brightness, 68 billion colors (12-bit)",
-                                                            "Features":  "Dolby Vision, HDR10+, 1920Hz PWM dimming, TÃœV Rheinland eye comfort certified"
+                                                            "Features":  "Dolby Vision, HDR10+, 1920Hz PWM dimming, TUV Rheinland eye comfort certified"
                                                         },
                                      "Processor \u0026 Silicon":  {
                                                                       "SoC":  "Qualcomm Snapdragon 8 Gen 3 (4nm)",
@@ -810,12 +828,13 @@ const DEFAULT_CATALOG_DATA = {
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
                                                                                "Rear Main Camera":  "50MP 1-inch Sony LYT-900 sensor, f/1.63 - f/4.0 stepless variable aperture, 23mm, OIS",
-                                                                               "Ultra-Wide Camera":  "50MP Sony IMX858, f/1.8, 12mm, 122° FOV, 5cm macro shooting",
+                                                                               "Ultra-Wide Camera":  "50MP Sony IMX858, f/1.8, 12mm, 122 deg FOV, 5cm macro shooting",
                                                                                "Floating Telephoto":  "50MP Sony IMX858 3.2x Optical, f/1.8, 75mm, OIS, 10cm telephoto macro",
                                                                                "Periscope Telephoto":  "50MP Sony IMX858 5x Optical Periscope, f/2.5, 120mm, OIS, 30cm telephoto macro",
                                                                                "Optical Lenses":  "Leica VARIO-SUMMILUX 1:1.63-2.5/12-120 ASPH with multi-layer ALD coating",
                                                                                "Video Capability":  "8K video recording at 30fps on ALL 4 rear cameras, 4K at 120fps on main camera",
-                                                                               "Front Selfie Camera":  "32MP in-display selfie camera, f/2.0, 4K60 video"
+                                                                               "Front Selfie Camera":  "32MP in-display selfie camera, f/2.0, 4K60 video",
+                                                                               "Telephoto Camera":  "50MP 5x Periscope (f/2.5, 120mm, OIS) + 50MP 3.2x Floating Telephoto (f/1.8, 75mm, OIS)"
                                                                            },
                                      "Battery \u0026 Charging":  {
                                                                      "Battery Capacity":  "5000 mAh high-density silicon-carbon battery",
@@ -876,7 +895,7 @@ const DEFAULT_CATALOG_DATA = {
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
                                                                                "Rear Main Camera":  "48MP Exmor T for mobile (1/1.35-inch sensor, 24mm/48mm, f/1.9, OIS, Dual-PD AF)",
-                                                                               "Ultra-Wide Camera":  "12MP Exmor RS (16mm, f/2.2, 1/2.5-inch, 123° FOV, AF)",
+                                                                               "Ultra-Wide Camera":  "12MP Exmor RS (16mm, f/2.2, 1/2.5-inch, 123 deg FOV, AF)",
                                                                                "Telephoto Camera":  "12MP True Optical Continuous Zoom (85mm-170mm, f/2.3-f/3.5, 3.5x-7.1x optical zoom, OIS, Telephoto Macro at 4cm)",
                                                                                "Optical Zoom":  "3.5x to 7.1x continuous optical zoom mechanism",
                                                                                "Video Capability":  "4K HDR video up to 120 fps on all rear lenses with S-Cinetone for mobile",
@@ -942,7 +961,7 @@ const DEFAULT_CATALOG_DATA = {
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
                                                                                "Rear Main Camera":  "50MP Sony LYT-900 (1.0-inch sensor, 23mm, f/1.75, Gimbal OIS, Zeiss T* coating)",
-                                                                               "Ultra-Wide Camera":  "50MP (1/2.0-inch sensor, 14mm, f/2.2, 116° FOV, AF)",
+                                                                               "Ultra-Wide Camera":  "50MP (1/2.0-inch sensor, 14mm, f/2.2, 116 deg FOV, AF)",
                                                                                "Telephoto Camera":  "200MP Zeiss APO Periscope (1/1.4-inch Samsung HP9 sensor, 85mm, f/2.67, 3.7x optical zoom, CIPA 4.5 level OIS)",
                                                                                "Optical Zoom":  "3.7x optical zoom, up to 20x telephoto macro mode, up to 100x Zeiss hyper-zoom",
                                                                                "Video Capability":  "4K 120 fps portrait video, 4K 60 fps Dolby Vision HDR",
@@ -1008,7 +1027,7 @@ const DEFAULT_CATALOG_DATA = {
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
                                                                                "Rear Main Camera":  "50MP Sony LYT-900 (1.0-inch sensor, 23mm, f/1.8, OIS, 100% All-Pixel Omni-directional PDAF)",
-                                                                               "Ultra-Wide Camera":  "50MP Sony LYT-600 (14mm, f/2.0, 123° FOV, 4cm macro focus, PDAF)",
+                                                                               "Ultra-Wide Camera":  "50MP Sony LYT-600 (14mm, f/2.0, 123 deg FOV, 4cm macro focus, PDAF)",
                                                                                "Telephoto Camera":  "50MP Sony IMX890 (65mm, 2.8x optical periscope, f/2.6, OIS, 25cm close focus) + 50MP Sony IMX858 (135mm, 6x optical periscope, f/4.3, OIS, 35cm close focus)",
                                                                                "Optical Zoom":  "Quad-main system providing true optical zoom at 2.8x (65mm) and 6x (135mm)",
                                                                                "Video Capability":  "4K 60 fps Dolby Vision HDR across all four camera lenses",
@@ -1074,7 +1093,7 @@ const DEFAULT_CATALOG_DATA = {
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
                                                                                "Rear Main Camera":  "50MP Sony IMX890 (1/1.56-inch sensor, 24mm, f/1.88, OIS \u0026 EIS, Advanced HDR)",
-                                                                               "Ultra-Wide Camera":  "50MP Samsung JN1 (1/2.76-inch sensor, 14mm, f/2.2, 114° FOV, 4cm Macro mode)",
+                                                                               "Ultra-Wide Camera":  "50MP Samsung JN1 (1/2.76-inch sensor, 14mm, f/2.2, 114 deg FOV, 4cm Macro mode)",
                                                                                "Telephoto Camera":  "2x in-sensor lossless sensor crop on 50MP Sony IMX890",
                                                                                "Optical Zoom":  "2x lossless in-sensor crop; up to 10x digital zoom",
                                                                                "Video Capability":  "4K 60 fps with Action Mode stabilization, Live HDR, 1080p 240 fps slow motion",
@@ -1139,7 +1158,7 @@ const DEFAULT_CATALOG_DATA = {
                                                                    "Card Slot":  "No expandable storage"
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
-                                                                               "Rear Main Camera":  "50MP (1/1.95-inch sensor, 24mm, f/1.7, 0.8µm, OIS, Instant All-Pixel Focus)",
+                                                                               "Rear Main Camera":  "50MP (1/1.95-inch sensor, 24mm, f/1.7, 0.8um, OIS, Instant All-Pixel Focus)",
                                                                                "Ultra-Wide Camera":  "Replaced by specialized 2x Telephoto lens for portrait clarity",
                                                                                "Telephoto Camera":  "50MP 2x Telephoto (1/2.75-inch sensor, 48mm, f/2.0, 2x optical zoom, 30x AI super-zoom)",
                                                                                "Optical Zoom":  "2x optical zoom; 30x digital AI super-zoom",
@@ -1206,11 +1225,11 @@ const DEFAULT_CATALOG_DATA = {
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
                                                                                "Rear Main Camera":  "50MP Sony IMX890 (1/1.56-inch, 24mm, f/1.9, 6-Axis Hybrid Gimbal Stabilizer 3.0)",
-                                                                               "Ultra-Wide Camera":  "13MP free-form lens (12.7mm, f/2.2, 120° FOV)",
+                                                                               "Ultra-Wide Camera":  "13MP free-form lens (12.7mm, f/2.2, 120 deg FOV)",
                                                                                "Telephoto Camera":  "32MP (f/2.4, OIS, 3x optical zoom, 30x HyperClarity zoom)",
                                                                                "Optical Zoom":  "3x optical zoom; up to 30x digital zoom",
                                                                                "Video Capability":  "8K UHD at 24 fps, 4K at 60 fps with Super HyperSteady gimbal stabilization",
-                                                                               "Front Selfie Camera":  "32MP RGBW sensor with 90° wide field of view"
+                                                                               "Front Selfie Camera":  "32MP RGBW sensor with 90 deg wide field of view"
                                                                            },
                                      "Battery \u0026 Charging":  {
                                                                      "Battery Capacity":  "5500 mAh dual-cell battery",
@@ -1257,7 +1276,7 @@ const DEFAULT_CATALOG_DATA = {
                                                             "Resolution":  "2800 x 1280 pixels at 453 ppi (FHD+)",
                                                             "Refresh Rate":  "1-120Hz adaptive variable refresh rate",
                                                             "Peak Brightness":  "5000 nits HDR peak brightness (1600 nits global full-screen)",
-                                                            "Features":  "4320Hz ultra-high frequency PWM dimming, Dolby Vision, TÃœV Rheinland Circadian Friendly certified"
+                                                            "Features":  "4320Hz ultra-high frequency PWM dimming, Dolby Vision, TUV Rheinland Circadian Friendly certified"
                                                         },
                                      "Processor \u0026 Silicon":  {
                                                                       "SoC":  "Qualcomm Snapdragon 8 Gen 3 (4nm node)",
@@ -1272,7 +1291,7 @@ const DEFAULT_CATALOG_DATA = {
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
                                                                                "Rear Main Camera":  "50MP Falcon Camera (1/1.3-inch sensor, 27mm, f/1.4-f/2.0 self-adjusting variable aperture, OIS)",
-                                                                               "Ultra-Wide Camera":  "50MP (1/2.88-inch sensor, 13mm, f/2.0, 122° FOV, 2.5cm macro focus, AF)",
+                                                                               "Ultra-Wide Camera":  "50MP (1/2.88-inch sensor, 13mm, f/2.0, 122 deg FOV, 2.5cm macro focus, AF)",
                                                                                "Telephoto Camera":  "180MP Periscope Telephoto (1/1.49-inch sensor, 68mm, f/2.6, 2.5x optical zoom, OIS)",
                                                                                "Optical Zoom":  "2.5x optical zoom; 5x and 10x high-res in-sensor crop; up to 100x digital zoom",
                                                                                "Video Capability":  "4K 60 fps 10-bit Log video recording, AI Motion Sensing sport capture",
@@ -1404,7 +1423,7 @@ const DEFAULT_CATALOG_DATA = {
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
                                                                                "Rear Main Camera":  "50MP Sony LYT-808 (1/1.4-inch sensor, 24mm, f/1.69, OIS \u0026 EIS, 4K Dolby Vision)",
-                                                                               "Ultra-Wide Camera":  "8MP Sony IMX355 (16mm, f/2.2, 112° FOV)",
+                                                                               "Ultra-Wide Camera":  "8MP Sony IMX355 (16mm, f/2.2, 112 deg FOV)",
                                                                                "Telephoto Camera":  "50MP Samsung JN5 Portrait Telephoto (47mm, f/2.0, 2x optical zoom, 4x in-sensor lossless)",
                                                                                "Optical Zoom":  "2x optical zoom; 4x in-sensor lossless zoom",
                                                                                "Video Capability":  "4K 60 fps, Super Nightscape video algorithms",
@@ -1422,14 +1441,14 @@ const DEFAULT_CATALOG_DATA = {
                                                                           "Wi-Fi":  "Wi-Fi 7 (802.11be)",
                                                                           "Bluetooth":  "Bluetooth 5.4 with aptX HD, LHDC",
                                                                           "Ports":  "USB-C 2.0",
-                                                                          "Special Hardware":  "Iceberg dual-vapor chamber cooling system with 10,014 mm² cooling area"
+                                                                          "Special Hardware":  "Iceberg dual-vapor chamber cooling system with 10,014 mm^2 cooling area"
                                                                       }
                                  },
                        "highlights":  [
                                           "World\u0027s brightest smartphone screen reaching an unprecedented 6000-nit local peak brightness",
                                           "Flagship 50MP Sony LYT-808 primary sensor with OIS paired with dedicated 50MP portrait telephoto",
                                           "Blazing 120W SUPERVOOC charging replenishing 50% of the massive 5500mAh battery in only 10 minutes",
-                                          "Flagship-tier 10,014 mm² Iceberg Vapor Chamber delivering sustained gaming thermal stability"
+                                          "Flagship-tier 10,014 mm^2 Iceberg Vapor Chamber delivering sustained gaming thermal stability"
                                       ]
                    },
                    {
@@ -1470,7 +1489,7 @@ const DEFAULT_CATALOG_DATA = {
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
                                                                                "Rear Main Camera":  "48MP Fusion (26mm, f/1.6, Sensor-shift OIS, 100% Focus Pixels, 24MP \u0026 48MP super-high-resolution)",
-                                                                               "Ultra-Wide Camera":  "12MP Ultra-Wide (13mm, f/2.2, 120° FOV, Autofocus, Macro photography)",
+                                                                               "Ultra-Wide Camera":  "12MP Ultra-Wide (13mm, f/2.2, 120 deg FOV, Autofocus, Macro photography)",
                                                                                "Telephoto Camera":  "12MP 2x Telephoto enabled by 48MP quad-pixel sensor crop (52mm, f/1.6)",
                                                                                "Optical Zoom":  "2x optical zoom in, 2x optical zoom out, 4x optical zoom range",
                                                                                "Video Capability":  "4K Dolby Vision video up to 60 fps, Spatial Video recording at 1080p 30 fps",
@@ -1536,7 +1555,7 @@ const DEFAULT_CATALOG_DATA = {
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
                                                                                "Rear Main Camera":  "50MP (24mm, f/1.8, Dual Pixel PDAF, OIS)",
-                                                                               "Ultra-Wide Camera":  "12MP (13mm, f/2.2, 120° FOV)",
+                                                                               "Ultra-Wide Camera":  "12MP (13mm, f/2.2, 120 deg FOV)",
                                                                                "Telephoto Camera":  "10MP (67mm, f/2.4, PDAF, OIS, 3x optical zoom)",
                                                                                "Optical Zoom":  "3x optical zoom, 2x in-sensor optical quality crop, up to 30x Space Zoom",
                                                                                "Video Capability":  "8K video recording at 30 fps, 4K at 60 fps, Super Slow-Mo",
@@ -1601,12 +1620,12 @@ const DEFAULT_CATALOG_DATA = {
                                                                    "Card Slot":  "No expandable storage"
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
-                                                                               "Rear Main Camera":  "50MP Octa PD (1/1.31-inch sensor, 25mm, f/1.68, 1.2µm, OIS \u0026 EIS)",
-                                                                               "Ultra-Wide Camera":  "48MP Quad PD with Macro Focus (1/2.55-inch sensor, 123° FOV, f/1.7)",
+                                                                               "Rear Main Camera":  "50MP Octa PD (1/1.31-inch sensor, 25mm, f/1.68, 1.2um, OIS \u0026 EIS)",
+                                                                               "Ultra-Wide Camera":  "48MP Quad PD with Macro Focus (1/2.55-inch sensor, 123 deg FOV, f/1.7)",
                                                                                "Telephoto Camera":  "Super Res Zoom up to 8x with 2x optical-grade in-sensor crop",
                                                                                "Optical Zoom":  "2x lossless sensor crop, up to 8x Super Res digital zoom",
                                                                                "Video Capability":  "4K 60 fps, Audio Magic Eraser, Cinematic Blur, Night Sight Video",
-                                                                               "Front Selfie Camera":  "10.5MP Dual PD, f/2.2, autofocus, 95° ultrawide FOV"
+                                                                               "Front Selfie Camera":  "10.5MP Dual PD, f/2.2, autofocus, 95 deg ultrawide FOV"
                                                                            },
                                      "Battery \u0026 Charging":  {
                                                                      "Battery Capacity":  "4700 mAh battery",
@@ -1668,7 +1687,7 @@ const DEFAULT_CATALOG_DATA = {
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
                                                                                "Rear Main Camera":  "48MP Sony LYT-T808 Pixel Stacked sensor (1/1.43-inch, 24mm, f/1.7, OIS)",
-                                                                               "Ultra-Wide Camera":  "48MP (1/2-inch sensor, 14mm, f/2.2, 114° FOV, 3.5cm macro focus, AF)",
+                                                                               "Ultra-Wide Camera":  "48MP (1/2-inch sensor, 14mm, f/2.2, 114 deg FOV, 3.5cm macro focus, AF)",
                                                                                "Telephoto Camera":  "64MP OmniVision OV64B Periscope (1/2-inch sensor, 70mm, f/2.6, OIS, 3x optical, 6x in-sensor)",
                                                                                "Optical Zoom":  "3x optical zoom, 6x lossless in-sensor zoom, up to 120x Ultra Res zoom",
                                                                                "Video Capability":  "4K 60 fps Dolby Vision video recording on all camera modules",
@@ -1734,7 +1753,7 @@ const DEFAULT_CATALOG_DATA = {
                                                                },
                                      "Optics \u0026 Camera Architecture":  {
                                                                                "Rear Main Camera":  "50MP Light Fusion 900 sensor (1/1.31-inch, 23mm, f/1.6 Leica Summilux lens, HyperOIS)",
-                                                                               "Ultra-Wide Camera":  "50MP (1/2.76-inch, 14mm, f/2.2, 115° FOV)",
+                                                                               "Ultra-Wide Camera":  "50MP (1/2.76-inch, 14mm, f/2.2, 115 deg FOV)",
                                                                                "Telephoto Camera":  "50MP Leica 75mm Floating Telephoto (f/2.0, OIS, 3.2x optical zoom, 10cm telephoto macro)",
                                                                                "Optical Zoom":  "3.2x optical zoom, up to 60x digital zoom",
                                                                                "Video Capability":  "8K at 24 fps, 4K at 24/30/60 fps with 10-bit Dolby Vision HDR support",
@@ -2110,6 +2129,14 @@ document.addEventListener('alpine:init', () => {
         if (this.searchSortBy === 'name-desc') {
           return (b.model || '').localeCompare(a.model || '', undefined, { numeric: true, sensitivity: 'base' });
         }
+        if (this.searchSortBy === 'brand-asc') {
+          const brandComp = (a.brandName || '').localeCompare(b.brandName || '', undefined, { numeric: true, sensitivity: 'base' });
+          return brandComp !== 0 ? brandComp : (a.model || '').localeCompare(b.model || '', undefined, { numeric: true, sensitivity: 'base' });
+        }
+        if (this.searchSortBy === 'brand-desc') {
+          const brandComp = (b.brandName || '').localeCompare(a.brandName || '', undefined, { numeric: true, sensitivity: 'base' });
+          return brandComp !== 0 ? brandComp : (b.model || '').localeCompare(a.model || '', undefined, { numeric: true, sensitivity: 'base' });
+        }
         if (this.searchSortBy === 'year-desc') {
           const yearDiff = (b.releaseYear || 0) - (a.releaseYear || 0);
           return yearDiff !== 0 ? yearDiff : (b.releaseDate || '').localeCompare(a.releaseDate || '');
@@ -2130,6 +2157,14 @@ document.addEventListener('alpine:init', () => {
         }
         if (sortBy === 'name-desc') {
           return (b.model || '').localeCompare(a.model || '', undefined, { numeric: true, sensitivity: 'base' });
+        }
+        if (sortBy === 'brand-asc') {
+          const brandComp = (a.brandName || '').localeCompare(b.brandName || '', undefined, { numeric: true, sensitivity: 'base' });
+          return brandComp !== 0 ? brandComp : (a.model || '').localeCompare(b.model || '', undefined, { numeric: true, sensitivity: 'base' });
+        }
+        if (sortBy === 'brand-desc') {
+          const brandComp = (b.brandName || '').localeCompare(a.brandName || '', undefined, { numeric: true, sensitivity: 'base' });
+          return brandComp !== 0 ? brandComp : (b.model || '').localeCompare(a.model || '', undefined, { numeric: true, sensitivity: 'base' });
         }
         if (sortBy === 'year-desc') {
           const yearDiff = (b.releaseYear || 0) - (a.releaseYear || 0);
@@ -2381,7 +2416,7 @@ document.addEventListener('alpine:init', () => {
         },
         "Optics & Camera Architecture": {
           "Rear Main Camera": "50MP f/1.7 OIS",
-          "Ultra-Wide Camera": "50MP 120° FOV",
+          "Ultra-Wide Camera": "50MP 120 deg FOV",
           "Telephoto Camera": "50MP 3x Optical Zoom",
           "Front Selfie Camera": "32MP AF"
         },
