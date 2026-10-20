@@ -29,7 +29,7 @@ permissions:
 jobs:
   audit-legal:
     name: Audit NOTICE, Disclaimers & SPDX Headers
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v5

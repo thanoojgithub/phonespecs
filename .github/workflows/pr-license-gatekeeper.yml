@@ -27,7 +27,7 @@ permissions:
 jobs:
   gatekeeper:
     name: Apache 2.0 PR Verification & Auto-Labeler
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Code
         uses: actions/checkout@v5
