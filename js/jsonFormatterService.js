@@ -90,9 +90,51 @@ class JsonFormatterService {
       clean += char;
     }
 
-    text = clean;
+    // 2. Escape bad control characters inside string literals (0x00 to 0x1F, unescaped literal newlines/tabs)
+    let sanitizedChars = '';
+    inString = false;
+    stringChar = '';
+    isEscaped = false;
 
-    // 2. Normalize single quotes to double quotes (preserving escaped internal quotes)
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      const code = text.charCodeAt(i);
+
+      if (inString) {
+        if (isEscaped) {
+          sanitizedChars += char;
+          isEscaped = false;
+        } else if (char === '\\') {
+          sanitizedChars += char;
+          isEscaped = true;
+        } else if (char === stringChar) {
+          sanitizedChars += char;
+          inString = false;
+        } else if (char === '\n') {
+          sanitizedChars += '\\n';
+        } else if (char === '\r') {
+          sanitizedChars += '\\r';
+        } else if (char === '\t') {
+          sanitizedChars += '\\t';
+        } else if (code < 32) {
+          // General unescaped ASCII control character: escape as Unicode hex \u00xx
+          sanitizedChars += '\\u' + code.toString(16).padStart(4, '0');
+        } else {
+          sanitizedChars += char;
+        }
+        continue;
+      }
+
+      if (char === '"' || char === "'") {
+        inString = true;
+        stringChar = char;
+      }
+      sanitizedChars += char;
+    }
+
+    text = sanitizedChars;
+
+    // 3. Normalize single quotes to double quotes (preserving escaped internal quotes)
     // We walk character-by-character to strictly handle single quotes vs double quotes
     let quoteNormalized = '';
     inString = false;
@@ -132,11 +174,11 @@ class JsonFormatterService {
 
     text = quoteNormalized;
 
-    // 3. Fix unquoted property keys: e.g. { processor: "Snapdragon" } -> { "processor": "Snapdragon" }
+    // 4. Fix unquoted property keys: e.g. { processor: "Snapdragon" } -> { "processor": "Snapdragon" }
     // Match unquoted identifiers preceding a colon
     text = text.replace(/([{,]\s*)([a-zA-Z0-9_$-]+)(\s*:)/g, '$1"$2"$3');
 
-    // 4. Strip trailing commas before closing braces/brackets: e.g. { "a": 1, } -> { "a": 1 }
+    // 5. Strip trailing commas before closing braces/brackets: e.g. { "a": 1, } -> { "a": 1 }
     text = text.replace(/,\s*([}\]])/g, '$1');
 
     return text;
@@ -191,8 +233,8 @@ class JsonFormatterService {
         parsed = JSON.parse(repaired);
         neededRepair = true;
       } catch (repairErr) {
-        // Detailed error diagnostic
-        const diagnostics = JsonFormatterService.diagnoseSyntaxError(trimmed, initialErr);
+        // Detailed error diagnostic (use repair error if it provides better position on cleaned text)
+        const diagnostics = JsonFormatterService.diagnoseSyntaxError(trimmed, repairErr || initialErr);
         return {
           success: false,
           error: diagnostics.message,
