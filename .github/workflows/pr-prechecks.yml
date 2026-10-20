@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-name: PR Pre-Checks & Pure Native Stack Gatekeeper
+name: PR Pre-Checks Build Verification
 
 on:
   pull_request:
@@ -27,12 +27,12 @@ on:
       - main
 
 concurrency:
-  group: pr-checks-${{ github.workflow }}-${{ github.ref }}
+  group: pr-prechecks-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  pr_architectural_prechecks:
-    name: Pure Native Architecture & 100% Coverage Gate
+  pr_prechecks:
+    name: PR Code Pre-Checks & Compliance Verification
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
@@ -40,40 +40,61 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Headless CLI Test Engine
+      - name: Set up Headless Node CLI Test Engine
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Precheck 1 - Pure Native Stack & Zero-Framework Architecture Audit
-        run: node scripts/check_native_stack_compliance.js
-
-      - name: Precheck 2 - Modern HTML5, Semantic Elements & Mobile-First Viewport
+      - name: "Check 1: Modern HTML5, Mobile-First Viewport & SPA Structure"
         run: |
           node -e '
             const fs = require("fs");
             const html = fs.readFileSync("index.html", "utf8");
-            if (!html.includes("<!DOCTYPE html>")) throw new Error("Missing HTML5 doctype");
-            if (!html.includes("width=device-width")) throw new Error("Missing mobile-first viewport meta");
-            if (!html.includes("<header") || !html.includes("<main") || !html.includes("<nav")) throw new Error("Missing HTML5 semantic landmark elements");
-            console.log("✓ HTML5 Mobile-First structure passed");
+            if (!html.trim().startsWith("<!DOCTYPE html>")) {
+              throw new Error("HTML5 DOCTYPE missing at start of index.html");
+            }
+            if (!html.includes("width=device-width")) {
+              throw new Error("Mobile-first viewport meta tag missing in index.html");
+            }
+            if (!html.includes("<header") || !html.includes("<main") || !html.includes("<nav")) {
+              throw new Error("Modern HTML5 semantic elements (<header>, <main>, <nav>) missing");
+            }
+            console.log("✓ Check 1 Passed: Modern HTML5 Mobile-First SPA architecture verified.");
           '
 
-      - name: Precheck 3 - Native CSS Grid & Zero Tailwind/Bootstrap Audit
+      - name: "Check 2: Modern Native CSS Grid Layout & 0% Tailwind/Bootstrap"
         run: |
           node -e '
             const fs = require("fs");
             const css = fs.readFileSync("css/styles.css", "utf8");
-            if (!css.includes("display: grid") && !css.includes("display:grid")) throw new Error("Missing Native CSS Grid layout");
-            if (css.includes("@tailwind") || css.includes("tailwindcss")) throw new Error("Tailwind forbidden");
-            if (css.includes("bootstrap")) throw new Error("Bootstrap forbidden");
-            console.log("✓ Modern Native CSS Grid and 0% Tailwind/Bootstrap passed");
+            if (!css.includes("display: grid") && !css.includes("display:grid")) {
+              throw new Error("Native CSS Grid layout declaration missing from css/styles.css");
+            }
+            if (css.includes("@tailwind") || css.includes("--tw-") || css.includes("tailwindcss")) {
+              throw new Error("Tailwind CSS artifacts/classes detected! Only Native Vanilla CSS is permitted.");
+            }
+            if (css.includes("bootstrap") || css.includes(".col-md-") || css.includes(".container-fluid")) {
+              throw new Error("Bootstrap artifacts/classes detected! Only Native Vanilla CSS is permitted.");
+            }
+            console.log("✓ Check 2 Passed: Modern Native CSS Grid and 0% Tailwind/Bootstrap verified.");
           '
 
-      - name: Precheck 4 - Validate Catalog Data Integrity
-        run: node scripts/validate_catalog.js
+      - name: "Check 3: Zero External Third-Party Dependencies (100% Pure Native Stack)"
+        run: node scripts/check_native_stack_compliance.js
 
-      - name: Precheck 5 - Pure Native JS Test Suite Execution (0% external test frameworks)
+      - name: "Check 4: 100% Apache License 2.0 Compliance"
+        run: |
+          if [ ! -f "LICENSE" ]; then
+            echo "✗ Missing LICENSE file"
+            exit 1
+          fi
+          if [ ! -f "NOTICE" ]; then
+            echo "✗ Missing NOTICE file"
+            exit 1
+          fi
+          node scripts/check_license_compliance.js
+
+      - name: "Check 5: Pure Native JavaScript Test Suite Execution (0% external test frameworks)"
         run: |
           node scripts/test_catalog_crud.js
           node scripts/test_audit_service.js
@@ -81,10 +102,10 @@ jobs:
           node scripts/test_app_controller.js
           node scripts/run_all_tests.js
 
-      - name: Precheck 6 - Enforce 100% Code Coverage Policy for PR
+      - name: "Check 6: 100% Code Coverage Enforcement (Pure Native JS Tests Only)"
         env:
           BASE_REF: ${{ github.base_ref || 'main' }}
         run: node scripts/check_code_coverage.js
 
-      - name: Precheck 7 - Verify Apache License 2.0 Compliance
-        run: node scripts/check_license_compliance.js
+      - name: "Check 7: Validate Catalog JSON Integrity"
+        run: node scripts/validate_catalog.js
