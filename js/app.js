@@ -2957,7 +2957,6 @@ class PhoneSpecsApp {
 
           <div class="item-card-admin-bar ${this.adminMode ? '' : 'is-hidden'}" data-admin-bar="true">
             <button class="btn-card-edit" data-action="edit" data-phone-id="${phone.id}">Edit</button>
-            ${this.hasItemUndo(phone.id) ? `<button class="btn-card-undo" data-action="undo" data-phone-id="${phone.id}" title="Undo last edit for this phone (${this.getItemUndoCount(phone.id)} available)">↶ Undo</button>` : ''}
             <button class="btn-card-delete" data-action="delete" data-phone-id="${phone.id}">Delete</button>
           </div>
         </div>
@@ -2985,13 +2984,6 @@ class PhoneSpecsApp {
         if (editBtn) {
           e.stopPropagation();
           this.openEditModal(phone);
-          return;
-        }
-
-        const undoBtn = e.target.closest('[data-action="undo"]');
-        if (undoBtn) {
-          e.stopPropagation();
-          this.undoItemEdit(phoneId);
           return;
         }
 
@@ -3222,11 +3214,6 @@ class PhoneSpecsApp {
             <button id="btn-modal-edit" class="btn-modal-edit" title="Edit specifications">
               ✏ Edit Phone
             </button>
-            ${this.hasItemUndo(phone.id) ? `
-              <button id="btn-modal-undo" class="btn-modal-undo" title="Undo last edit for this phone (${this.getItemUndoCount(phone.id)} available)">
-                ↶ Undo Edit (${this.getItemUndoCount(phone.id)})
-              </button>
-            ` : ''}
           ` : ''}
         </div>
       </div>
@@ -3246,13 +3233,6 @@ class PhoneSpecsApp {
     if (editBtn) {
       editBtn.addEventListener('click', () => {
         this.openEditModal(phone);
-      });
-    }
-
-    const undoBtn = document.getElementById('btn-modal-undo');
-    if (undoBtn) {
-      undoBtn.addEventListener('click', () => {
-        this.undoItemEdit(phone.id);
       });
     }
   }

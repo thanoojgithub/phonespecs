@@ -102,12 +102,12 @@ A clean, high-performance, and modern mobile phone technical specifications cata
 PhoneSpecs includes a dedicated, robust audit trail stored in [`data/audit.json`](data/audit.json) that maintains version history independently from the primary catalog:
 - **Decoupled Audit File**: Keeps `catalog.json` lean for public visitors while maintaining a complete, versioned audit trail for admins.
 - **Self-Maintained 5 Recent Versions**: Whenever an admin saves changes to an existing phone, the prior state is automatically archived. Each phone maintains strictly its **5 most recent versions** (older revisions automatically roll off).
+- **Clean Card UI**: Phone cards keep a clean, focused admin interface (**Edit** and **Delete**) without cluttering card space.
 - **Select, Fetch & Update Workflow**:
   1. Open the **Edit Phone** modal for any device.
-  2. If the item has historical edits, the **Audit Versions (Max 5)** selector in the modal header displays available versions with timestamps (e.g. `v3 (Oct 20, 06:30 AM)`).
+  2. The **Audit Versions (Max 5)** selector in the modal header displays available versions with timestamps (e.g. `v3 (Oct 20, 06:30 AM)`).
   3. Select any desired historical version and click **Fetch Version** to instantly load that version's exact specs into the form.
   4. Make edits directly on top of the fetched version and click **Save Phone** to commit the new update.
-- **Single-Click Undo**: Quick `↶ Undo` buttons appear directly on phone cards and within the full specs view for instantaneous one-click rollbacks.
 
 ---
 
