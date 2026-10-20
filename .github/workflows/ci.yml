@@ -32,6 +32,11 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
+      - name: Set up Headless Node CLI Test Engine
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Validate Catalog JSON Integrity
         run: node scripts/validate_catalog.js
 

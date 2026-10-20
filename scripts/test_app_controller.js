@@ -73,9 +73,14 @@ global.document = {
   body: new MockElement('app-body', 'body')
 };
 
+global.history = {
+  replaceState: () => {},
+  pushState: () => {}
+};
+
 global.window = {
   addEventListener: () => {},
-  location: { hash: '#/all', reload: () => {} }
+  location: { hash: '#/all', pathname: '/', reload: () => {} }
 };
 
 const mockStorage = {};
