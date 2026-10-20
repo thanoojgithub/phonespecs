@@ -267,12 +267,18 @@ Every source code file in this repository contains the standard Apache 2.0 copyr
 - [`index.html`](index.html)
 - [`css/styles.css`](css/styles.css)
 - [`js/catalogService.js`](js/catalogService.js)
+- [`js/auditService.js`](js/auditService.js)
+- [`js/jsonFormatterService.js`](js/jsonFormatterService.js)
 - [`js/app.js`](js/app.js)
 - [`scripts/validate_catalog.js`](scripts/validate_catalog.js)
 - [`scripts/test_catalog_crud.js`](scripts/test_catalog_crud.js)
 - [`scripts/check_license_compliance.js`](scripts/check_license_compliance.js)
 
-Automated license compliance and test suites are enforced on every commit and pull request via the [Quality & License Compliance CI](.github/workflows/ci.yml) workflow.
+Automated Apache 2.0 license compliance and test suites are enforced on every commit and pull request via dedicated GitHub Actions workflows:
+- **[Apache 2.0 License Compliance Audit](.github/workflows/license-compliance.yml)**: Verifies presence and valid formatting of official Apache 2.0 text in `LICENSE`, `NOTICE`, and required copyright headers on newly pushed or modified code files.
+- **[Quality & License Compliance CI](.github/workflows/ci.yml)**: Executes pure Native JS CRUD test suites and catalog schema validation.
+- **[Contributor DCO & License Check](.github/workflows/contributor-dco.yml)**: Enforces Developer Certificate of Origin (DCO) commit sign-offs (`git commit -s`) on all incoming pull requests.
+- **[Apache 2.0 Notice & Trademark Audit](.github/workflows/apache-notice-audit.yml)**: Audits in-app web footer legal disclaimers, trademark non-endorsement language, and third-party attribution fidelity.
 
 ---
 
@@ -282,5 +288,6 @@ Automated license compliance and test suites are enforced on every commit and pu
 2. Ensure changes comply with the Apache 2.0 license:
    - Preserve or add the Apache 2.0 license header at the top of new source files.
    - Run `node scripts/validate_catalog.js` to ensure catalog integrity.
-3. Commit your changes: `git commit -m "Add new feature"`
+   - Sign off your commits using `git commit -s` (DCO requirement).
+3. Commit your changes: `git commit -s -m "Add new feature"`
 4. Push to your branch and submit a Pull Request.
