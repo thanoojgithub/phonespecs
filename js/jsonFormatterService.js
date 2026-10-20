@@ -122,15 +122,98 @@ class JsonFormatterService {
   }
 
   /**
-   * Sorts object keys recursively for canonical, organized readability
+   * Canonical Technical Specifications Template (Fixed Standard Ordering)
+   * Defines standard category and attribute key sequence for mobile specifications.
    */
-  static sortObjectKeys(obj) {
+  static DEFAULT_SPECS_TEMPLATE = Object.freeze({
+    "Design & Dimensions": {
+      "Dimensions": "163.0 x 77.6 x 8.25 mm",
+      "Weight": "220 g",
+      "Materials": "Aluminum frame with glass front & back",
+      "Protection": "IP68 dust/water resistant (up to 1.5m for 30 min)",
+      "Colors": "Midnight Black, Pearl White, Deep Navy"
+    },
+    "Display System": {
+      "Display Size": "6.7 inches AMOLED LTPO",
+      "Resolution": "2778 x 1284 pixels",
+      "Refresh Rate": "1-120Hz adaptive refresh",
+      "Peak Brightness": "2500 nits peak outdoor",
+      "Features": "HDR10+, Dolby Vision, Always-On Display"
+    },
+    "Processor & Silicon": {
+      "SoC": "Qualcomm Snapdragon 8 Gen 3 (4nm)",
+      "CPU": "Octa-core up to 3.3GHz",
+      "GPU": "Adreno 750",
+      "NPU": "Hexagon AI neural engine",
+      "Architecture": "64-bit"
+    },
+    "Memory & Storage": {
+      "RAM": "12GB LPDDR5X",
+      "Internal Storage": "256GB / 512GB UFS 4.0",
+      "Card Slot": "No expandable storage"
+    },
+    "Optics & Camera Architecture": {
+      "Rear Main Camera": "50MP f/1.7, 24mm, OIS, dual-pixel PDAF",
+      "Ultra-Wide Camera": "50MP f/2.2, 120 deg FOV, Macro mode",
+      "Telephoto Camera": "50MP f/2.6, 3x optical zoom, OIS",
+      "Optical Zoom": "3x optical zoom, 30x digital zoom",
+      "Video Capability": "4K 60 fps, 1080p 240 fps, HDR10+",
+      "Front Selfie Camera": "32MP f/2.4, AF, 4K video recording"
+    },
+    "Battery & Charging": {
+      "Battery Capacity": "5000 mAh lithium-ion",
+      "Wired Charging": "80W Wired Fast Charging (1-100% in 30 min)",
+      "Wireless Charging": "50W Wireless Fast Charging",
+      "Battery Life": "Up to 28 hours video playback"
+    },
+    "Connectivity & Software": {
+      "Operating System": "Android 15 / Latest Platform OS",
+      "Cellular": "5G SA/NSA, 4G LTE-A with 4x4 MIMO",
+      "Wi-Fi": "Wi-Fi 7 (802.11be), tri-band",
+      "Bluetooth": "Bluetooth 5.4, A2DP, LE",
+      "Ports": "USB-C 3.2 Gen 2, DisplayPort 1.4",
+      "Special Hardware": "In-display ultrasonic fingerprint sensor, Stereo speakers, NFC"
+    }
+  });
+
+  /**
+   * Sorts object keys recursively for canonical, organized readability.
+   * If a template is provided, orders keys by template order first, followed by alphabetical for new/custom keys.
+   *
+   * @param {Object} obj Target object to sort
+   * @param {Object|null} template Reference ordering template
+   */
+  static sortObjectKeys(obj, template = null) {
     if (obj === null || typeof obj !== 'object') return obj;
     if (Array.isArray(obj)) {
-      return obj.map(item => JsonFormatterService.sortObjectKeys(item));
+      return obj.map(item => JsonFormatterService.sortObjectKeys(item, template));
     }
+
     const sorted = {};
-    const keys = Object.keys(obj).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+    const objKeys = Object.keys(obj);
+
+    if (template && typeof template === 'object' && !Array.isArray(template)) {
+      const templateKeys = Object.keys(template);
+      // Keys defined in template retain their exact template sequence
+      const matchedKeys = templateKeys.filter(k => objKeys.includes(k));
+      // Remaining custom keys not in template are sorted alphabetically
+      const remainingKeys = objKeys
+        .filter(k => !templateKeys.includes(k))
+        .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+
+      const orderedKeys = [...matchedKeys, ...remainingKeys];
+
+      for (const key of orderedKeys) {
+        const subTemplate = (template[key] && typeof template[key] === 'object' && !Array.isArray(template[key]))
+          ? template[key]
+          : null;
+        sorted[key] = JsonFormatterService.sortObjectKeys(obj[key], subTemplate);
+      }
+      return sorted;
+    }
+
+    // Default alphabetical sort if no template provided
+    const keys = objKeys.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
     for (const key of keys) {
       sorted[key] = JsonFormatterService.sortObjectKeys(obj[key]);
     }
@@ -145,9 +228,12 @@ class JsonFormatterService {
    *
    * @param {string} rawInput
    * @param {Object} options
-   * @returns {{ success: boolean, formatted?: string, parsed?: any, error?: string, line?: number, col?: number }}
+   * @param {number} [options.indent=2]
+   * @param {boolean} [options.sortKeys=false]
+   * @param {Object|null} [options.template=null]
+   * @returns {{ success: boolean, formatted?: string, parsed?: any, error?: string, line?: number, col?: number, repaired?: boolean }}
    */
-  static format(rawInput, { indent = 2, sortKeys = false } = {}) {
+  static format(rawInput, { indent = 2, sortKeys = false, template = null } = {}) {
     if (!rawInput || !rawInput.trim()) {
       return {
         success: false,
@@ -191,7 +277,8 @@ class JsonFormatterService {
     }
 
     if (sortKeys) {
-      parsed = JsonFormatterService.sortObjectKeys(parsed);
+      const activeTemplate = template || JsonFormatterService.DEFAULT_SPECS_TEMPLATE;
+      parsed = JsonFormatterService.sortObjectKeys(parsed, activeTemplate);
     }
 
     const formatted = JSON.stringify(parsed, null, indent);

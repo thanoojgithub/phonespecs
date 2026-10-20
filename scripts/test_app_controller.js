@@ -179,6 +179,7 @@ assert(!app.dom.formSpecsJson.value.includes('\n'), 'minifyFormSpecs compresses 
 console.log('\n--- 7. Edit Modal, Versions & Safe Commit ---');
 app.openAddModal();
 assert(app.showFormModal === true, 'openAddModal opens modal');
+assert(app.dom.formSpecsJson.value.includes('Design & Dimensions'), 'openAddModal loads starter specs with Technical Specifications Template structure');
 app.closeFormModal();
 assert(app.showFormModal === false, 'closeFormModal closes modal');
 
@@ -188,13 +189,50 @@ assert(app.dom.formPhoneId.value === 'phone-test', 'openEditModal populates form
 
 // Test savePhone
 app.dom.formModel.value = 'Test Phone Pro';
-app.dom.formSpecsJson.value = '{"Display":{"Size":"6.7 inch"}}';
+app.dom.formSpecsJson.value = '{"Optics & Camera Architecture":{"Rear Main Camera":"50MP"},"Design & Dimensions":{"Weight":"200g"}}';
 app.dom.formBrandId.value = 'apple';
 app.dom.formSeriesId.value = 'iphone-pro';
 app.dom.formReleaseYear.value = '2025';
 
 app.savePhone();
 assert(app.showFormModal === false, 'savePhone saves record and closes modal');
+const savedPhone = app.catalogService.getPhoneById('phone-test');
+assert(savedPhone !== null, 'Saved phone is in catalog');
+const savedCategories = Object.keys(savedPhone.specs);
+assert(savedCategories[0] === 'Design & Dimensions', 'savePhone automatically sorts specs categories by Technical Specifications Template');
+assert(savedCategories[1] === 'Optics & Camera Architecture', 'Subsequent categories follow template ordering');
+
+// 8. Technical Specifications Template Management (Admin-Only)
+console.log('\n--- 8. Technical Specifications Template Management (Admin-Only) ---');
+// Verify non-admin blocked
+app.adminMode = false;
+app.openTemplateModal();
+assert(app.showTemplateModal === false, 'Non-admin cannot open Technical Specifications Template modal');
+
+// Verify admin access
+app.adminMode = true;
+app.openTemplateModal();
+assert(app.showTemplateModal === true, 'Admin can open Technical Specifications Template modal');
+assert(app.dom.templateSpecsJson.value.includes('Design & Dimensions'), 'Template modal loads current active master template');
+
+// Test format template JSON
+app.dom.templateSpecsJson.value = '{ "Display System": { "Size": "6.8 inch" } }';
+app.formatTemplateJson();
+assert(app.dom.templateSpecsJson.value.includes('  "Display System": {'), 'formatTemplateJson formats with 2-space indentation');
+
+// Test saving updated template
+app.saveMasterTemplate();
+assert(app.showTemplateModal === false, 'saveMasterTemplate saves and closes template modal');
+assert(app.specsTemplate['Display System'] !== undefined, 'Master specsTemplate updated in controller');
+
+// Test reset to factory default
+global.confirm = () => true;
+app.resetTemplateToFactoryDefault();
+assert(app.dom.templateSpecsJson.value.includes('Design & Dimensions'), 'resetTemplateToFactoryDefault restores factory baseline');
+app.saveMasterTemplate();
+
+app.closeAllModals();
+assert(app.showTemplateModal === false, 'closeAllModals closes template modal');
 
 console.log(`\n====================================================`);
 console.log(` PhoneSpecsApp Tests: Total: ${totalTests} | Passed: ${passedTests} | Failed: ${failedTests}`);

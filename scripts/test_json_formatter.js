@@ -92,19 +92,47 @@ const controlRes = JsonFormatterService.format(rawControlChar);
 assert(controlRes.success === true, 'Auto-escapes ASCII control codes (< 32) into unicode escape format');
 
 // 4. Recursive Key Sorting Tests
-console.log('\n--- 4. Recursive Key Sorting ---');
+console.log('\n--- 4. Recursive Key Sorting (Technical Specifications Template Order) ---');
 const unsorted = {
-  "Optics": { "Z_Telephoto": "5x", "A_Main": "48MP" },
-  "Battery": { "Capacity": "5000 mAh" },
-  "Display": { "Size": "6.7 inch" }
+  "Optics & Camera Architecture": { "Optical Zoom": "5x", "Rear Main Camera": "48MP" },
+  "Connectivity & Software": { "Operating System": "Android 15" },
+  "Display System": { "Refresh Rate": "120Hz", "Display Size": "6.7 inch" },
+  "Design & Dimensions": { "Weight": "210g", "Dimensions": "160 x 75 mm" }
 };
 
-const sortedRes = JsonFormatterService.format(JSON.stringify(unsorted), { sortKeys: true });
-assert(sortedRes.success === true, 'Formats with sortKeys=true');
-const sortedKeys = Object.keys(sortedRes.parsed);
-assert(sortedKeys[0] === 'Battery' && sortedKeys[1] === 'Display' && sortedKeys[2] === 'Optics', 'Sorts top-level category keys alphabetically');
-const innerKeys = Object.keys(sortedRes.parsed['Optics']);
-assert(innerKeys[0] === 'A_Main' && innerKeys[1] === 'Z_Telephoto', 'Sorts nested specification keys alphabetically');
+// Sort using active Technical Specifications Template (Fixed Standard Order)
+const sortedTemplateRes = JsonFormatterService.format(JSON.stringify(unsorted), {
+  sortKeys: true,
+  template: JsonFormatterService.DEFAULT_SPECS_TEMPLATE
+});
+assert(sortedTemplateRes.success === true, 'Formats with sortKeys=true and template');
+const sortedTemplateCategories = Object.keys(sortedTemplateRes.parsed);
+assert(sortedTemplateCategories[0] === 'Design & Dimensions', 'First category is Design & Dimensions per Template');
+assert(sortedTemplateCategories[1] === 'Display System', 'Second category is Display System per Template');
+assert(sortedTemplateCategories[2] === 'Optics & Camera Architecture', 'Third category is Optics & Camera Architecture per Template');
+assert(sortedTemplateCategories[3] === 'Connectivity & Software', 'Fourth category is Connectivity & Software per Template');
+
+// Inner spec keys follow template order
+const displayKeys = Object.keys(sortedTemplateRes.parsed['Display System']);
+assert(displayKeys[0] === 'Display Size', 'Display Size precedes Refresh Rate per Template');
+assert(displayKeys[1] === 'Refresh Rate', 'Refresh Rate follows Display Size per Template');
+
+// Custom / unknown category falls back to alphabetical after template items
+const withCustomCategory = {
+  "Custom Sensors": { "LiDAR": "Yes" },
+  "Design & Dimensions": { "Weight": "200g" }
+};
+const customSortedRes = JsonFormatterService.format(JSON.stringify(withCustomCategory), {
+  sortKeys: true,
+  template: JsonFormatterService.DEFAULT_SPECS_TEMPLATE
+});
+const customKeys = Object.keys(customSortedRes.parsed);
+assert(customKeys[0] === 'Design & Dimensions', 'Template categories come first');
+assert(customKeys[1] === 'Custom Sensors', 'Custom / non-template categories follow gracefully');
+
+// Pure alphabetical fallback if template is null
+const pureAlphaRes = JsonFormatterService.sortObjectKeys({ "Z": 1, "A": 2 }, null);
+assert(Object.keys(pureAlphaRes)[0] === 'A' && Object.keys(pureAlphaRes)[1] === 'Z', 'Pure alphabetical fallback when template is null');
 
 // 5. Minification Tests
 console.log('\n--- 5. Minification ---');

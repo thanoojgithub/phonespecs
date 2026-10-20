@@ -1787,6 +1787,7 @@ const DEFAULT_CATALOG_DATA = {
 const STORAGE_KEY = 'phonespecs_catalog_v3';
 const ADMIN_PASS_KEY = 'phonespecs_admin_session_active';
 const AUDIT_STORAGE_KEY = 'phonespecs_catalog_audit_v1';
+const SPECS_TEMPLATE_STORAGE_KEY = 'phonespecs_specs_template_v1';
 const MAX_ITEM_VERSIONS = 5;
 
 /**
@@ -1812,8 +1813,12 @@ class PhoneSpecsApp {
 
     this.adminMode = false;
     this.showFormModal = false;
+    this.showTemplateModal = false;
     this.formTitle = 'Add New Mobile Phone';
     this.activeEditHistoricalVersion = null; // Tracks if currently modifying on top of a fetched version
+
+    // Technical Specifications Template (Admin Maintained)
+    this.specsTemplate = this.loadSpecsTemplate();
 
     // Robust Audit Trail & Versioning Service: Strictly maintains 5 recent versions for each catalog item
     this.auditService = new AuditService();
@@ -1826,7 +1831,7 @@ class PhoneSpecsApp {
   }
 
   get isAnyModalOpen() {
-    return Boolean(this.showDetailsModal || this.showCompareModal || this.showFormModal);
+    return Boolean(this.showDetailsModal || this.showCompareModal || this.showFormModal || this.showTemplateModal);
   }
 
   async init() {
@@ -1860,6 +1865,7 @@ class PhoneSpecsApp {
 
     this.dom.adminBanner = document.getElementById('admin-banner');
     this.dom.btnAdminAdd = document.getElementById('btn-admin-add');
+    this.dom.btnAdminTemplate = document.getElementById('btn-admin-template');
     this.dom.btnAdminExport = document.getElementById('btn-admin-export');
     this.dom.btnAdminExportAudit = document.getElementById('btn-admin-export-audit');
     this.dom.btnAdminImportAudit = document.getElementById('btn-admin-import-audit');
@@ -1928,6 +1934,16 @@ class PhoneSpecsApp {
     this.dom.formVersionActiveText = document.getElementById('form-version-active-text');
     this.dom.btnRevertActiveVersion = document.getElementById('btn-revert-active-version');
 
+    // Technical Specifications Template Modal Elements
+    this.dom.templateModal = document.getElementById('template-modal');
+    this.dom.templateModalCard = document.getElementById('template-modal-card');
+    this.dom.btnCloseTemplateModal = document.getElementById('btn-close-template-modal');
+    this.dom.btnCancelTemplate = document.getElementById('btn-cancel-template');
+    this.dom.templateSpecsJson = document.getElementById('template-specs-json');
+    this.dom.btnTemplateFormat = document.getElementById('btn-template-format');
+    this.dom.btnTemplateResetDefault = document.getElementById('btn-template-reset-default');
+    this.dom.btnSaveTemplate = document.getElementById('btn-save-template');
+
     this.dom.toastContainer = document.getElementById('toast-container');
   }
 
@@ -1937,6 +1953,9 @@ class PhoneSpecsApp {
 
     this.dom.btnAdminToggle.addEventListener('click', () => this.toggleAdmin());
     this.dom.btnAdminAdd.addEventListener('click', () => this.openAddModal());
+    if (this.dom.btnAdminTemplate) {
+      this.dom.btnAdminTemplate.addEventListener('click', () => this.openTemplateModal());
+    }
     this.dom.btnAdminExport.addEventListener('click', () => this.exportCatalogJson());
     if (this.dom.btnAdminExportAudit) {
       this.dom.btnAdminExportAudit.addEventListener('click', () => this.exportAuditJson());
@@ -2021,6 +2040,28 @@ class PhoneSpecsApp {
       e.preventDefault();
       this.savePhone();
     });
+
+    // Technical Specifications Template Modal Events
+    if (this.dom.btnCloseTemplateModal) {
+      this.dom.btnCloseTemplateModal.addEventListener('click', () => this.closeTemplateModal());
+    }
+    if (this.dom.btnCancelTemplate) {
+      this.dom.btnCancelTemplate.addEventListener('click', () => this.closeTemplateModal());
+    }
+    if (this.dom.templateModal) {
+      this.dom.templateModal.addEventListener('click', (e) => {
+        if (e.target === this.dom.templateModal) this.closeTemplateModal();
+      });
+    }
+    if (this.dom.btnTemplateFormat) {
+      this.dom.btnTemplateFormat.addEventListener('click', () => this.formatTemplateJson());
+    }
+    if (this.dom.btnTemplateResetDefault) {
+      this.dom.btnTemplateResetDefault.addEventListener('click', () => this.resetTemplateToFactoryDefault());
+    }
+    if (this.dom.btnSaveTemplate) {
+      this.dom.btnSaveTemplate.addEventListener('click', () => this.saveMasterTemplate());
+    }
   }
 
   async loadCatalogData() {
@@ -2202,6 +2243,7 @@ class PhoneSpecsApp {
     this.showDetailsModal = false;
     this.showCompareModal = false;
     this.showFormModal = false;
+    this.showTemplateModal = false;
     this.activePhone = null;
     this.render();
   }
@@ -2231,6 +2273,7 @@ class PhoneSpecsApp {
       const brandObj = this.catalogService.brands.find(b => b.id === defaultBrand);
       const defaultSeries = brandObj?.series?.[0]?.id || '';
 
+      const starterSpecs = JsonFormatterService.sortObjectKeys(this.specsTemplate, this.specsTemplate);
       this.populateFormFields({
         id: '',
         brandId: defaultBrand,
@@ -2239,24 +2282,7 @@ class PhoneSpecsApp {
         tagline: '',
         releaseYear: new Date().getFullYear(),
         releaseDate: `${new Date().getFullYear()}-01`,
-        specsRawJson: JSON.stringify({
-          "Display System": {
-            "Display Size": "6.7\" AMOLED 120Hz",
-            "Resolution": "2778 x 1284 pixels"
-          },
-          "Processor & Silicon": {
-            "SoC": "Snapdragon 8 Gen 3 (4nm)",
-            "RAM": "12GB RAM"
-          },
-          "Optics & Camera Architecture": {
-            "Rear Main Camera": "50MP OIS",
-            "Front Selfie Camera": "32MP"
-          },
-          "Battery & Charging": {
-            "Battery Capacity": "5000 mAh",
-            "Wired Charging": "65W Wired Fast Charging"
-          }
-        }, null, 2),
+        specsRawJson: JSON.stringify(starterSpecs, null, 2),
         highlightsRaw: "Feature Specification 1\nFeature Specification 2"
       });
 
@@ -2278,6 +2304,8 @@ class PhoneSpecsApp {
 
     try {
       this.formTitle = `Edit Phone: ${phone.model || 'Device'}`;
+      // Sort phone specs by active Technical Specifications Template for consistent presentation
+      const sortedSpecs = JsonFormatterService.sortObjectKeys(phone.specs || {}, this.specsTemplate);
       this.populateFormFields({
         id: phone.id || '',
         brandId: phone.brandId || (this.catalogService.brands[0]?.id || 'apple'),
@@ -2286,7 +2314,7 @@ class PhoneSpecsApp {
         tagline: phone.tagline || '',
         releaseYear: phone.releaseYear || new Date().getFullYear(),
         releaseDate: phone.releaseDate || `${phone.releaseYear || new Date().getFullYear()}-01`,
-        specsRawJson: JSON.stringify(phone.specs || {}, null, 2),
+        specsRawJson: JSON.stringify(sortedSpecs, null, 2),
         highlightsRaw: Array.isArray(phone.highlights) ? phone.highlights.join('\n') : ''
       });
 
@@ -2461,16 +2489,116 @@ class PhoneSpecsApp {
     this.updateFormSeriesDropdown(selectedBrandId, defaultSeries);
   }
 
+  /**
+   * Technical Specifications Template Management (Admin-Controlled)
+   */
+  loadSpecsTemplate() {
+    try {
+      const stored = localStorage.getItem(SPECS_TEMPLATE_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && Object.keys(parsed).length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('[PhoneSpecsApp] Failed loading custom specs template:', e);
+    }
+    return JSON.parse(JSON.stringify(JsonFormatterService.DEFAULT_SPECS_TEMPLATE));
+  }
+
+  saveSpecsTemplate(templateObj) {
+    try {
+      this.specsTemplate = templateObj;
+      localStorage.setItem(SPECS_TEMPLATE_STORAGE_KEY, JSON.stringify(templateObj, null, 2));
+      return true;
+    } catch (e) {
+      console.error('[PhoneSpecsApp] Failed saving specs template:', e);
+      return false;
+    }
+  }
+
+  openTemplateModal() {
+    if (!this.adminMode) {
+      this.showToast('Only Admin can maintain the Technical Specifications Template.', 'error');
+      return;
+    }
+
+    if (this.dom.templateSpecsJson) {
+      this.dom.templateSpecsJson.value = JSON.stringify(this.specsTemplate, null, 2);
+    }
+    this.showTemplateModal = true;
+    this.render();
+  }
+
+  closeTemplateModal() {
+    this.showTemplateModal = false;
+    this.render();
+  }
+
+  formatTemplateJson() {
+    if (!this.dom.templateSpecsJson) return;
+    const raw = this.dom.templateSpecsJson.value;
+    const result = JsonFormatterService.format(raw, { indent: 2, sortKeys: false });
+    if (result.success) {
+      this.dom.templateSpecsJson.value = result.formatted;
+      this.showToast('Template JSON formatted successfully.', 'success');
+    } else {
+      this.showToast(`Template error: ${result.error}`, 'error');
+    }
+  }
+
+  resetTemplateToFactoryDefault() {
+    if (!this.dom.templateSpecsJson) return;
+    if (confirm('Reset Technical Specifications Template to factory baseline schema?')) {
+      const factory = JSON.parse(JSON.stringify(JsonFormatterService.DEFAULT_SPECS_TEMPLATE));
+      this.dom.templateSpecsJson.value = JSON.stringify(factory, null, 2);
+      this.showToast('Template reset to factory default. Click "Save Master Template" to commit.', 'info');
+    }
+  }
+
+  saveMasterTemplate() {
+    if (!this.adminMode) {
+      this.showToast('Only Admin can maintain the Technical Specifications Template.', 'error');
+      return;
+    }
+
+    if (!this.dom.templateSpecsJson) return;
+    const raw = this.dom.templateSpecsJson.value;
+    const result = JsonFormatterService.format(raw, { indent: 2 });
+    if (!result.success) {
+      this.showToast(`Invalid Template JSON: ${result.error}`, 'error');
+      return;
+    }
+
+    const templateObj = result.parsed;
+    if (typeof templateObj !== 'object' || templateObj === null || Array.isArray(templateObj) || Object.keys(templateObj).length === 0) {
+      this.showToast('Template must be a non-empty JSON object mapping categories to attributes.', 'error');
+      return;
+    }
+
+    if (this.saveSpecsTemplate(templateObj)) {
+      this.showToast('Master Technical Specifications Template saved and active for all models!', 'success');
+      this.closeTemplateModal();
+    } else {
+      this.showToast('Failed to save template to local storage.', 'error');
+    }
+  }
+
   formatFormSpecs(sortKeys = false) {
     const raw = this.dom.formSpecsJson.value;
     const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-    const result = JsonFormatterService.format(raw, { indent: 2, sortKeys });
+    const result = JsonFormatterService.format(raw, {
+      indent: 2,
+      sortKeys,
+      template: this.specsTemplate
+    });
     const elapsed = Math.round(((typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now()) - t0) * 100) / 100;
 
     if (result.success) {
       this.dom.formSpecsJson.value = result.formatted;
       const repairMsg = result.repaired ? ' (lenient syntax repaired)' : '';
-      const sortMsg = sortKeys ? ' & keys sorted' : '';
+      const sortMsg = sortKeys ? ' & keys sorted by Technical Specifications Template' : '';
       this.showToast(`JSON formatted${sortMsg}${repairMsg} in ${elapsed}ms.`, 'success');
     } else {
       const errorMsg = result.error || 'Invalid JSON syntax.';
@@ -2508,43 +2636,9 @@ class PhoneSpecsApp {
   }
 
   resetFormSpecsTemplate() {
-    const template = {
-      "Display System": {
-        "Display Size": "6.7\" AMOLED 120Hz",
-        "Resolution": "2778 x 1284 pixels",
-        "Peak Brightness": "2500 nits",
-        "Refresh Rate": "120Hz LTPO"
-      },
-      "Processor & Silicon": {
-        "SoC": "Qualcomm Snapdragon 8 Gen 3 (4nm)",
-        "CPU": "Octa-core up to 3.3GHz",
-        "GPU": "Adreno 750",
-        "Architecture": "64-bit"
-      },
-      "Memory & Storage": {
-        "RAM": "12GB LPDDR5X",
-        "Internal Storage": "256GB / 512GB UFS 4.0"
-      },
-      "Optics & Camera Architecture": {
-        "Rear Main Camera": "50MP f/1.7 OIS",
-        "Ultra-Wide Camera": "50MP 120 deg FOV",
-        "Telephoto Camera": "50MP 3x Optical Zoom",
-        "Front Selfie Camera": "32MP AF"
-      },
-      "Battery & Charging": {
-        "Battery Capacity": "5000 mAh",
-        "Wired Charging": "80W Wired Fast Charging",
-        "Wireless Charging": "50W Wireless"
-      },
-      "Connectivity & Software": {
-        "Operating System": "Android 15",
-        "Network Bands": "5G SA/NSA, 4G LTE",
-        "Wi-Fi & Bluetooth": "Wi-Fi 7, Bluetooth 5.4",
-        "Port": "USB-C 3.2"
-      }
-    };
-    this.dom.formSpecsJson.value = JSON.stringify(template, null, 2);
-    this.showToast('Starter specifications template loaded.', 'info');
+    const sorted = JsonFormatterService.sortObjectKeys(this.specsTemplate, this.specsTemplate);
+    this.dom.formSpecsJson.value = JSON.stringify(sorted, null, 2);
+    this.showToast('Active Technical Specifications Template loaded.', 'info');
   }
 
   async savePhone() {
@@ -2577,6 +2671,9 @@ class PhoneSpecsApp {
         this.showToast('Specifications must be a valid JSON object mapping category names to spec details.', 'error');
         return;
       }
+
+      // Enforce Technical Specifications Template key sorting on all saves
+      parsedSpecs = JsonFormatterService.sortObjectKeys(parsedSpecs, this.specsTemplate);
 
       const rawHighlights = this.dom.formHighlights.value
         .split('\n')
@@ -2934,7 +3031,16 @@ class PhoneSpecsApp {
       this.dom.formModal.classList.add('is-hidden');
     }
 
-    // 15. Render Toasts
+    // 15. Render Specifications Template Modal Visibility
+    if (this.dom.templateModal) {
+      if (this.showTemplateModal) {
+        this.dom.templateModal.classList.remove('is-hidden');
+      } else {
+        this.dom.templateModal.classList.add('is-hidden');
+      }
+    }
+
+    // 16. Render Toasts
     this.renderToasts();
   }
 
