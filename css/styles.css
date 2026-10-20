@@ -633,22 +633,22 @@ input, select, textarea {
   align-items: center;
   justify-content: flex-end;
   width: auto;
-  max-width: fit-content;
+  max-width: 96px;
   flex-shrink: 0;
 }
 
-/* Touch-optimized Select Dropdown: STRICTLY compact and limited to content width */
+/* Touch-optimized Select Dropdown: STRICTLY compact, small in size across all devices */
 .filter-select {
   width: auto;
-  max-width: fit-content;
-  min-height: 36px;
-  height: 36px;
-  padding: 0.35rem 1.6rem 0.35rem 0.75rem;
+  max-width: 96px;
+  min-height: 32px;
+  height: 32px;
+  padding: 0.2rem 1.35rem 0.2rem 0.55rem;
   background-color: #ffffff;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e11d48' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23e11d48' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 0.55rem center;
-  background-size: 9px;
+  background-position: right 0.45rem center;
+  background-size: 8px;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -656,11 +656,13 @@ input, select, textarea {
   outline: none;
   border-radius: var(--radius-full);
   color: #0f172a;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
   touch-action: manipulation;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   transition: border-color 0.18s ease, color 0.18s ease;
 }
@@ -757,7 +759,7 @@ input, select, textarea {
 .catalog-heading-row .filter-group,
 .catalog-heading-row .filter-select {
   width: auto;
-  max-width: fit-content;
+  max-width: 96px;
 }
 
 /* ==========================================================================
@@ -1753,7 +1755,7 @@ input, select, textarea {
 
   .filter-select {
     width: auto;
-    max-width: fit-content;
+    max-width: 96px;
   }
 
   .catalog-heading-row {
@@ -1764,7 +1766,7 @@ input, select, textarea {
   .catalog-heading-row .filter-group,
   .catalog-heading-row .filter-select {
     width: auto;
-    max-width: fit-content;
+    max-width: 96px;
   }
 
   /* 2 Columns on Phablets */
