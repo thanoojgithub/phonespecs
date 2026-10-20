@@ -14,6 +14,19 @@
  * limitations under the License.
  */
 
+// Node.js environment support for test runner and CLI tools
+if (typeof require !== 'undefined') {
+  if (typeof CatalogService === 'undefined') {
+    try { global.CatalogService = require('./catalogService').CatalogService; } catch (e) {}
+  }
+  if (typeof AuditService === 'undefined') {
+    try { global.AuditService = require('./auditService').AuditService; } catch (e) {}
+  }
+  if (typeof JsonFormatterService === 'undefined') {
+    try { global.JsonFormatterService = require('./jsonFormatterService').JsonFormatterService; } catch (e) {}
+  }
+}
+
 // Initial fallback data for direct double-click (file:// protocol)
 // Ensures content always loads even without a local web server!
 const DEFAULT_CATALOG_DATA = {
@@ -3492,10 +3505,7 @@ class PhoneSpecsApp {
   }
 }
 
-const { CatalogService } = require('./catalogService');
-const { AuditService } = require('./auditService');
-const { JsonFormatterService } = require('./jsonFormatterService');
-
+// Instantiate and initialize when DOM is ready
 if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
   window.addEventListener('DOMContentLoaded', () => {
     window.phoneSpecsApp = new PhoneSpecsApp();
@@ -3507,15 +3517,4 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = { PhoneSpecsApp };
 }
 
-// Instantiate and initialize when DOM is ready
-if (typeof window !== 'undefined' && window.addEventListener) {
-  window.addEventListener('DOMContentLoaded', () => {
-    window.phoneSpecsApp = new PhoneSpecsApp();
-    window.phoneSpecsApp.init();
-  });
-}
-
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { PhoneSpecsApp };
-}
 
