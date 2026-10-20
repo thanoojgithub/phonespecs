@@ -92,8 +92,9 @@
     <span><strong>App Owner Mode:</strong> Add, edit, or delete mobile phone specifications directly.</span>
     <div class="admin-banner-actions">
       <button class="btn-banner-action" id="btn-admin-add">+ Add New Phone</button>
-      <button class="btn-banner-action" id="btn-admin-export" title="Download updated catalog.json file">Export JSON</button>
-      <button class="btn-banner-action" id="btn-admin-reset" title="Reset back to disk catalog.json">Reset to Disk</button>
+      <button class="btn-banner-action" id="btn-admin-export" title="Download updated catalog.json file">Export Catalog</button>
+      <button class="btn-banner-action" id="btn-admin-export-audit" title="Download versioned audit.json history file">Export Audit</button>
+      <button class="btn-banner-action" id="btn-admin-reset" title="Reset back to disk catalog.json and audit.json">Reset to Disk</button>
     </div>
   </div>
 
@@ -250,9 +251,16 @@
   <!-- App Owner Add/Edit Phone Modal -->
   <div class="form-modal-overlay is-hidden" id="form-modal" role="dialog" aria-modal="true" aria-labelledby="form-modal-title">
     <div class="form-modal form-modal-container" id="form-modal-card">
-      <!-- Modal Top Header -->
+      <!-- Modal Top Header with Versioned Audit History Restore Dropdown -->
       <div class="form-modal-header">
-        <h3 class="details-title" id="form-modal-title">Add New Mobile Phone</h3>
+        <div class="form-modal-title-wrap">
+          <h3 class="details-title" id="form-modal-title">Add New Mobile Phone</h3>
+          <div class="form-version-history-group is-hidden" id="form-version-history-group">
+            <label class="form-version-label" for="form-version-select">Audit Versions (Max 5):</label>
+            <select id="form-version-select" class="form-version-select" title="Select a prior saved version to fetch and edit on top of"></select>
+            <button type="button" id="btn-fetch-version" class="btn-fetch-version" title="Fetch selected version data into form">Fetch Version</button>
+          </div>
+        </div>
         <button type="button" class="btn-close-modal" id="btn-close-form" aria-label="Close form modal">✕</button>
       </div>
 
