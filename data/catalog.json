@@ -40,6 +40,10 @@
                                           "name":  "Pixel Pro Series"
                                       },
                                       {
+                                          "id":  "pixel-fold",
+                                          "name":  "Pixel Fold Series"
+                                      },
+                                      {
                                           "id":  "pixel-base",
                                           "name":  "Pixel Series"
                                       }
@@ -527,6 +531,86 @@
                                       ]
                    },
                    {
+                       "id":  "samsung-galaxy-s25-ultra",
+                       "brandId":  "samsung",
+                       "brandName":  "Samsung",
+                       "seriesId":  "galaxy-s-ultra",
+                       "seriesName":  "Galaxy S Ultra Series",
+                       "model":  "Galaxy S25 Ultra",
+                       "tagline":  "Snapdragon 8 Elite for Galaxy, Ergonomic Round Titanium Frame, and 200MP Quad Pro-Visual Engine.",
+                       "releaseDate":  "2025-02",
+                       "releaseYear":  2025,
+                       "filterKeys":  {
+                                          "priceSegment":  "ultra-premium",
+                                          "formFactor":  "bar",
+                                          "chipsetMaker":  "qualcomm-snapdragon",
+                                          "displayType":  "ltpo-oled",
+                                          "cameraTier":  "200mp-sensor",
+                                          "batteryChargingTier":  "fast-45w",
+                                          "has5G":  true,
+                                          "hasEsim":  true,
+                                          "hasWirelessCharging":  true,
+                                          "hasWaterProofing":  true
+                                      },
+                       "specs":  {
+                                     "Design \u0026 Dimensions":  {
+                                                                      "Dimensions":  "162.8 x 77.6 x 8.2 mm",
+                                                                      "Weight":  "218 g (14g lighter than S24 Ultra)",
+                                                                      "Materials":  "Grade 5 Titanium frame with ergonomic rounded corners and satin glass back",
+                                                                      "Protection":  "Corning Gorilla Armor 2 (front), Gorilla Glass (back), IP68 water \u0026 dust (1.5m up to 30 mins)",
+                                                                      "Colors":  "Titanium Silverblue, Titanium Black, Titanium Gray, Titanium Whitesilver"
+                                                                  },
+                                     "Display System":  {
+                                                            "Display Size":  "6.9 inches Dynamic LTPO AMOLED 2X flat display",
+                                                            "Resolution":  "3120 x 1440 pixels (Quad HD+), 498 ppi",
+                                                            "Refresh Rate":  "1-120Hz LTPO adaptive variable refresh rate",
+                                                            "Peak Brightness":  "2600 nits peak brightness, next-gen Vision Booster",
+                                                            "Features":  "Corning Gorilla Armor 2 anti-reflective coating, HDR10+, Always-on Display"
+                                                        },
+                                     "Processor \u0026 Silicon":  {
+                                                                      "SoC":  "Qualcomm Snapdragon 8 Elite for Galaxy (3nm TSMC N3E node)",
+                                                                      "CPU":  "Octa-core custom Oryon V2 CPU (2x 4.47 GHz Phoenix L + 6x 3.53 GHz Phoenix M)",
+                                                                      "GPU":  "Qualcomm Adreno 830 GPU with full hardware ray tracing",
+                                                                      "NPU":  "Qualcomm Hexagon NPU with 45% uplift for on-device multimodal Galaxy AI"
+                                                                  },
+                                     "Memory \u0026 Storage":  {
+                                                                   "RAM":  "12GB / 16GB LPDDR5X",
+                                                                   "Internal Storage":  "256GB / 512GB / 1TB UFS 4.0 flash storage",
+                                                                   "Card Slot":  "No expandable storage"
+                                                               },
+                                     "Optics \u0026 Camera Architecture":  {
+                                                                               "Rear Main Camera":  "200MP Wide Sensor, 1/1.3\", f/1.7, 24mm, multi-directional PDAF, Laser AF, OIS",
+                                                                               "Ultra-Wide Camera":  "50MP Ultra-Wide, 1/2.5\", f/1.9, 13mm, 120 deg FOV, Dual Pixel PDAF, Super Steady",
+                                                                               "Telephoto 1":  "10MP 3x Optical Telephoto, f/2.4, 67mm, Dual Pixel PDAF, OIS",
+                                                                               "Periscope Telephoto 2":  "50MP 5x Optical Periscope (10x Optical Quality), f/3.4, 111mm, PDAF, OIS",
+                                                                               "Optical Zoom":  "3x and 5x optical zoom, 100x Space Zoom with ProVisual Engine AI",
+                                                                               "Video Capability":  "8K at 30fps, 4K at 30/60/120fps, 1080p at 240fps, HDR10+, stereo audio",
+                                                                               "Front Selfie Camera":  "12MP Dual Pixel PDAF, f/2.2, 26mm, 4K video recording up to 60fps",
+                                                                               "Telephoto Camera":  "50MP 5x Optical Periscope (f/3.4, 111mm, OIS) + 10MP 3x Optical (f/2.4, 67mm, OIS)"
+                                                                           },
+                                     "Battery \u0026 Charging":  {
+                                                                     "Battery Capacity":  "5000 mAh typical lithium-ion battery",
+                                                                     "Wired Charging":  "45W wired fast charging (65% in 30 minutes with PPS 2.0)",
+                                                                     "Wireless Charging":  "15W wireless charging (Qi2 compatible), 4.5W reverse wireless charging",
+                                                                     "Battery Life":  "Up to 31 hours video playback, 98 hours audio playback"
+                                                                 },
+                                     "Connectivity \u0026 Software":  {
+                                                                          "Operating System":  "One UI 7 based on Android 15 with 7 full years of OS updates",
+                                                                          "Cellular":  "5G SA/NSA/Sub6/mmWave, Gigabit LTE",
+                                                                          "Wi-Fi":  "Wi-Fi 7 (802.11be) tri-band",
+                                                                          "Bluetooth":  "Bluetooth 5.4 with LE Audio",
+                                                                          "Ports":  "USB-C 3.2 Gen 1 with Samsung DeX desktop mode \u0026 DisplayPort output",
+                                                                          "Special Hardware":  "Integrated S-Pen stylus with high-precision writing, Ultra-Wideband (UWB)"
+                                                                      }
+                                 },
+                       "highlights":  [
+                                          "Qualcomm Snapdragon 8 Elite 3nm custom silicon with breakthrough Oryon V2 cores",
+                                          "Upgraded 50MP ultra-wide camera delivering vastly sharper landscape and macro captures",
+                                          "Refined ergonomic Grade 5 titanium chassis with curved corners weighing just 218g",
+                                          "Full suite of multimodal Galaxy AI on One UI 7 backed by 7 years of full OS upgrades"
+                                      ]
+                   },
+                   {
                        "id":  "google-pixel-9-pro-xl",
                        "brandId":  "google",
                        "brandName":  "Google Pixel",
@@ -602,6 +686,84 @@
                                           "Breakthrough \u0027Add Me\u0027 computational photography lets the photographer step into group shots",
                                           "Satellite SOS safety system connecting to emergency services when off-grid",
                                           "Thermometer sensor for measuring liquid, surface, and human body temperatures"
+                                      ]
+                   },
+                   {
+                       "id":  "google-pixel-9-pro-fold",
+                       "brandId":  "google",
+                       "brandName":  "Google Pixel",
+                       "seriesId":  "pixel-fold",
+                       "seriesName":  "Pixel Fold Series",
+                       "model":  "Pixel 9 Pro Fold",
+                       "tagline":  "Thinnest Foldable In North America, 8.0-inch Super Actua Flex Display, and Gemini Multimodal AI.",
+                       "releaseDate":  "2024-09",
+                       "releaseYear":  2024,
+                       "filterKeys":  {
+                                          "priceSegment":  "ultra-premium",
+                                          "formFactor":  "book-fold",
+                                          "chipsetMaker":  "google-tensor",
+                                          "displayType":  "ltpo-oled",
+                                          "cameraTier":  "periscope-zoom",
+                                          "batteryChargingTier":  "standard-25w",
+                                          "has5G":  true,
+                                          "hasEsim":  true,
+                                          "hasWirelessCharging":  true,
+                                          "hasWaterProofing":  true
+                                      },
+                       "specs":  {
+                                     "Design \u0026 Dimensions":  {
+                                                                      "Dimensions":  "Unfolded: 155.2 x 150.2 x 5.1 mm | Folded: 155.2 x 77.1 x 10.5 mm",
+                                                                      "Weight":  "257 g",
+                                                                      "Materials":  "Multi-alloy steel hinge with aerospace-grade high-strength aluminum cover, matte glass back",
+                                                                      "Protection":  "Corning Gorilla Glass Victus 2 (cover \u0026 back), IPX8 water resistance",
+                                                                      "Colors":  "Obsidian, Porcelain"
+                                                                  },
+                                     "Display System":  {
+                                                            "Display Size":  "Inner: 8.0 inches Super Actua Flex LTPO OLED; Cover: 6.3 inches Actua OLED",
+                                                            "Resolution":  "Inner: 2152 x 2076 pixels (373 ppi); Cover: 2424 x 1080 pixels (422 ppi)",
+                                                            "Refresh Rate":  "1-120Hz smooth adaptive LTPO refresh rate (inner \u0026 cover)",
+                                                            "Peak Brightness":  "2700 nits peak brightness (1600 nits HBM)",
+                                                            "Features":  "HDR10+, Ultra Thin Glass protection, Split-screen app pairs multitasking"
+                                                        },
+                                     "Processor \u0026 Silicon":  {
+                                                                      "SoC":  "Google Tensor G4 (4nm custom Google architecture)",
+                                                                      "CPU":  "Octa-core (1x 3.1 GHz Cortex-X4 + 3x 2.6 GHz Cortex-A720 + 4x 1.92 GHz Cortex-A520)",
+                                                                      "GPU":  "Mali-G715 MC7 GPU",
+                                                                      "Security":  "Titan M2 dedicated security coprocessor"
+                                                                  },
+                                     "Memory \u0026 Storage":  {
+                                                                   "RAM":  "16GB LPDDR5X (engineered for local Gemini Nano multimodal AI)",
+                                                                   "Internal Storage":  "256GB / 512GB UFS 3.1 flash storage",
+                                                                   "Card Slot":  "No expandable storage"
+                                                               },
+                                     "Optics \u0026 Camera Architecture":  {
+                                                                               "Rear Main Camera":  "48MP Quad PD Wide, 1/2.0\", f/1.7, 25mm, Dual Pixel PDAF, OIS",
+                                                                               "Ultra-Wide Camera":  "10.5MP Dual PD Ultra-Wide with Macro Focus, 1/3.4\", f/2.2, 127 deg FOV",
+                                                                               "Telephoto Camera":  "10.8MP Dual PD 5x Optical Periscope Telephoto, 1/3.2\", f/3.1, 112mm, OIS, Super Res Zoom 20x",
+                                                                               "Optical Zoom":  "5x Optical Zoom, up to 20x Super Res Zoom",
+                                                                               "Video Capability":  "4K at 24/30/60 fps, 1080p up to 240 fps, 10-bit HDR video, Audio Magic Eraser",
+                                                                               "Front Selfie Camera":  "Cover: 10MP Dual PD (f/2.2, 87 deg FOV); Inner: 10MP Dual PD (f/2.2, 87 deg FOV)"
+                                                                           },
+                                     "Battery \u0026 Charging":  {
+                                                                     "Battery Capacity":  "4650 mAh typical lithium-ion dual-cell battery",
+                                                                     "Wired Charging":  "Fast wired charging with USB-PD 3.0 (up to 45W charger supported)",
+                                                                     "Wireless Charging":  "Qi-certified fast wireless charging",
+                                                                     "Battery Life":  "24+ hours normal battery life, up to 72 hours with Extreme Battery Saver"
+                                                                  },
+                                     "Connectivity \u0026 Software":  {
+                                                                          "Operating System":  "Android 14 / Android 15 upgradeable with 7 years of OS, security, and Pixel Feature Drops",
+                                                                          "Cellular":  "5G Sub-6GHz and mmWave, Satellite SOS emergency service",
+                                                                          "Wi-Fi":  "Wi-Fi 7 (802.11be) with 2.4GHz + 5GHz + 6GHz, 2x2+2x2 MIMO",
+                                                                          "Bluetooth":  "Bluetooth 5.3 with dual antennas",
+                                                                          "Ports":  "USB Type-C 3.2 Gen 1",
+                                                                          "Special Hardware":  "Ultra-Wideband (UWB) chip for spatial awareness, side-mounted capacitive fingerprint sensor"
+                                                                      }
+                                 },
+                       "highlights":  [
+                                          "Largest 8.0-inch inner folding display in its category folded down to ultra-slim 10.5mm profile",
+                                          "Engineered with 16GB RAM explicitly tailored for latency-free local Gemini Nano on-device AI",
+                                          "Fluid multi-alloy steel hinge opening completely flat with zero gap",
+                                          "Full 5x optical periscope zoom system paired with 10-bit HDR video recording"
                                       ]
                    },
                    {
@@ -1762,6 +1924,240 @@
                                           "Unique Leica 75mm floating telephoto lens shifting internally to focus from portraits down to 10cm macro",
                                           "Blazing charging versatility: 90W wired HyperCharge (31 mins) and 50W wireless HyperCharge (46 mins)"
                                       ]
-                   }
+                   },
+                    {
+                        "id":  "oneplus-13",
+                        "brandId":  "oneplus",
+                        "brandName":  "OnePlus",
+                        "seriesId":  "oneplus-number",
+                        "seriesName":  "OnePlus Flagship Series",
+                        "model":  "OnePlus 13",
+                        "tagline":  "Snapdragon 8 Elite, 6000mAh Glacier Battery, Hasselblad Master Triple 50MP, and IP68/IP69.",
+                        "releaseDate":  "2024-11",
+                        "releaseYear":  2024,
+                        "filterKeys":  {
+                                           "priceSegment":  "flagship-killer",
+                                           "formFactor":  "bar",
+                                           "chipsetMaker":  "qualcomm-snapdragon",
+                                           "displayType":  "ltpo-oled",
+                                           "cameraTier":  "periscope-zoom",
+                                           "batteryChargingTier":  "ultra-fast-100w",
+                                           "has5G":  true,
+                                           "hasEsim":  true,
+                                           "hasWirelessCharging":  true,
+                                           "hasWaterProofing":  true
+                                       },
+                        "specs":  {
+                                      "Design \u0026 Dimensions":  {
+                                                                       "Dimensions":  "162.9 x 76.5 x 8.5 mm (glass) / 8.8 mm (leather)",
+                                                                       "Weight":  "210 g (leather) / 213 g (glass)",
+                                                                       "Materials":  "Aerospace-grade middle aluminum frame, Crystal Shield ultra-ceramic glass / eco-leather back",
+                                                                       "Protection":  "Dual IP68 and IP69 water & high-pressure steam jet resistance",
+                                                                       "Colors":  "Midnight Black, Black Eclipse, Arctic Dawn, Blue Hour"
+                                                                   },
+                                      "Display System":  {
+                                                             "Display Size":  "6.82 inches 2.5D Quad-Micro-Curved BOE X2 Oriental OLED",
+                                                             "Resolution":  "3168 x 1440 pixels at 510 ppi (2K QHD+)",
+                                                             "Refresh Rate":  "1-120Hz 8T LTPO adaptive refresh rate",
+                                                             "Peak Brightness":  "4500 nits peak brightness (1600 nits HBM)",
+                                                             "Features":  "Dolby Vision, DisplayMate A++, 2160Hz high-frequency PWM dimming, Glove Touch, Rain Water Touch 2.0"
+                                                         },
+                                      "Processor \u0026 Silicon":  {
+                                                                       "SoC":  "Qualcomm Snapdragon 8 Elite (TSMC 3nm Oryon Architecture)",
+                                                                       "CPU":  "Octa-core (2x 4.32 GHz Prime Oryon + 6x 3.53 GHz Performance Oryon)",
+                                                                       "GPU":  "Qualcomm Adreno 830 (1.1 GHz sliced architecture)",
+                                                                       "NPU":  "Qualcomm Hexagon NPU with 80 TOPS multimodal generative on-device AI"
+                                                                   },
+                                      "Memory \u0026 Storage":  {
+                                                                    "RAM":  "12GB / 16GB / 24GB LPDDR5X (9600 Mbps)",
+                                                                    "Internal Storage":  "256GB / 512GB / 1TB UFS 4.0 high-speed flash",
+                                                                    "Card Slot":  "No expandable storage"
+                                                                },
+                                      "Optics \u0026 Camera Architecture":  {
+                                                                                "Rear Main Camera":  "50MP Sony LYT-808 (1/1.4-inch, 23mm, f/1.6, OIS, ALC coating)",
+                                                                                "Ultra-Wide Camera":  "50MP Samsung JN5 (1/2.75-inch, 15mm, f/2.0, 120 deg FOV, 3.5cm macro AF)",
+                                                                                "Telephoto Camera":  "50MP Sony LYT-600 Tri-prism Periscope (1/1.95-inch, 73mm, f/2.6, OIS, 3x optical zoom)",
+                                                                                "Optical Zoom":  "3x optical zoom, 6x in-sensor lossless zoom, up to 120x Ultra Res zoom",
+                                                                                "Video Capability":  "8K at 30 fps, 4K at 30/60 fps Dolby Vision HDR",
+                                                                                "Front Selfie Camera":  "32MP Sony IMX615 (1/2.74-inch, 21mm, f/2.4, 4K60 video)"
+                                                                            },
+                                      "Battery \u0026 Charging":  {
+                                                                      "Battery Capacity":  "6000 mAh Silicon-Carbon Glacier battery",
+                                                                      "Wired Charging":  "100W SUPERVOOC fast wired charging (100% in ~36 minutes)",
+                                                                      "Wireless Charging":  "50W AIRVOOC wireless charging and magnetic case support",
+                                                                      "Battery Life":  "Multi-day endurance with advanced Silicon-Carbon energy density"
+                                                                  },
+                                      "Connectivity \u0026 Software":  {
+                                                                           "Operating System":  "OxygenOS 15 based on Android 15",
+                                                                           "Cellular":  "5G SA/NSA, dual SIM (Nano-SIM + eSIM)",
+                                                                           "Wi-Fi":  "Wi-Fi 7 (802.11be, tri-band)",
+                                                                           "Bluetooth":  "Bluetooth 5.4 with aptX HD, LDAC, LHDC 5.0",
+                                                                           "Ports":  "USB-C 3.2 Gen 1 (5Gbps) with DisplayPort video output",
+                                                                           "Special Hardware":  "Ultrasonic In-Display Fingerprint Sensor, Physical Tri-State Alert Slider, Tiangong Cooling System Pro (9925mm² VC)"
+                                                                       }
+                                  },
+                        "highlights":  [
+                                           "Massive 6000mAh Glacier Silicon-Carbon battery coupled with 100W wired and 50W wireless charging",
+                                           "TSMC 3nm Qualcomm Snapdragon 8 Elite Oryon dual-prime architecture delivering unprecedented speed",
+                                           "All-50MP Hasselblad Master triple camera array featuring a 3x multi-reflection tri-prism periscope",
+                                           "Dual IP68 and IP69 ratings protecting against both deep submersion and high-pressure hot water jets"
+                                       ]
+                    },
+                    {
+                        "id":  "xiaomi-15-pro",
+                        "brandId":  "xiaomi",
+                        "brandName":  "Xiaomi",
+                        "seriesId":  "xiaomi-pro",
+                        "seriesName":  "Xiaomi Series",
+                        "model":  "Xiaomi 15 Pro",
+                        "tagline":  "Snapdragon 8 Elite, 6100mAh Jinshajiang Battery, Leica Triple 50MP with 5x Periscope.",
+                        "releaseDate":  "2024-10",
+                        "releaseYear":  2024,
+                        "filterKeys":  {
+                                           "priceSegment":  "ultra-premium",
+                                           "formFactor":  "bar",
+                                           "chipsetMaker":  "qualcomm-snapdragon",
+                                           "displayType":  "ltpo-oled",
+                                           "cameraTier":  "periscope-zoom",
+                                           "batteryChargingTier":  "fast-45w",
+                                           "has5G":  true,
+                                           "hasEsim":  true,
+                                           "hasWirelessCharging":  true,
+                                           "hasWaterProofing":  true
+                                       },
+                        "specs":  {
+                                      "Design \u0026 Dimensions":  {
+                                                                       "Dimensions":  "161.3 x 75.3 x 8.35 mm",
+                                                                       "Weight":  "213 g (glass) / 219 g (liquid silver)",
+                                                                       "Materials":  "Aviation aluminum unibody frame, Xiaomi Dragon Crystal Glass 2.0 front & back",
+                                                                       "Protection":  "IP68 dust and water resistance (up to 1.5m for 30 minutes)",
+                                                                       "Colors":  "Black, White, Spruce Green, Liquid Silver Edition"
+                                                                   },
+                                      "Display System":  {
+                                                             "Display Size":  "6.73 inches Custom M9 LTPO micro-curved AMOLED",
+                                                             "Resolution":  "3200 x 1440 pixels at 522 ppi (2K WQHD+)",
+                                                             "Refresh Rate":  "1-120Hz dynamic adaptive LTPO refresh rate",
+                                                             "Peak Brightness":  "3200 nits peak brightness",
+                                                             "Features":  "Dolby Vision, HDR10+, 68 billion colors (12-bit), 1920Hz PWM dimming, DC dimming"
+                                                         },
+                                      "Processor \u0026 Silicon":  {
+                                                                       "SoC":  "Qualcomm Snapdragon 8 Elite (3nm TSMC Oryon V2 Architecture)",
+                                                                       "CPU":  "Octa-core (2x 4.32 GHz Prime Oryon + 6x 3.53 GHz Performance Oryon)",
+                                                                       "GPU":  "Qualcomm Adreno 830",
+                                                                       "NPU":  "Qualcomm Hexagon NPU with HyperCore AI system scheduling"
+                                                                   },
+                                      "Memory \u0026 Storage":  {
+                                                                    "RAM":  "12GB / 16GB LPDDR5X (8533 Mbps)",
+                                                                    "Internal Storage":  "256GB / 512GB / 1TB UFS 4.0",
+                                                                    "Card Slot":  "No expandable storage"
+                                                                },
+                                      "Optics \u0026 Camera Architecture":  {
+                                                                                "Rear Main Camera":  "50MP Light Fusion 900 sensor (1/1.31-inch, 23mm, f/1.44 Leica Summilux lens, OIS)",
+                                                                                "Ultra-Wide Camera":  "50MP Samsung JN1 (1/2.76-inch, 14mm, f/2.2, 115 deg FOV, 5cm macro)",
+                                                                                "Telephoto Camera":  "50MP Sony IMX858 Periscope (1/2.51-inch, 120mm, f/2.5, OIS, 5x optical zoom, 30cm telephoto macro)",
+                                                                                "Optical Zoom":  "5x optical zoom, 10x lossless zoom, up to 120x Ultra Zoom",
+                                                                                "Video Capability":  "8K at 30 fps, 4K at 30/60 fps with 10-bit Dolby Vision HDR support",
+                                                                                "Front Selfie Camera":  "32MP OmniVision OV32B40, f/2.0, 4K60 video recording"
+                                                                            },
+                                      "Battery \u0026 Charging":  {
+                                                                      "Battery Capacity":  "6100 mAh High-density Silicon-Carbon Jinshajiang battery",
+                                                                      "Wired Charging":  "90W wired HyperCharge (100% in ~38 minutes)",
+                                                                      "Wireless Charging":  "50W wireless HyperCharge and 10W reverse wireless charging",
+                                                                      "Battery Life":  "Xiaomi Surge G1 battery management chip ensuring up to 2 days of mixed usage"
+                                                                  },
+                                      "Connectivity \u0026 Software":  {
+                                                                           "Operating System":  "Xiaomi HyperOS 2 based on Android 15",
+                                                                           "Cellular":  "5G SA/NSA, dual SIM (Nano-SIM + eSIM)",
+                                                                           "Wi-Fi":  "Wi-Fi 7 (802.11be)",
+                                                                           "Bluetooth":  "Bluetooth 5.4 with aptX Adaptive, aptX Lossless, LDAC, LHDC 5.0",
+                                                                           "Ports":  "USB-C 3.2 Gen 2 (10Gbps high-speed data transfer)",
+                                                                           "Special Hardware":  "Ultrasonic In-Display Fingerprint Sensor, Xiaomi Star Communication (up to 3.5km off-grid calling), Circular Wing Loop cooling system"
+                                                                       }
+                                  },
+                        "highlights":  [
+                                           "Massive 6100mAh Silicon-Carbon Jinshajiang battery housed in a sleek 8.35mm body",
+                                           "Leica Summilux triple 50MP imaging system headlined by an IMX858 5x periscope telephoto lens",
+                                           "Qualcomm Snapdragon 8 Elite processor orchestrated by Xiaomi HyperOS 2 HyperCore engine",
+                                           "Ultrasonic fingerprint scanner and Xiaomi Dragon Crystal Glass 2.0 with 16x drop resistance"
+                                       ]
+                    },
+                    {
+                        "id":  "vivo-x200-pro",
+                        "brandId":  "vivo",
+                        "brandName":  "Vivo",
+                        "seriesId":  "x-series",
+                        "seriesName":  "X Series",
+                        "model":  "Vivo X200 Pro",
+                        "tagline":  "Dimensity 9400 3nm, 200MP Zeiss APO Telephoto, 6000mAh BlueVolt Battery, and IP68/IP69.",
+                        "releaseDate":  "2024-10",
+                        "releaseYear":  2024,
+                        "filterKeys":  {
+                                           "priceSegment":  "ultra-premium",
+                                           "formFactor":  "bar",
+                                           "chipsetMaker":  "mediatek-dimensity",
+                                           "displayType":  "ltpo-oled",
+                                           "cameraTier":  "200mp-sensor",
+                                           "batteryChargingTier":  "ultra-fast-100w",
+                                           "has5G":  true,
+                                           "hasEsim":  true,
+                                           "hasWirelessCharging":  true,
+                                           "hasWaterProofing":  true
+                                       },
+                        "specs":  {
+                                      "Design \u0026 Dimensions":  {
+                                                                       "Dimensions":  "162.4 x 76.0 x 8.20 mm (glass) / 8.49 mm (leather)",
+                                                                       "Weight":  "223 g (glass) / 228 g (leather)",
+                                                                       "Materials":  "Aviation-grade aluminum alloy frame, Armor Glass / vegan leather back, Zeiss circular camera module",
+                                                                       "Protection":  "IP68 and IP69 water, steam jet, and dust resistance",
+                                                                       "Colors":  "Sapphire Blue, Titanium Grey, Moonlight White, Carbon Black"
+                                                                   },
+                                      "Display System":  {
+                                                             "Display Size":  "6.78 inches Quad-Curved Zeiss Master Color LTPO AMOLED",
+                                                             "Resolution":  "2800 x 1260 pixels at 452 ppi (1.5K)",
+                                                             "Refresh Rate":  "0.1-120Hz 8T LTPO variable refresh rate",
+                                                             "Peak Brightness":  "4500 nits local peak brightness",
+                                                             "Features":  "Dolby Vision, HDR10+, 2160Hz high-frequency PWM dimming, Zeiss Natural Color certification"
+                                                         },
+                                      "Processor \u0026 Silicon":  {
+                                                                       "SoC":  "MediaTek Dimensity 9400 (Second-generation TSMC 3nm All-Big-Core)",
+                                                                       "CPU":  "Octa-core (1x 3.63 GHz Cortex-X925 + 3x 3.3 GHz Cortex-X4 + 4x 2.4 GHz Cortex-A720)",
+                                                                       "GPU":  "ARM Immortalis-G925 MC12 with hardware ray tracing",
+                                                                       "NPU":  "MediaTek NPU 890 (50 TOPS) and proprietary Vivo V3+ 6nm imaging chip"
+                                                                   },
+                                      "Memory \u0026 Storage":  {
+                                                                    "RAM":  "12GB / 16GB LPDDR5X (9600 Mbps)",
+                                                                    "Internal Storage":  "256GB / 512GB / 1TB UFS 4.0",
+                                                                    "Card Slot":  "No expandable storage"
+                                                                },
+                                      "Optics \u0026 Camera Architecture":  {
+                                                                                "Rear Main Camera":  "50MP Sony LYT-818 (1/1.28-inch, 23mm, f/1.57, Zeiss T* coating, VCS 3.0, OIS)",
+                                                                                "Ultra-Wide Camera":  "50MP Samsung JN1 (1/2.76-inch, 15mm, f/2.0, 119 deg FOV, AF macro)",
+                                                                                "Telephoto Camera":  "200MP Samsung ISOCELL HP9 Zeiss APO Periscope (1/1.4-inch, 85mm, f/2.67, OIS, 3.7x optical zoom, telephoto macro)",
+                                                                                "Optical Zoom":  "3.7x optical zoom, up to 100x Zeiss Ultra-Zoom",
+                                                                                "Video Capability":  "4K at 120 fps cinematic slow-motion, 4K 60 fps 10-bit Log video, 8K at 30 fps",
+                                                                                "Front Selfie Camera":  "32MP (1/2.8-inch, 20mm, f/2.0, 4K60 video)"
+                                                                            },
+                                      "Battery \u0026 Charging":  {
+                                                                      "Battery Capacity":  "6000 mAh Silicon-Anode BlueVolt battery",
+                                                                      "Wired Charging":  "90W FlashCharge wired charging",
+                                                                      "Wireless Charging":  "30W wireless FlashCharge",
+                                                                      "Battery Life":  "Semi-solid state electrolyte operating reliably even at -20 deg C"
+                                                                  },
+                                      "Connectivity \u0026 Software":  {
+                                                                           "Operating System":  "OriginOS 5 (China) / Funtouch OS 15 (Global) based on Android 15",
+                                                                           "Cellular":  "5G SA/NSA, dual SIM (Nano-SIM + eSIM)",
+                                                                           "Wi-Fi":  "Wi-Fi 7 (802.11be)",
+                                                                           "Bluetooth":  "Bluetooth 5.4 with aptX HD, LDAC, LHDC 5.0",
+                                                                           "Ports":  "USB-C 3.2 Gen 1 (5Gbps data transfer)",
+                                                                           "Special Hardware":  "Ultrasonic In-Display Fingerprint Sensor, Vivo V3+ Imaging Co-Processor, Kilometre-level Networkless Communication, Dual IP68 & IP69"
+                                                                       }
+                                  },
+                        "highlights":  [
+                                           "Breakthrough 200MP Zeiss APO periscope telephoto with large 1/1.4-inch HP9 sensor and 4K120fps video",
+                                           "Next-generation 3nm MediaTek Dimensity 9400 all-big-core silicon paired with custom Vivo V3+ imaging chip",
+                                           "Massive 6000mAh semi-solid BlueVolt silicon-carbon battery with cold-weather sub-zero resilience",
+                                           "Dual IP68 submersion and IP69 high-pressure steam jet water and dust resistance certification"
+                                       ]
+                    }
                ]
 }
