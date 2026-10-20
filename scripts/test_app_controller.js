@@ -183,21 +183,24 @@ assert(app.dom.formSpecsJson.value.includes('Design & Dimensions'), 'openAddModa
 app.closeFormModal();
 assert(app.showFormModal === false, 'closeFormModal closes modal');
 
-app.openEditModal(samplePhone);
+const targetPhone = app.catalogService.getPhoneById('apple-iphone-16-pro-max');
+assert(targetPhone !== null, 'apple-iphone-16-pro-max exists in catalog');
+app.openEditModal(targetPhone);
 assert(app.showFormModal === true, 'openEditModal opens modal for phone');
-assert(app.dom.formPhoneId.value === 'phone-test', 'openEditModal populates formPhoneId');
+assert(app.dom.formPhoneId.value === targetPhone.id, 'openEditModal populates formPhoneId');
 
 // Test savePhone
-app.dom.formModel.value = 'Test Phone Pro';
-app.dom.formSpecsJson.value = '{"Optics & Camera Architecture":{"Rear Main Camera":"50MP"},"Design & Dimensions":{"Weight":"200g"}}';
+app.dom.formModel.value = 'iPhone 16 Pro Max Updated';
+app.dom.formSpecsJson.value = '{"Optics & Camera Architecture":{"Rear Main Camera":"50MP"},"Design & Dimensions":{"Weight":"220g"}}';
 app.dom.formBrandId.value = 'apple';
 app.dom.formSeriesId.value = 'iphone-pro';
-app.dom.formReleaseYear.value = '2025';
+app.dom.formReleaseYear.value = '2024';
 
 app.savePhone();
 assert(app.showFormModal === false, 'savePhone saves record and closes modal');
-const savedPhone = app.catalogService.getPhoneById('phone-test');
+const savedPhone = app.catalogService.getPhoneById(targetPhone.id);
 assert(savedPhone !== null, 'Saved phone is in catalog');
+assert(savedPhone.model === 'iPhone 16 Pro Max Updated', 'Model updated');
 const savedCategories = Object.keys(savedPhone.specs);
 assert(savedCategories[0] === 'Design & Dimensions', 'savePhone automatically sorts specs categories by Technical Specifications Template');
 assert(savedCategories[1] === 'Optics & Camera Architecture', 'Subsequent categories follow template ordering');
