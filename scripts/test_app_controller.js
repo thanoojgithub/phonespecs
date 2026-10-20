@@ -157,6 +157,7 @@ assert(app.adminMode === false, 'toggleAdmin toggles admin mode off');
 
 // 4. Toast Notifications & HTML Escaping
 console.log('\n--- 4. Toasts & Escaping ---');
+app.toasts = []; // Reset toast queue from previous tests to test isolated showToast behavior
 app.showToast('Test Toast Message', 'success');
 assert(app.toasts.length === 1, 'showToast adds toast to queue');
 assert(app.toasts[0].message === 'Test Toast Message', 'Toast contains correct message');
