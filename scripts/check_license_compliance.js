@@ -50,7 +50,9 @@ const EXEMPT_PATHS = new Set([
   'README.md',
   '.dockerignore',
   '.gitignore',
-  'data/catalog.json'
+  '.github/CODEOWNERS',
+  'data/catalog.json',
+  'data/audit.json'
 ]);
 
 function isExempt(relPath) {
