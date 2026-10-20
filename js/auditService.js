@@ -332,6 +332,7 @@ class AuditService {
       };
     }
 
+    const itemMeta = this.data.items[phoneId];
     const contentHash = AuditService.computeContentHash(cleanSnapshot);
 
     // ZERO DUPLICATES GUARANTEE:
