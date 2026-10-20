@@ -97,10 +97,11 @@ global.sessionStorage = {
   removeItem: (k) => { delete mockSession[k]; }
 };
 
-const { PhoneSpecsApp } = require('../js/app');
 const { CatalogService } = require('../js/catalogService');
 const { AuditService } = require('../js/auditService');
 const { JsonFormatterService } = require('../js/jsonFormatterService');
+const { PhoneSpecsApp } = require('../js/app');
+
 
 console.log('====================================================');
 console.log('   PhoneSpecsApp Native JS Controller Tests (100%)  ');
