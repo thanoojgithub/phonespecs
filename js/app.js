@@ -2641,7 +2641,7 @@ class PhoneSpecsApp {
     this.showToast('Active Technical Specifications Template loaded.', 'info');
   }
 
-  async savePhone() {
+  savePhone() {
     if (this._isSavingPhone) return;
     this._isSavingPhone = true;
 

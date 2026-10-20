@@ -52,6 +52,11 @@ class MockElement {
   }
   focus() {}
   setSelectionRange() {}
+  getAttribute(attr) { return this.attributes[attr] || null; }
+  setAttribute(attr, val) { this.attributes[attr] = String(val); }
+  querySelector(sel) { return null; }
+  querySelectorAll(sel) { return []; }
+  closest(sel) { return null; }
 }
 
 const elementsMap = {};
@@ -63,6 +68,8 @@ function getOrCreateElem(id, tagName = 'div') {
 global.document = {
   getElementById: (id) => getOrCreateElem(id),
   createElement: (tagName) => new MockElement('', tagName),
+  querySelector: () => null,
+  querySelectorAll: () => [],
   body: new MockElement('app-body', 'body')
 };
 
@@ -192,57 +199,55 @@ assert(app.dom.formPhoneId.value === targetPhone.id, 'openEditModal populates fo
 // Test savePhone
 app.dom.formModel.value = 'iPhone 16 Pro Max Updated';
 app.dom.formSpecsJson.value = '{"Optics & Camera Architecture":{"Rear Main Camera":"50MP"},"Design & Dimensions":{"Weight":"220g"}}';
-(async () => {
-  app.dom.formBrandId.value = 'apple';
-  app.dom.formSeriesId.value = 'iphone-pro';
-  app.dom.formReleaseYear.value = '2024';
+app.dom.formBrandId.value = 'apple';
+app.dom.formSeriesId.value = 'iphone-pro';
+app.dom.formReleaseYear.value = '2024';
 
-  await app.savePhone();
-  assert(app.showFormModal === false, 'savePhone saves record and closes modal');
-  const savedPhone = app.catalogService.getPhoneById(targetPhone.id);
-  assert(savedPhone !== null, 'Saved phone is in catalog');
-  assert(savedPhone.model === 'iPhone 16 Pro Max Updated', 'Model updated');
-  const savedCategories = Object.keys(savedPhone.specs);
-  assert(savedCategories[0] === 'Design & Dimensions', 'savePhone automatically sorts specs categories by Technical Specifications Template');
-  assert(savedCategories[1] === 'Optics & Camera Architecture', 'Subsequent categories follow template ordering');
+app.savePhone();
+assert(app.showFormModal === false, 'savePhone saves record and closes modal');
+const savedPhone = app.catalogService.getPhoneById(targetPhone.id);
+assert(savedPhone !== null, 'Saved phone is in catalog');
+assert(savedPhone.model === 'iPhone 16 Pro Max Updated', 'Model updated');
+const savedCategories = Object.keys(savedPhone.specs);
+assert(savedCategories[0] === 'Design & Dimensions', 'savePhone automatically sorts specs categories by Technical Specifications Template');
+assert(savedCategories[1] === 'Optics & Camera Architecture', 'Subsequent categories follow template ordering');
 
-  // 8. Technical Specifications Template Management (Admin-Only)
-  console.log('\n--- 8. Technical Specifications Template Management (Admin-Only) ---');
-  // Verify non-admin blocked
-  app.adminMode = false;
-  app.openTemplateModal();
-  assert(app.showTemplateModal === false, 'Non-admin cannot open Technical Specifications Template modal');
+// 8. Technical Specifications Template Management (Admin-Only)
+console.log('\n--- 8. Technical Specifications Template Management (Admin-Only) ---');
+// Verify non-admin blocked
+app.adminMode = false;
+app.openTemplateModal();
+assert(app.showTemplateModal === false, 'Non-admin cannot open Technical Specifications Template modal');
 
-  // Verify admin access
-  app.adminMode = true;
-  app.openTemplateModal();
-  assert(app.showTemplateModal === true, 'Admin can open Technical Specifications Template modal');
-  assert(app.dom.templateSpecsJson.value.includes('Design & Dimensions'), 'Template modal loads current active master template');
+// Verify admin access
+app.adminMode = true;
+app.openTemplateModal();
+assert(app.showTemplateModal === true, 'Admin can open Technical Specifications Template modal');
+assert(app.dom.templateSpecsJson.value.includes('Design & Dimensions'), 'Template modal loads current active master template');
 
-  // Test format template JSON
-  app.dom.templateSpecsJson.value = '{ "Display System": { "Size": "6.8 inch" } }';
-  app.formatTemplateJson();
-  assert(app.dom.templateSpecsJson.value.includes('  "Display System": {'), 'formatTemplateJson formats with 2-space indentation');
+// Test format template JSON
+app.dom.templateSpecsJson.value = '{ "Display System": { "Size": "6.8 inch" } }';
+app.formatTemplateJson();
+assert(app.dom.templateSpecsJson.value.includes('  "Display System": {'), 'formatTemplateJson formats with 2-space indentation');
 
-  // Test saving updated template
-  app.saveMasterTemplate();
-  assert(app.showTemplateModal === false, 'saveMasterTemplate saves and closes template modal');
-  assert(app.specsTemplate['Display System'] !== undefined, 'Master specsTemplate updated in controller');
+// Test saving updated template
+app.saveMasterTemplate();
+assert(app.showTemplateModal === false, 'saveMasterTemplate saves and closes template modal');
+assert(app.specsTemplate['Display System'] !== undefined, 'Master specsTemplate updated in controller');
 
-  // Test reset to factory default
-  global.confirm = () => true;
-  app.resetTemplateToFactoryDefault();
-  assert(app.dom.templateSpecsJson.value.includes('Design & Dimensions'), 'resetTemplateToFactoryDefault restores factory baseline');
-  app.saveMasterTemplate();
+// Test reset to factory default
+global.confirm = () => true;
+app.resetTemplateToFactoryDefault();
+assert(app.dom.templateSpecsJson.value.includes('Design & Dimensions'), 'resetTemplateToFactoryDefault restores factory baseline');
+app.saveMasterTemplate();
 
-  app.closeAllModals();
-  assert(app.showTemplateModal === false, 'closeAllModals closes template modal');
+app.closeAllModals();
+assert(app.showTemplateModal === false, 'closeAllModals closes template modal');
 
-  console.log(`\n====================================================`);
-  console.log(` PhoneSpecsApp Tests: Total: ${totalTests} | Passed: ${passedTests} | Failed: ${failedTests}`);
-  console.log(`====================================================\n`);
+console.log(`\n====================================================`);
+console.log(` PhoneSpecsApp Tests: Total: ${totalTests} | Passed: ${passedTests} | Failed: ${failedTests}`);
+console.log(`====================================================\n`);
 
-  if (failedTests > 0) {
-    process.exit(1);
-  }
-})();
+if (failedTests > 0) {
+  process.exit(1);
+}
