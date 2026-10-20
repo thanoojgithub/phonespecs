@@ -368,12 +368,12 @@ input, select, textarea {
   transform: translateY(-1px);
 }
 
-/* Mobile-First Catalog Section Padding */
+/* Mobile-First Catalog Section: Breathable top spacing below sticky header */
 .catalog-section {
   width: 100%;
   max-width: 1400px;
-  margin: 0.75rem auto 5.5rem auto;
-  padding: 0 0.75rem;
+  margin: 1.5rem auto 5.5rem auto;
+  padding: 0 0.85rem;
 }
 
 /* ==========================================================================
@@ -507,14 +507,6 @@ input, select, textarea {
 
 /* ==========================================================================
    Filter & Search Controls (White & Red Accent)
-   ========================================================================== */
-
-.catalog-section {
-  max-width: 1400px;
-  margin: 0 auto 5rem auto;
-  padding: 0 1.5rem;
-}
-
 /* Mobile-First Controls Bar: Search box and Sort dropdown ALWAY beside each other on all screen sizes */
 .controls-bar {
   display: grid;
@@ -523,7 +515,7 @@ input, select, textarea {
   gap: 0.5rem;
   width: 100%;
   max-width: 680px;
-  margin: 0 auto 1.15rem auto;
+  margin: 1.25rem auto 1.25rem auto; /* Comfortable gap below top header row on mobile */
   padding: 0;
   background: transparent;
   border: none;
