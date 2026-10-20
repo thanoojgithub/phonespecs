@@ -24,6 +24,7 @@ A clean, high-performance, and modern mobile phone technical specifications cata
   - [3. Viewing Phone Specifications](#3-viewing-phone-specifications)
   - [4. Side-by-Side Phone Comparison](#4-side-by-side-phone-comparison)
   - [5. App Owner Mode (Admin Data Management)](#5-app-owner-mode-admin-data-management)
+  - [6. Robust Versioned Audit Trail & Item History](#6-robust-versioned-audit-trail--item-history)
 - [Local Development & Running](#local-development--running)
 - [Apache License 2.0 Compliance](#apache-license-20-compliance)
   - [Summary of Rights & Conditions](#summary-of-rights--conditions)
@@ -41,6 +42,7 @@ A clean, high-performance, and modern mobile phone technical specifications cata
 - **Deep Technical Specifications**: Detailed breakdowns across Display, Processor, Optics/Camera, Battery/Charging, and Connectivity.
 - **Side-by-Side Comparison Engine**: Compare devices simultaneously with sticky, aligned matrix spec tables.
 - **App Owner / Admin Mode**: In-browser catalog editor with native grid-constrained modal dialogs to add, edit, export, or reset device data.
+- **Self-Maintained Versioned Audit Trail**: Dedicated `data/audit.json` maintaining 5 recent updates per catalog item with instant version fetch, edit, and undo.
 - **Zero 3rd-Party UI/UX Frameworks**: Built strictly with pure Native JavaScript (ES6+ standard APIs) and standard native CSS—no Alpine.js, Tailwind, Bootstrap, React, or external JS bundles.
 - **Ultra-Lean Footprint**: Zero node build pipelines, zero npm lockfiles, zero runtime dependencies. Runs directly in any web browser.
 
@@ -53,6 +55,7 @@ A clean, high-performance, and modern mobile phone technical specifications cata
 - **Catalog CRUD Service**: Dedicated pure Native JavaScript domain engine in [`js/catalogService.js`](js/catalogService.js) managing phone entity validation, schema enforcement, filtering, inverted full-text search, regex search, multi-field sorting, and sanitized JSON export.
 - **Application Controller**: Pure Native JavaScript UI controller in [`js/app.js`](js/app.js) handling DOM events, view rendering, comparison trays, and modal dialogs.
 - **Data Catalog**: Structured JSON store in [`data/catalog.json`](data/catalog.json).
+- **Audit Trail & Versioning**: Dedicated decoupled audit store in [`data/audit.json`](data/audit.json) maintaining 5 recent revisions per device.
 
 ---
 
@@ -91,8 +94,20 @@ A clean, high-performance, and modern mobile phone technical specifications cata
 - Click the **Admin Access** button in the top-right header to activate owner controls.
 - **+ Add New Phone**: Open the modal to register a new phone model and input its specs.
 - **Edit / Delete**: Admin badges appear on every card to edit specifications or remove devices.
-- **Export JSON**: Download the modified dataset as a clean, formatted `catalog.json` file ready to be committed to the repository.
-- **Reset to Disk**: Discard in-memory edits and restore the original `data/catalog.json` state.
+- **Export Catalog**: Download the modified dataset as a clean, formatted `catalog.json` file ready to be committed to the repository.
+- **Export Audit**: Download the versioned `audit.json` history file tracking edits across devices.
+- **Reset to Disk**: Discard local edits and re-sync both `data/catalog.json` and `data/audit.json` back to pristine repository files.
+
+### 6. Robust Versioned Audit Trail & Item History
+PhoneSpecs includes a dedicated, robust audit trail stored in [`data/audit.json`](data/audit.json) that maintains version history independently from the primary catalog:
+- **Decoupled Audit File**: Keeps `catalog.json` lean for public visitors while maintaining a complete, versioned audit trail for admins.
+- **Self-Maintained 5 Recent Versions**: Whenever an admin saves changes to an existing phone, the prior state is automatically archived. Each phone maintains strictly its **5 most recent versions** (older revisions automatically roll off).
+- **Select, Fetch & Update Workflow**:
+  1. Open the **Edit Phone** modal for any device.
+  2. If the item has historical edits, the **Audit Versions (Max 5)** selector in the modal header displays available versions with timestamps (e.g. `v3 (Oct 20, 06:30 AM)`).
+  3. Select any desired historical version and click **Fetch Version** to instantly load that version's exact specs into the form.
+  4. Make edits directly on top of the fetched version and click **Save Phone** to commit the new update.
+- **Single-Click Undo**: Quick `↶ Undo` buttons appear directly on phone cards and within the full specs view for instantaneous one-click rollbacks.
 
 ---
 
