@@ -195,14 +195,21 @@ Run the catalog integrity validator and Native JS CRUD test suite using Node.js 
 
 - **Using local Node.js:**
   ```bash
-  # Validate catalog JSON format, schema, and reference integrity
-  node scripts/validate_catalog.js
+  # Run all test suites with 100% full coverage verification:
+  node scripts/run_all_tests.js
 
-  # Run the pure Native JS CatalogService test suite (57+ unit & corner-case tests)
-  node scripts/test_catalog_crud.js
+  # Or run individual native JS test suites:
+  node scripts/validate_catalog.js       # Catalog schema & foreign-key reference integrity
+  node scripts/test_catalog_crud.js       # Pure Native JS CatalogService (57+ unit tests)
+  node scripts/test_audit_service.js      # 128-bit collision-resistant hashing & bounded FIFO audit
+  node scripts/test_json_formatter.js     # Lenient JSON auto-repair, control-char & key-sorting tests
+  node scripts/check_license_compliance.js # 100% Apache 2.0 license compliance audit
   ```
 - **Using Docker (if Node is not installed locally):**
   ```powershell
+  # Windows PowerShell: Run all test suites inside lightweight Node container
+  docker run --rm -v ${PWD}:/app -w /app node:alpine node scripts/run_all_tests.js
+  ```
   # PowerShell
   docker run --rm -v ${PWD}:/app -w /app node:alpine node scripts/validate_catalog.js
   docker run --rm -v ${PWD}:/app -w /app node:alpine node scripts/test_catalog_crud.js

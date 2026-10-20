@@ -257,3 +257,7 @@ class JsonFormatterService {
 if (typeof window !== 'undefined') {
   window.JsonFormatterService = JsonFormatterService;
 }
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { JsonFormatterService };
+}

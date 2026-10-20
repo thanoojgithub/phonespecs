@@ -38,6 +38,15 @@ jobs:
       - name: Run Native JS Catalog CRUD Test Suite
         run: node scripts/test_catalog_crud.js
 
+      - name: Run Native JS Versioned Audit Test Suite
+        run: node scripts/test_audit_service.js
+
+      - name: Run Native JS JSON Formatter & Sanitizer Test Suite
+        run: node scripts/test_json_formatter.js
+
+      - name: Execute Full 100% Test Suite Runner
+        run: node scripts/run_all_tests.js
+
       - name: Check Apache 2.0 Compliance Files
         run: |
           if [ ! -f "LICENSE" ]; then

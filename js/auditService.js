@@ -490,3 +490,7 @@ class AuditService {
 if (typeof window !== 'undefined') {
   window.AuditService = AuditService;
 }
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { AuditService };
+}
