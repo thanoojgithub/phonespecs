@@ -26,6 +26,7 @@ const testSuites = [
   { name: 'CatalogService Native CRUD & Search Engine', file: 'test_catalog_crud.js' },
   { name: 'AuditService 128-Bit Versioning & Zero Duplicates', file: 'test_audit_service.js' },
   { name: 'JsonFormatterService & Control Character Sanitizer', file: 'test_json_formatter.js' },
+  { name: 'PhoneSpecsApp Controller & UI State Engine', file: 'test_app_controller.js' },
   { name: 'Apache License 2.0 Full Tree Compliance Audit', file: 'check_license_compliance.js' }
 ];
 

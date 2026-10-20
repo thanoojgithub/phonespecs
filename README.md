@@ -203,6 +203,7 @@ Run the catalog integrity validator and Native JS CRUD test suite using Node.js 
   node scripts/test_catalog_crud.js       # Pure Native JS CatalogService (57+ unit tests)
   node scripts/test_audit_service.js      # 128-bit collision-resistant hashing & bounded FIFO audit
   node scripts/test_json_formatter.js     # Lenient JSON auto-repair, control-char & key-sorting tests
+  node scripts/test_app_controller.js     # Pure Native JS DOM controller & modal/toast lifecycle tests
   node scripts/check_license_compliance.js # 100% Apache 2.0 license compliance audit
   ```
 - **Using Docker (if Node is not installed locally):**
@@ -210,14 +211,9 @@ Run the catalog integrity validator and Native JS CRUD test suite using Node.js 
   # Windows PowerShell: Run all test suites inside lightweight Node container
   docker run --rm -v ${PWD}:/app -w /app node:alpine node scripts/run_all_tests.js
   ```
-  # PowerShell
-  docker run --rm -v ${PWD}:/app -w /app node:alpine node scripts/validate_catalog.js
-  docker run --rm -v ${PWD}:/app -w /app node:alpine node scripts/test_catalog_crud.js
-  ```
   ```bash
   # Linux / macOS / WSL
-  docker run --rm -v "$(pwd)":/app -w /app node:alpine node scripts/validate_catalog.js
-  docker run --rm -v "$(pwd)":/app -w /app node:alpine node scripts/test_catalog_crud.js
+  docker run --rm -v "$(pwd)":/app -w /app node:alpine node scripts/run_all_tests.js
   ```
 
 ---
@@ -279,6 +275,10 @@ Every source code file in this repository contains the standard Apache 2.0 copyr
 - [`js/app.js`](js/app.js)
 - [`scripts/validate_catalog.js`](scripts/validate_catalog.js)
 - [`scripts/test_catalog_crud.js`](scripts/test_catalog_crud.js)
+- [`scripts/test_audit_service.js`](scripts/test_audit_service.js)
+- [`scripts/test_json_formatter.js`](scripts/test_json_formatter.js)
+- [`scripts/test_app_controller.js`](scripts/test_app_controller.js)
+- [`scripts/run_all_tests.js`](scripts/run_all_tests.js)
 - [`scripts/check_license_compliance.js`](scripts/check_license_compliance.js)
 
 Automated Apache 2.0 license compliance and test suites are enforced on every commit and pull request via dedicated GitHub Actions workflows:

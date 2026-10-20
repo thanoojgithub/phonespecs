@@ -3387,8 +3387,14 @@ class PhoneSpecsApp {
 }
 
 // Instantiate and initialize when DOM is ready
-window.addEventListener('DOMContentLoaded', () => {
-  window.phoneSpecsApp = new PhoneSpecsApp();
-  window.phoneSpecsApp.init();
-});
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('DOMContentLoaded', () => {
+    window.phoneSpecsApp = new PhoneSpecsApp();
+    window.phoneSpecsApp.init();
+  });
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { PhoneSpecsApp };
+}
 
