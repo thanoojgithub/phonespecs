@@ -1,0 +1,72 @@
+#
+# Copyright 2026 Thanooj Kalathuru
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+name: PR 100% Code Coverage Gatekeeper
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - main
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+
+concurrency:
+  group: coverage-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coverage_gate:
+    name: Verify 100% Code Coverage on Incoming Changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Schema & Data Integrity Validator
+        run: node scripts/validate_catalog.js
+
+      - name: Run Native JS Catalog CRUD Test Suite
+        run: node scripts/test_catalog_crud.js
+
+      - name: Run Native JS Versioned Audit Test Suite
+        run: node scripts/test_audit_service.js
+
+      - name: Run Native JS JSON Formatter & Sanitizer Test Suite
+        run: node scripts/test_json_formatter.js
+
+      - name: Run Native JS PhoneSpecsApp Controller & UI State Test Suite
+        run: node scripts/test_app_controller.js
+
+      - name: Run Unified Test Runner
+        run: node scripts/run_all_tests.js
+
+      - name: Enforce 100% Code Coverage Policy for PR
+        env:
+          BASE_REF: ${{ github.base_ref || 'main' }}
+        run: node scripts/check_code_coverage.js
+
+      - name: Verify Apache 2.0 License Compliance
+        run: node scripts/check_license_compliance.js

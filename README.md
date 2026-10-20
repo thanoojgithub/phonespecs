@@ -278,10 +278,12 @@ Every source code file in this repository contains the standard Apache 2.0 copyr
 - [`scripts/test_audit_service.js`](scripts/test_audit_service.js)
 - [`scripts/test_json_formatter.js`](scripts/test_json_formatter.js)
 - [`scripts/test_app_controller.js`](scripts/test_app_controller.js)
+- [`scripts/check_code_coverage.js`](scripts/check_code_coverage.js)
 - [`scripts/run_all_tests.js`](scripts/run_all_tests.js)
 - [`scripts/check_license_compliance.js`](scripts/check_license_compliance.js)
 
 Automated Apache 2.0 license compliance and test suites are enforced on every commit and pull request via dedicated GitHub Actions workflows:
+- **[PR 100% Code Coverage Gatekeeper](.github/workflows/pr-code-coverage.yml)**: Strict PR gate ensuring existing code and incoming PR changes maintain 100% test coverage and zero regressions.
 - **[Apache 2.0 License Compliance Audit](.github/workflows/license-compliance.yml)**: Verifies presence and valid formatting of official Apache 2.0 text in `LICENSE`, `NOTICE`, and required copyright headers on newly pushed or modified code files.
 - **[Quality & License Compliance CI](.github/workflows/ci.yml)**: Executes pure Native JS CRUD test suites and catalog schema validation.
 - **[Contributor DCO & License Check](.github/workflows/contributor-dco.yml)**: Enforces Developer Certificate of Origin (DCO) commit sign-offs (`git commit -s`) on all incoming pull requests.
