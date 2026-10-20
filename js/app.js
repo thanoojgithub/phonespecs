@@ -2347,38 +2347,45 @@ class PhoneSpecsApp {
   }
 
   fetchSelectedAuditVersion() {
-    const phoneId = this.dom.formPhoneId.value.trim();
-    if (!phoneId) return;
+    try {
+      const phoneId = this.dom.formPhoneId?.value?.trim();
+      if (!phoneId) {
+        this.showToast('Please select a phone record first.', 'error');
+        return;
+      }
 
-    const versionId = this.dom.formVersionSelect.value;
-    const targetVersion = this.auditService.getVersion(phoneId, versionId);
+      const versionId = this.dom.formVersionSelect.value;
+      const targetVersion = this.auditService.getVersion(phoneId, versionId);
 
-    if (!targetVersion || !targetVersion.snapshot) {
-      this.showToast('Selected version snapshot not found in audit trail.', 'error');
-      return;
+      if (!targetVersion || !targetVersion.snapshot) {
+        this.showToast('Selected version snapshot not found in audit trail.', 'error');
+        return;
+      }
+
+      const snap = targetVersion.snapshot;
+      this.populateFormFields({
+        id: phoneId,
+        brandId: snap.brandId || this.dom.formBrandId.value,
+        seriesId: snap.seriesId || '',
+        model: snap.model || '',
+        tagline: snap.tagline || '',
+        releaseYear: snap.releaseYear || new Date().getFullYear(),
+        releaseDate: snap.releaseDate || '',
+        specsRawJson: JSON.stringify(snap.specs || {}, null, 2),
+        highlightsRaw: Array.isArray(snap.highlights) ? snap.highlights.join('\n') : ''
+      });
+
+      this.activeEditHistoricalVersion = targetVersion;
+      if (this.dom.formVersionActiveBanner && this.dom.formVersionActiveText) {
+        const timeStr = new Date(targetVersion.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        this.dom.formVersionActiveText.textContent = `Active snapshot: v${targetVersion.version} (${timeStr}). Modifying on top of this revision; saving will create the next version.`;
+        this.dom.formVersionActiveBanner.classList.remove('is-hidden');
+      }
+
+      this.showToast(`Fetched version ${targetVersion.version} into form. Ready to edit and save!`, 'success');
+    } catch (err) {
+      this.showToast(`Failed to fetch audit version: ${err.message}`, 'error');
     }
-
-    const snap = targetVersion.snapshot;
-    this.populateFormFields({
-      id: phoneId,
-      brandId: snap.brandId || this.dom.formBrandId.value,
-      seriesId: snap.seriesId || '',
-      model: snap.model || '',
-      tagline: snap.tagline || '',
-      releaseYear: snap.releaseYear || new Date().getFullYear(),
-      releaseDate: snap.releaseDate || '',
-      specsRawJson: JSON.stringify(snap.specs || {}, null, 2),
-      highlightsRaw: Array.isArray(snap.highlights) ? snap.highlights.join('\n') : ''
-    });
-
-    this.activeEditHistoricalVersion = targetVersion;
-    if (this.dom.formVersionActiveBanner && this.dom.formVersionActiveText) {
-      const timeStr = new Date(targetVersion.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-      this.dom.formVersionActiveText.textContent = `Active snapshot: v${targetVersion.version} (${timeStr}). Modifying on top of this revision; saving will create the next version.`;
-      this.dom.formVersionActiveBanner.classList.remove('is-hidden');
-    }
-
-    this.showToast(`Fetched version ${targetVersion.version} into form. Ready to edit and save!`, 'success');
   }
 
   revertToLiveRecord() {
@@ -2540,8 +2547,19 @@ class PhoneSpecsApp {
     this.showToast('Starter specifications template loaded.', 'info');
   }
 
-  savePhone() {
+  async savePhone() {
+    if (this._isSavingPhone) return;
+    this._isSavingPhone = true;
+
+    const saveBtn = document.getElementById('btn-save-phone');
+    const originalBtnText = saveBtn ? saveBtn.textContent : 'Save Phone';
+
     try {
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+      }
+
       const rawModel = this.dom.formModel.value.trim();
       if (!rawModel) {
         this.showToast('Phone Model Name is required.', 'error');
@@ -2613,6 +2631,12 @@ class PhoneSpecsApp {
       this.closeFormModal();
     } catch (err) {
       this.showToast(`Failed to save record: ${err.message}`, 'error');
+    } finally {
+      this._isSavingPhone = false;
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = originalBtnText;
+      }
     }
   }
 
