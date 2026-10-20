@@ -1916,6 +1916,8 @@ class PhoneSpecsApp {
     this.dom.formHighlights = document.getElementById('form-highlights');
     this.dom.formSpecsJson = document.getElementById('form-specs-json');
     this.dom.btnFormFormatJson = document.getElementById('btn-form-format-json');
+    this.dom.btnFormSortJson = document.getElementById('btn-form-sort-json');
+    this.dom.btnFormMinifyJson = document.getElementById('btn-form-minify-json');
     this.dom.btnFormLoadTemplate = document.getElementById('btn-form-load-template');
 
     this.dom.formVersionHistoryGroup = document.getElementById('form-version-history-group');
@@ -2006,7 +2008,13 @@ class PhoneSpecsApp {
     });
 
     this.dom.formBrandId.addEventListener('change', () => this.onBrandChange());
-    this.dom.btnFormFormatJson.addEventListener('click', () => this.formatFormSpecs());
+    this.dom.btnFormFormatJson.addEventListener('click', () => this.formatFormSpecs(false));
+    if (this.dom.btnFormSortJson) {
+      this.dom.btnFormSortJson.addEventListener('click', () => this.formatFormSpecs(true));
+    }
+    if (this.dom.btnFormMinifyJson) {
+      this.dom.btnFormMinifyJson.addEventListener('click', () => this.minifyFormSpecs());
+    }
     this.dom.btnFormLoadTemplate.addEventListener('click', () => this.resetFormSpecsTemplate());
 
     this.dom.phoneCrudForm.addEventListener('submit', (e) => {
@@ -2446,13 +2454,49 @@ class PhoneSpecsApp {
     this.updateFormSeriesDropdown(selectedBrandId, defaultSeries);
   }
 
-  formatFormSpecs() {
-    try {
-      const parsed = JSON.parse(this.dom.formSpecsJson.value);
-      this.dom.formSpecsJson.value = JSON.stringify(parsed, null, 2);
-      this.showToast('JSON formatted cleanly.', 'info');
-    } catch (err) {
-      this.showToast(`Cannot format: ${err.message}`, 'error');
+  formatFormSpecs(sortKeys = false) {
+    const raw = this.dom.formSpecsJson.value;
+    const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    const result = JsonFormatterService.format(raw, { indent: 2, sortKeys });
+    const elapsed = Math.round(((typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now()) - t0) * 100) / 100;
+
+    if (result.success) {
+      this.dom.formSpecsJson.value = result.formatted;
+      const repairMsg = result.repaired ? ' (lenient syntax repaired)' : '';
+      const sortMsg = sortKeys ? ' & keys sorted' : '';
+      this.showToast(`JSON formatted${sortMsg}${repairMsg} in ${elapsed}ms.`, 'success');
+    } else {
+      const errorMsg = result.error || 'Invalid JSON syntax.';
+      this.showToast(errorMsg, 'error');
+      if (result.line && this.dom.formSpecsJson) {
+        // Attempt cursor jump to approximate line of error
+        const lines = raw.split('\n');
+        let charIndex = 0;
+        for (let i = 0; i < Math.min(result.line - 1, lines.length); i++) {
+          charIndex += lines[i].length + 1;
+        }
+        if (result.col) charIndex += Math.max(0, result.col - 1);
+        try {
+          this.dom.formSpecsJson.focus();
+          this.dom.formSpecsJson.setSelectionRange(charIndex, charIndex);
+        } catch (e) {
+          // Ignore selection error
+        }
+      }
+    }
+  }
+
+  minifyFormSpecs() {
+    const raw = this.dom.formSpecsJson.value;
+    const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    const result = JsonFormatterService.minify(raw);
+    const elapsed = Math.round(((typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now()) - t0) * 100) / 100;
+
+    if (result.success) {
+      this.dom.formSpecsJson.value = result.minified;
+      this.showToast(`JSON minified in ${elapsed}ms.`, 'success');
+    } else {
+      this.showToast(result.error || 'Cannot minify invalid JSON.', 'error');
     }
   }
 
@@ -2505,13 +2549,14 @@ class PhoneSpecsApp {
       }
 
       let parsedSpecs = {};
-      try {
-        parsedSpecs = JSON.parse(this.dom.formSpecsJson.value);
-        if (typeof parsedSpecs !== 'object' || parsedSpecs === null || Array.isArray(parsedSpecs)) {
-          throw new Error('Specifications must be a valid JSON object mapping category names to spec details.');
-        }
-      } catch (err) {
-        this.showToast(`Invalid JSON in Specifications: ${err.message}`, 'error');
+      const formatResult = JsonFormatterService.format(this.dom.formSpecsJson.value);
+      if (!formatResult.success) {
+        this.showToast(`Invalid JSON in Specifications: ${formatResult.error}`, 'error');
+        return;
+      }
+      parsedSpecs = formatResult.parsed;
+      if (typeof parsedSpecs !== 'object' || parsedSpecs === null || Array.isArray(parsedSpecs)) {
+        this.showToast('Specifications must be a valid JSON object mapping category names to spec details.', 'error');
         return;
       }
 

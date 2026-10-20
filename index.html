@@ -42,6 +42,9 @@
   <!-- Native JavaScript Robust Versioned Audit Service -->
   <script src="js/auditService.js?v=6.0"></script>
 
+  <!-- Native JavaScript High-Performance JSON Formatter Service -->
+  <script src="js/jsonFormatterService.js?v=6.0"></script>
+
   <!-- Native JavaScript Application Logic (Pure DOM UI & State Management) -->
   <script src="js/app.js?v=6.0"></script>
 </head>
@@ -327,7 +330,9 @@
             <div class="form-specs-header">
               <label class="form-specs-label" for="form-specs-json">Technical Specifications (JSON Format) *</label>
               <div class="form-specs-actions">
-                <button type="button" id="btn-form-format-json" class="btn-form-specs-action action-accent" title="Prettify JSON syntax">Format JSON</button>
+                <button type="button" id="btn-form-format-json" class="btn-form-specs-action action-accent" title="Format & prettify JSON syntax with auto-repair">Format JSON</button>
+                <button type="button" id="btn-form-sort-json" class="btn-form-specs-action" title="Sort category and spec keys alphabetically">Sort Keys</button>
+                <button type="button" id="btn-form-minify-json" class="btn-form-specs-action" title="Minify JSON into compact single line">Minify</button>
                 <button type="button" id="btn-form-load-template" class="btn-form-specs-action" title="Insert clean starter schema">Load Starter Template</button>
               </div>
             </div>

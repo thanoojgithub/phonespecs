@@ -119,6 +119,17 @@ PhoneSpecs features an enterprise-grade, dedicated audit architecture encapsulat
   - **Import Audit**: Upload and validate external `audit.json` files with automatic schema integrity verification and duplicate pruning.
   - **Reset to Disk**: Cleanly resets local browser state back to the repository's pristine disk files.
 
+### 7. Robust & High-Performance Native JSON Formatter ([`js/jsonFormatterService.js`](js/jsonFormatterService.js))
+PhoneSpecs incorporates a dedicated, zero-dependency Native JavaScript JSON engine designed for maximum execution speed (sub-millisecond parsing and formatting) and lenient syntax auto-repair for the **Technical Specifications** editor:
+- **Two-Tier Engine**:
+  - **Fast-Path**: Runs directly through the native browser engine (`JSON.parse` at compiled C++ speed) taking < 0.2ms.
+  - **Lenient Auto-Repair Fallback**: If an admin inputs non-standard JSON, the engine automatically repairs single quotes, unquoted property keys (`{ processor: 'A18 Pro' }` $\to$ `{"processor": "A18 Pro"}`), trailing dangling commas (`{ "a": 1, }` $\to$ `{"a": 1}`), and strips JavaScript comments without corrupting internal string literals.
+- **Formatter Controls**:
+  - **Format JSON**: Standardizes indentation cleanly with 2 spaces and repairs syntax anomalies.
+  - **Sort Keys**: Alphabetically re-orders categories and specification keys recursively for clean, structured consistency.
+  - **Minify**: Compresses specifications into a single dense line.
+- **Syntax Error Diagnostics**: If unrecoverable syntax is found, the editor pinpoints the exact line and column number, generates a contextual pointer snippet, and moves the text cursor to the error location.
+
 ---
 
 ## Local Development & Running
