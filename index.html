@@ -39,6 +39,9 @@
   <!-- Native JavaScript Catalog Service (Pure CRUD & Search Engine) -->
   <script src="js/catalogService.js?v=6.0"></script>
 
+  <!-- Native JavaScript Robust Versioned Audit Service -->
+  <script src="js/auditService.js?v=6.0"></script>
+
   <!-- Native JavaScript Application Logic (Pure DOM UI & State Management) -->
   <script src="js/app.js?v=6.0"></script>
 </head>
@@ -94,6 +97,8 @@
       <button class="btn-banner-action" id="btn-admin-add">+ Add New Phone</button>
       <button class="btn-banner-action" id="btn-admin-export" title="Download updated catalog.json file">Export Catalog</button>
       <button class="btn-banner-action" id="btn-admin-export-audit" title="Download versioned audit.json history file">Export Audit</button>
+      <button class="btn-banner-action" id="btn-admin-import-audit" title="Import & validate audit.json history file">Import Audit</button>
+      <input type="file" id="audit-file-input" accept=".json,application/json" class="is-hidden" aria-hidden="true">
       <button class="btn-banner-action" id="btn-admin-reset" title="Reset back to disk catalog.json and audit.json">Reset to Disk</button>
     </div>
   </div>
@@ -259,9 +264,17 @@
             <label class="form-version-label" for="form-version-select">Audit Versions (Max 5):</label>
             <select id="form-version-select" class="form-version-select" title="Select a prior saved version to fetch and edit on top of"></select>
             <button type="button" id="btn-fetch-version" class="btn-fetch-version" title="Fetch selected version data into form">Fetch Version</button>
+            <span class="version-meta-badge is-hidden" id="version-meta-badge" title="Version details"></span>
           </div>
         </div>
         <button type="button" class="btn-close-modal" id="btn-close-form" aria-label="Close form modal">✕</button>
+      </div>
+
+      <!-- Active Historical Edit Notification Banner -->
+      <div class="form-version-active-banner is-hidden" id="form-version-active-banner">
+        <span class="version-active-icon">ℹ</span>
+        <span class="version-active-text" id="form-version-active-text">Editing on top of historical audit snapshot. Saving will create the next version.</span>
+        <button type="button" class="btn-revert-active-version" id="btn-revert-active-version" title="Revert to current live catalog state">Revert to Live</button>
       </div>
 
       <!-- Main Form with Flex Column Filling Entire Modal Height -->

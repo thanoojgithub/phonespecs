@@ -2245,6 +2245,68 @@ input, select, textarea {
   border-color: #93c5fd;
 }
 
+.version-meta-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #475569;
+  background: #e2e8f0;
+  padding: 0.18rem 0.45rem;
+  border-radius: var(--radius-sm);
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.form-version-active-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #eff6ff;
+  border-bottom: 1px solid #bfdbfe;
+  padding: 0.4rem 1.25rem;
+  font-size: 0.78rem;
+  color: #1e40af;
+  flex-shrink: 0;
+}
+
+.version-active-icon {
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 0.65rem;
+  flex-shrink: 0;
+}
+
+.version-active-text {
+  flex: 1;
+  font-weight: 600;
+}
+
+.btn-revert-active-version {
+  padding: 0.2rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #ffffff;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  touch-action: manipulation;
+}
+
+.btn-revert-active-version:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
 .form-modal-content {
   display: grid;
   grid-template-rows: 1fr;

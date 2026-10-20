@@ -1813,14 +1813,10 @@ class PhoneSpecsApp {
     this.adminMode = false;
     this.showFormModal = false;
     this.formTitle = 'Add New Mobile Phone';
+    this.activeEditHistoricalVersion = null; // Tracks if currently modifying on top of a fetched version
 
-    // Robust Audit Trail & Versioning: Maintains 5 recent versions for each catalog item
-    this.auditData = {
-      schemaVersion: "1.0.0",
-      description: "PhoneSpecs Catalog Versioned Audit Trail",
-      lastUpdated: new Date().toISOString(),
-      items: {}
-    };
+    // Robust Audit Trail & Versioning Service: Strictly maintains 5 recent versions for each catalog item
+    this.auditService = new AuditService();
 
     this.toasts = [];
     this.searchDebounceTimer = null;
@@ -1866,6 +1862,8 @@ class PhoneSpecsApp {
     this.dom.btnAdminAdd = document.getElementById('btn-admin-add');
     this.dom.btnAdminExport = document.getElementById('btn-admin-export');
     this.dom.btnAdminExportAudit = document.getElementById('btn-admin-export-audit');
+    this.dom.btnAdminImportAudit = document.getElementById('btn-admin-import-audit');
+    this.dom.auditFileInput = document.getElementById('audit-file-input');
     this.dom.btnAdminReset = document.getElementById('btn-admin-reset');
 
     this.dom.searchInput = document.getElementById('search-input');
@@ -1923,6 +1921,10 @@ class PhoneSpecsApp {
     this.dom.formVersionHistoryGroup = document.getElementById('form-version-history-group');
     this.dom.formVersionSelect = document.getElementById('form-version-select');
     this.dom.btnFetchVersion = document.getElementById('btn-fetch-version');
+    this.dom.versionMetaBadge = document.getElementById('version-meta-badge');
+    this.dom.formVersionActiveBanner = document.getElementById('form-version-active-banner');
+    this.dom.formVersionActiveText = document.getElementById('form-version-active-text');
+    this.dom.btnRevertActiveVersion = document.getElementById('btn-revert-active-version');
 
     this.dom.toastContainer = document.getElementById('toast-container');
   }
@@ -1937,10 +1939,20 @@ class PhoneSpecsApp {
     if (this.dom.btnAdminExportAudit) {
       this.dom.btnAdminExportAudit.addEventListener('click', () => this.exportAuditJson());
     }
+    if (this.dom.btnAdminImportAudit && this.dom.auditFileInput) {
+      this.dom.btnAdminImportAudit.addEventListener('click', () => this.dom.auditFileInput.click());
+      this.dom.auditFileInput.addEventListener('change', (e) => this.handleAuditFileUpload(e));
+    }
     this.dom.btnAdminReset.addEventListener('click', () => this.resetToDisk());
 
     if (this.dom.btnFetchVersion) {
       this.dom.btnFetchVersion.addEventListener('click', () => this.fetchSelectedAuditVersion());
+    }
+    if (this.dom.formVersionSelect) {
+      this.dom.formVersionSelect.addEventListener('change', () => this.updateVersionMetaBadge());
+    }
+    if (this.dom.btnRevertActiveVersion) {
+      this.dom.btnRevertActiveVersion.addEventListener('click', () => this.revertToLiveRecord());
     }
 
     // Instant Search with 120ms debounce
@@ -2027,23 +2039,16 @@ class PhoneSpecsApp {
 
   async loadAuditData() {
     try {
-      const cachedAudit = localStorage.getItem(AUDIT_STORAGE_KEY);
-      if (cachedAudit) {
-        this.auditData = JSON.parse(cachedAudit);
-      } else {
+      const loadedFromCache = this.auditService.loadFromStorage();
+      if (!loadedFromCache) {
         const res = await fetch('./data/audit.json');
         if (res.ok) {
-          this.auditData = await res.json();
+          const rawAudit = await res.json();
+          this.auditService.loadInitialData(rawAudit);
         }
       }
     } catch (e) {
-      // Fallback empty schema
-      this.auditData = {
-        schemaVersion: "1.0.0",
-        description: "PhoneSpecs Catalog Versioned Audit Trail",
-        lastUpdated: new Date().toISOString(),
-        items: {}
-      };
+      console.warn('[PhoneSpecsApp] Falling back to fresh audit container:', e);
     }
   }
 
@@ -2277,6 +2282,11 @@ class PhoneSpecsApp {
         highlightsRaw: Array.isArray(phone.highlights) ? phone.highlights.join('\n') : ''
       });
 
+      this.activeEditHistoricalVersion = null;
+      if (this.dom.formVersionActiveBanner) {
+        this.dom.formVersionActiveBanner.classList.add('is-hidden');
+      }
+
       this.populateFormVersionSelect(phone.id);
 
       this.showFormModal = true;
@@ -2293,14 +2303,39 @@ class PhoneSpecsApp {
     if (versions.length === 0) {
       this.dom.formVersionHistoryGroup.classList.add('is-hidden');
       this.dom.formVersionSelect.innerHTML = '';
+      if (this.dom.versionMetaBadge) this.dom.versionMetaBadge.classList.add('is-hidden');
       return;
     }
 
     this.dom.formVersionHistoryGroup.classList.remove('is-hidden');
-    this.dom.formVersionSelect.innerHTML = versions.map(v => {
+    this.dom.formVersionSelect.innerHTML = versions.map((v, idx) => {
       const timeStr = new Date(v.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' });
-      return `<option value="${v.versionId}">v${v.version} (${timeStr})</option>`;
+      const label = idx === 0 ? `v${v.version} (Latest, ${timeStr})` : `v${v.version} (${timeStr})`;
+      return `<option value="${v.versionId}">${this.escapeHtml(label)}</option>`;
     }).join('');
+
+    this.updateVersionMetaBadge();
+  }
+
+  updateVersionMetaBadge() {
+    if (!this.dom.formVersionSelect || !this.dom.versionMetaBadge) return;
+    const phoneId = this.dom.formPhoneId?.value?.trim();
+    if (!phoneId) {
+      this.dom.versionMetaBadge.classList.add('is-hidden');
+      return;
+    }
+
+    const versionId = this.dom.formVersionSelect.value;
+    const targetVersion = this.auditService.getVersion(phoneId, versionId);
+    if (!targetVersion) {
+      this.dom.versionMetaBadge.classList.add('is-hidden');
+      return;
+    }
+
+    const summary = targetVersion.changeSummary || 'Baseline revision';
+    this.dom.versionMetaBadge.textContent = summary;
+    this.dom.versionMetaBadge.title = `Summary: ${summary} (Checksum: ${targetVersion.checksum || 'N/A'})`;
+    this.dom.versionMetaBadge.classList.remove('is-hidden');
   }
 
   fetchSelectedAuditVersion() {
@@ -2308,11 +2343,10 @@ class PhoneSpecsApp {
     if (!phoneId) return;
 
     const versionId = this.dom.formVersionSelect.value;
-    const versions = this.getAuditVersionsForItem(phoneId);
-    const targetVersion = versions.find(v => v.versionId === versionId);
+    const targetVersion = this.auditService.getVersion(phoneId, versionId);
 
     if (!targetVersion || !targetVersion.snapshot) {
-      this.showToast('Selected version snapshot not found.', 'error');
+      this.showToast('Selected version snapshot not found in audit trail.', 'error');
       return;
     }
 
@@ -2329,11 +2363,51 @@ class PhoneSpecsApp {
       highlightsRaw: Array.isArray(snap.highlights) ? snap.highlights.join('\n') : ''
     });
 
-    this.showToast(`Fetched version ${targetVersion.version} into form. You can now edit and save!`, 'success');
+    this.activeEditHistoricalVersion = targetVersion;
+    if (this.dom.formVersionActiveBanner && this.dom.formVersionActiveText) {
+      const timeStr = new Date(targetVersion.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      this.dom.formVersionActiveText.textContent = `Active snapshot: v${targetVersion.version} (${timeStr}). Modifying on top of this revision; saving will create the next version.`;
+      this.dom.formVersionActiveBanner.classList.remove('is-hidden');
+    }
+
+    this.showToast(`Fetched version ${targetVersion.version} into form. Ready to edit and save!`, 'success');
+  }
+
+  revertToLiveRecord() {
+    const phoneId = this.dom.formPhoneId?.value?.trim();
+    if (!phoneId) return;
+
+    const liveRecord = this.catalogService.getPhoneById(phoneId);
+    if (!liveRecord) {
+      this.showToast('Live catalog record not found.', 'error');
+      return;
+    }
+
+    this.populateFormFields({
+      id: liveRecord.id,
+      brandId: liveRecord.brandId,
+      seriesId: liveRecord.seriesId || '',
+      model: liveRecord.model,
+      tagline: liveRecord.tagline || '',
+      releaseYear: liveRecord.releaseYear || new Date().getFullYear(),
+      releaseDate: liveRecord.releaseDate || '',
+      specsRawJson: JSON.stringify(liveRecord.specs || {}, null, 2),
+      highlightsRaw: Array.isArray(liveRecord.highlights) ? liveRecord.highlights.join('\n') : ''
+    });
+
+    this.activeEditHistoricalVersion = null;
+    if (this.dom.formVersionActiveBanner) {
+      this.dom.formVersionActiveBanner.classList.add('is-hidden');
+    }
+    this.showToast('Reverted form back to current live catalog state.', 'info');
   }
 
   closeFormModal() {
     this.showFormModal = false;
+    this.activeEditHistoricalVersion = null;
+    if (this.dom.formVersionActiveBanner) {
+      this.dom.formVersionActiveBanner.classList.add('is-hidden');
+    }
     this.render();
   }
 
@@ -2466,7 +2540,10 @@ class PhoneSpecsApp {
         // Capture snapshot of original state before updating for robust versioning & undo
         const previousPhoneState = this.catalogService.getPhoneById(phoneId);
         if (previousPhoneState) {
-          this.recordAuditVersion(phoneId, previousPhoneState);
+          const diffSummary = this.activeEditHistoricalVersion
+            ? `Edited on top of v${this.activeEditHistoricalVersion.version} snapshot`
+            : null;
+          this.recordAuditVersion(phoneId, previousPhoneState, phoneData, diffSummary);
         }
 
         savedRecord = this.catalogService.updatePhone(phoneData);
@@ -2476,6 +2553,8 @@ class PhoneSpecsApp {
         }
       } else {
         savedRecord = this.catalogService.addPhone(phoneData);
+        // Create baseline version in audit service for newly added phones
+        this.recordAuditVersion(savedRecord.id, savedRecord, null, 'Initial device creation');
         this.showToast(`Added new phone "${savedRecord.model}"`, 'success');
       }
 
@@ -2487,64 +2566,17 @@ class PhoneSpecsApp {
   }
 
   persistAuditData() {
-    try {
-      this.auditData.lastUpdated = new Date().toISOString();
-      localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(this.auditData));
-    } catch (e) {
-      // Storage quota safety
-    }
+    this.auditService.persistToStorage();
   }
 
-  recordAuditVersion(phoneId, phoneRecord) {
-    if (!phoneId || !phoneRecord) return;
-    if (!this.auditData.items[phoneId]) {
-      this.auditData.items[phoneId] = {
-        model: phoneRecord.model,
-        brandId: phoneRecord.brandId,
-        currentVersion: 0,
-        versions: []
-      };
-    }
-
-    const itemMeta = this.auditData.items[phoneId];
-    itemMeta.model = phoneRecord.model;
-    itemMeta.brandId = phoneRecord.brandId;
-    itemMeta.currentVersion += 1;
-
-    // Clean snapshot without runtime cached search buffers
-    const snapshot = {
-      id: phoneRecord.id,
-      brandId: phoneRecord.brandId,
-      brandName: phoneRecord.brandName,
-      seriesId: phoneRecord.seriesId || '',
-      seriesName: phoneRecord.seriesName || '',
-      model: phoneRecord.model,
-      tagline: phoneRecord.tagline || '',
-      releaseDate: phoneRecord.releaseDate || '',
-      releaseYear: phoneRecord.releaseYear,
-      specs: JSON.parse(JSON.stringify(phoneRecord.specs || {})),
-      highlights: Array.isArray(phoneRecord.highlights) ? [...phoneRecord.highlights] : []
-    };
-
-    const newVersionEntry = {
-      version: itemMeta.currentVersion,
-      versionId: `v${itemMeta.currentVersion}-${Date.now().toString().slice(-6)}`,
-      timestamp: new Date().toISOString(),
-      snapshot: snapshot
-    };
-
-    // Prepend latest update and maintain strictly 5 recent updates
-    itemMeta.versions.unshift(newVersionEntry);
-    if (itemMeta.versions.length > MAX_ITEM_VERSIONS) {
-      itemMeta.versions = itemMeta.versions.slice(0, MAX_ITEM_VERSIONS);
-    }
-
+  recordAuditVersion(phoneId, previousState, newState = null, customNote = null) {
+    if (!phoneId || !previousState) return;
+    this.auditService.recordVersion(phoneId, previousState, newState, customNote);
     this.persistAuditData();
   }
 
   getAuditVersionsForItem(phoneId) {
-    if (!phoneId || !this.auditData.items[phoneId]) return [];
-    return this.auditData.items[phoneId].versions || [];
+    return this.auditService.getVersions(phoneId);
   }
 
   hasItemUndo(phoneId) {
@@ -2562,9 +2594,11 @@ class PhoneSpecsApp {
     }
 
     try {
-      const versions = this.getAuditVersionsForItem(phoneId);
-      // Remove latest version snapshot and restore it
-      const restoredVersion = versions.shift();
+      const restoredVersion = this.auditService.popVersion(phoneId);
+      if (!restoredVersion || !restoredVersion.snapshot) {
+        this.showToast('Could not retrieve audit snapshot for undo.', 'error');
+        return;
+      }
       this.persistAuditData();
 
       // Restore snapshot directly in CatalogService
@@ -2594,10 +2628,8 @@ class PhoneSpecsApp {
       this.catalogService.deletePhone(phoneId);
       this.compareList = this.compareList.filter(p => p.id !== phoneId);
 
-      if (this.auditData.items[phoneId]) {
-        delete this.auditData.items[phoneId];
-        this.persistAuditData();
-      }
+      this.auditService.removeItem(phoneId);
+      this.persistAuditData();
 
       if (this.activePhone && this.activePhone.id === phoneId) {
         this.closeDetails();
@@ -2645,8 +2677,7 @@ class PhoneSpecsApp {
 
   exportAuditJson() {
     try {
-      this.auditData.lastUpdated = new Date().toISOString();
-      const jsonString = JSON.stringify(this.auditData, null, 2);
+      const jsonString = this.auditService.exportJSON();
       const blob = new Blob([jsonString], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
 
@@ -2662,6 +2693,33 @@ class PhoneSpecsApp {
     } catch (err) {
       this.showToast('Failed to export audit.json file.', 'error');
     }
+  }
+
+  handleAuditFileUpload(event) {
+    const file = event?.target?.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target.result;
+        const itemCount = this.auditService.importJSON(text);
+        this.persistAuditData();
+        this.showToast(`Successfully imported audit trail (${itemCount} devices verified)!`, 'success');
+        if (this.showFormModal && this.dom.formPhoneId?.value) {
+          this.populateFormVersionSelect(this.dom.formPhoneId.value);
+        }
+      } catch (err) {
+        this.showToast(`Import failed: ${err.message}`, 'error');
+      } finally {
+        if (event.target) event.target.value = '';
+      }
+    };
+    reader.onerror = () => {
+      this.showToast('Failed to read selected audit JSON file.', 'error');
+      if (event.target) event.target.value = '';
+    };
+    reader.readAsText(file);
   }
 
   resetToDisk() {

@@ -98,16 +98,23 @@ A clean, high-performance, and modern mobile phone technical specifications cata
 - **Export Audit**: Download the versioned `audit.json` history file tracking edits across devices.
 - **Reset to Disk**: Discard local edits and re-sync both `data/catalog.json` and `data/audit.json` back to pristine repository files.
 
-### 6. Robust Versioned Audit Trail & Item History
-PhoneSpecs includes a dedicated, robust audit trail stored in [`data/audit.json`](data/audit.json) that maintains version history independently from the primary catalog:
-- **Decoupled Audit File**: Keeps `catalog.json` lean for public visitors while maintaining a complete, versioned audit trail for admins.
-- **Self-Maintained 5 Recent Versions**: Whenever an admin saves changes to an existing phone, the prior state is automatically archived. Each phone maintains strictly its **5 most recent versions** (older revisions automatically roll off).
-- **Clean Card UI**: Phone cards keep a clean, focused admin interface (**Edit** and **Delete**) without cluttering card space.
-- **Select, Fetch & Update Workflow**:
+### 6. Robust Versioned Audit System (100% Deterministic & Self-Maintained)
+PhoneSpecs features an enterprise-grade, dedicated audit architecture encapsulated in [`js/auditService.js`](js/auditService.js) and backed by [`data/audit.json`](data/audit.json):
+- **Decoupled Audit Persistence**: The primary [`data/catalog.json`](data/catalog.json) remains ultra-lightweight and fast for visitors, while [`data/audit.json`](data/audit.json) serves as the persistent audit repository for administrators.
+- **Strict 5-Version Bounded FIFO**: Every catalog item retains strictly the 5 most recent versioned snapshots. When a 6th version is generated, the oldest revision rolls off deterministically.
+- **Integrity Checksums & Deep Schema Validation**: Every archived version is stamped with a deterministic 32-bit FNV-1a checksum of canonical state, an ISO 8601 timestamp, and deep snapshot validation.
+- **Automated Field-Level Diff Summaries**: The audit engine computes structured change summaries between revisions (e.g. `Modified Display System > Refresh Rate`, `Release year updated to 2025`), displayed directly in the version picker badge.
+- **Defensive Immutability & Fault Tolerance**: Uses deep cloning to guarantee historical snapshots cannot be mutated by runtime modifications, paired with resilient localStorage error handling and corrupted data recovery.
+- **Select, Fetch, Modify & Save Workflow**:
   1. Open the **Edit Phone** modal for any device.
-  2. The **Audit Versions (Max 5)** selector in the modal header displays available versions with timestamps (e.g. `v3 (Oct 20, 06:30 AM)`).
-  3. Select any desired historical version and click **Fetch Version** to instantly load that version's exact specs into the form.
-  4. Make edits directly on top of the fetched version and click **Save Phone** to commit the new update.
+  2. The **Audit Versions (Max 5)** dropdown displays previous versions with relative timestamps and change summaries.
+  3. Select any prior version and click **Fetch Version** to load that snapshot's exact specs into the form.
+  4. An active notification banner confirms you are editing on top of a historical snapshot, with an instant **Revert to Live** option.
+  5. Apply your modifications and click **Save Phone** to commit the new sequential version into the catalog and audit trail.
+- **Bi-Directional Audit Sync**:
+  - **Export Audit**: Download the complete, verified `audit.json` file to commit to the repository.
+  - **Import Audit**: Upload and validate external `audit.json` files with automatic schema integrity verification.
+  - **Reset to Disk**: Cleanly resets local browser state back to the repository's pristine disk files.
 
 ---
 
