@@ -2620,6 +2620,11 @@ class PhoneSpecsApp {
         if (this.activePhone && this.activePhone.id === savedRecord.id) {
           this.activePhone = savedRecord;
         }
+
+        // Keep compare drawer in sync if this item is currently selected for comparison
+        if (Array.isArray(this.compareList)) {
+          this.compareList = this.compareList.map(p => p.id === savedRecord.id ? savedRecord : p);
+        }
       } else {
         savedRecord = this.catalogService.addPhone(phoneData);
         // Create baseline version in audit service for newly added phones
@@ -2629,6 +2634,7 @@ class PhoneSpecsApp {
 
       this.persistToLocalStorage();
       this.closeFormModal();
+      this.render(); // Ensure all cards, details views, and drawers re-render immediately with fresh data
     } catch (err) {
       this.showToast(`Failed to save record: ${err.message}`, 'error');
     } finally {
