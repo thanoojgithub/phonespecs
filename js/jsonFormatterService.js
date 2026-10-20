@@ -44,57 +44,12 @@ class JsonFormatterService {
     if (!rawText || typeof rawText !== 'string') return '';
     let text = rawText.trim();
 
-    // 1. Strip single-line comments (// ...) and multi-line comments (/* ... */) outside of strings
-    let clean = '';
+    // 1. First Pass: State machine that escapes bad control characters (0x00-0x1F, unescaped newlines/tabs)
+    // inside strings, while converting single-quoted strings to double-quoted strings.
+    let pass1 = '';
     let inString = false;
-    let stringChar = '';
+    let quoteType = '';
     let isEscaped = false;
-    const len = text.length;
-
-    for (let i = 0; i < len; i++) {
-      const char = text[i];
-      const nextChar = i + 1 < len ? text[i + 1] : '';
-
-      if (inString) {
-        clean += char;
-        if (isEscaped) {
-          isEscaped = false;
-        } else if (char === '\\') {
-          isEscaped = true;
-        } else if (char === stringChar) {
-          inString = false;
-        }
-        continue;
-      }
-
-      // Check comments
-      if (char === '/' && nextChar === '/') {
-        // Skip until newline
-        i += 2;
-        while (i < len && text[i] !== '\n' && text[i] !== '\r') i++;
-        if (i < len) clean += text[i];
-        continue;
-      }
-      if (char === '/' && nextChar === '*') {
-        // Skip until */
-        i += 2;
-        while (i + 1 < len && !(text[i] === '*' && text[i + 1] === '/')) i++;
-        i++; // skip /
-        continue;
-      }
-
-      if (char === '"' || char === "'") {
-        inString = true;
-        stringChar = char;
-      }
-      clean += char;
-    }
-
-    // 2. Escape bad control characters inside string literals (0x00 to 0x1F, unescaped literal newlines/tabs)
-    let sanitizedChars = '';
-    inString = false;
-    stringChar = '';
-    isEscaped = false;
 
     for (let i = 0; i < text.length; i++) {
       const char = text[i];
@@ -102,83 +57,65 @@ class JsonFormatterService {
 
       if (inString) {
         if (isEscaped) {
-          sanitizedChars += char;
+          pass1 += char;
           isEscaped = false;
         } else if (char === '\\') {
-          sanitizedChars += char;
+          pass1 += char;
           isEscaped = true;
-        } else if (char === stringChar) {
-          sanitizedChars += char;
+        } else if (char === quoteType) {
+          pass1 += '"'; // always close with double quote
           inString = false;
+        } else if (char === '"' && quoteType === "'") {
+          pass1 += '\\"'; // escape literal double quotes found within single-quoted string
         } else if (char === '\n') {
-          sanitizedChars += '\\n';
+          pass1 += '\\n';
         } else if (char === '\r') {
-          sanitizedChars += '\\r';
+          pass1 += '\\r';
         } else if (char === '\t') {
-          sanitizedChars += '\\t';
+          pass1 += '\\t';
         } else if (code < 32) {
-          // General unescaped ASCII control character: escape as Unicode hex \u00xx
-          sanitizedChars += '\\u' + code.toString(16).padStart(4, '0');
+          // ASCII control codes 0-31
+          pass1 += '\\u' + code.toString(16).padStart(4, '0');
         } else {
-          sanitizedChars += char;
+          pass1 += char;
         }
+        continue;
+      }
+
+      // Check comments outside of strings
+      const nextChar = i + 1 < text.length ? text[i + 1] : '';
+      if (char === '/' && nextChar === '/') {
+        // Skip until newline
+        i += 2;
+        while (i < text.length && text[i] !== '\n' && text[i] !== '\r') i++;
+        if (i < text.length) pass1 += text[i];
+        continue;
+      }
+      if (char === '/' && nextChar === '*') {
+        // Skip until */
+        i += 2;
+        while (i + 1 < text.length && !(text[i] === '*' && text[i + 1] === '/')) i++;
+        i++; // skip /
         continue;
       }
 
       if (char === '"' || char === "'") {
         inString = true;
-        stringChar = char;
-      }
-      sanitizedChars += char;
-    }
-
-    text = sanitizedChars;
-
-    // 3. Normalize single quotes to double quotes (preserving escaped internal quotes)
-    // We walk character-by-character to strictly handle single quotes vs double quotes
-    let quoteNormalized = '';
-    inString = false;
-    stringChar = '';
-    isEscaped = false;
-
-    for (let i = 0; i < text.length; i++) {
-      const char = text[i];
-
-      if (inString) {
-        if (isEscaped) {
-          quoteNormalized += char;
-          isEscaped = false;
-        } else if (char === '\\') {
-          quoteNormalized += char;
-          isEscaped = true;
-        } else if (char === stringChar) {
-          quoteNormalized += '"';
-          inString = false;
-        } else if (char === '"' && stringChar === "'") {
-          quoteNormalized += '\\"';
-        } else {
-          quoteNormalized += char;
-        }
+        quoteType = char;
+        pass1 += '"'; // always open with double quote
         continue;
       }
 
-      if (char === "'" || char === '"') {
-        inString = true;
-        stringChar = char;
-        quoteNormalized += '"';
-        continue;
-      }
-
-      quoteNormalized += char;
+      pass1 += char;
     }
 
-    text = quoteNormalized;
+    text = pass1;
 
-    // 4. Fix unquoted property keys: e.g. { processor: "Snapdragon" } -> { "processor": "Snapdragon" }
+    // 2. Fix unquoted property keys: e.g. { processor: "Snapdragon" } -> { "processor": "Snapdragon" }
     // Match unquoted identifiers preceding a colon
     text = text.replace(/([{,]\s*)([a-zA-Z0-9_$-]+)(\s*:)/g, '$1"$2"$3');
 
-    // 5. Strip trailing commas before closing braces/brackets: e.g. { "a": 1, } -> { "a": 1 }
+    // 3. Strip trailing commas before closing braces/brackets: e.g. { "a": 1, } -> { "a": 1 }
     text = text.replace(/,\s*([}\]])/g, '$1');
 
     return text;
