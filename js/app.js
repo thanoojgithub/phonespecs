@@ -2539,15 +2539,21 @@ class PhoneSpecsApp {
       if (isEditing) {
         // Capture snapshot of original state before updating for robust versioning & undo
         const previousPhoneState = this.catalogService.getPhoneById(phoneId);
+        let versionRecorded = null;
         if (previousPhoneState) {
           const diffSummary = this.activeEditHistoricalVersion
             ? `Edited on top of v${this.activeEditHistoricalVersion.version} snapshot`
             : null;
-          this.recordAuditVersion(phoneId, previousPhoneState, phoneData, diffSummary);
+          versionRecorded = this.recordAuditVersion(phoneId, previousPhoneState, phoneData, diffSummary);
         }
 
         savedRecord = this.catalogService.updatePhone(phoneData);
-        this.showToast(`Updated specs for "${savedRecord.model}". Version saved to audit trail.`, 'success');
+        if (versionRecorded) {
+          this.showToast(`Updated specs for "${savedRecord.model}". New version v${versionRecorded.version} recorded in audit trail.`, 'success');
+        } else {
+          this.showToast(`Updated specs for "${savedRecord.model}". (Identical content — duplicate audit version omitted).`, 'info');
+        }
+
         if (this.activePhone && this.activePhone.id === savedRecord.id) {
           this.activePhone = savedRecord;
         }
@@ -2570,9 +2576,12 @@ class PhoneSpecsApp {
   }
 
   recordAuditVersion(phoneId, previousState, newState = null, customNote = null) {
-    if (!phoneId || !previousState) return;
-    this.auditService.recordVersion(phoneId, previousState, newState, customNote);
-    this.persistAuditData();
+    if (!phoneId || !previousState) return null;
+    const entry = this.auditService.recordVersion(phoneId, previousState, newState, customNote);
+    if (entry) {
+      this.persistAuditData();
+    }
+    return entry;
   }
 
   getAuditVersionsForItem(phoneId) {

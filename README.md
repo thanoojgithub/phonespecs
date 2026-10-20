@@ -101,8 +101,11 @@ A clean, high-performance, and modern mobile phone technical specifications cata
 ### 6. Robust Versioned Audit System (100% Deterministic & Self-Maintained)
 PhoneSpecs features an enterprise-grade, dedicated audit architecture encapsulated in [`js/auditService.js`](js/auditService.js) and backed by [`data/audit.json`](data/audit.json):
 - **Decoupled Audit Persistence**: The primary [`data/catalog.json`](data/catalog.json) remains ultra-lightweight and fast for visitors, while [`data/audit.json`](data/audit.json) serves as the persistent audit repository for administrators.
-- **Strict 5-Version Bounded FIFO**: Every catalog item retains strictly the 5 most recent versioned snapshots. When a 6th version is generated, the oldest revision rolls off deterministically.
-- **Integrity Checksums & Deep Schema Validation**: Every archived version is stamped with a deterministic 32-bit FNV-1a checksum of canonical state, an ISO 8601 timestamp, and deep snapshot validation.
+- **Zero Duplicate Versions (Collision-Resistant 128-Bit Content Hashing)**:
+  - Uses recursive canonical JSON serialization (key-sorted and whitespace-normalized) so identical content always yields the exact same byte string regardless of object traversal or formatting differences.
+  - Generates a high-entropy 128-bit multi-lane hash digest (combining 4 independent mixing algorithms across Murmur3, FNV-1a, DJB2-variant, and SDBM with avalanche mixing) with virtually zero collision probability (1 in $2^{128}$).
+  - Before any new version is added, the audit engine compares the content hash against existing versions in the stack. If the content is identical, duplicate version creation is automatically omitted.
+- **Strict 5-Version Bounded FIFO**: Every catalog item retains strictly up to the 5 most recent unique versioned snapshots. When a 6th unique revision is generated, the oldest revision rolls off deterministically.
 - **Automated Field-Level Diff Summaries**: The audit engine computes structured change summaries between revisions (e.g. `Modified Display System > Refresh Rate`, `Release year updated to 2025`), displayed directly in the version picker badge.
 - **Defensive Immutability & Fault Tolerance**: Uses deep cloning to guarantee historical snapshots cannot be mutated by runtime modifications, paired with resilient localStorage error handling and corrupted data recovery.
 - **Select, Fetch, Modify & Save Workflow**:
@@ -113,7 +116,7 @@ PhoneSpecs features an enterprise-grade, dedicated audit architecture encapsulat
   5. Apply your modifications and click **Save Phone** to commit the new sequential version into the catalog and audit trail.
 - **Bi-Directional Audit Sync**:
   - **Export Audit**: Download the complete, verified `audit.json` file to commit to the repository.
-  - **Import Audit**: Upload and validate external `audit.json` files with automatic schema integrity verification.
+  - **Import Audit**: Upload and validate external `audit.json` files with automatic schema integrity verification and duplicate pruning.
   - **Reset to Disk**: Cleanly resets local browser state back to the repository's pristine disk files.
 
 ---
