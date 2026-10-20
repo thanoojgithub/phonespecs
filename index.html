@@ -131,16 +131,16 @@
     </div>
 
     <!-- Centered Circular Brand Filter Links Across Multiple Lines Below Search Bar -->
-    <div class="circular-brands-section">
+    <nav class="circular-brands-section" aria-label="Brand Filter Navigation">
       <div class="circular-brands-container" id="brands-container">
         <!-- Rendered dynamically by native JS -->
       </div>
-    </div>
+    </nav>
 
     <!-- Brand Series Submenu Filter Pills (Only shown when a brand has multiple distinct series) -->
-    <div class="filter-pills is-hidden" id="series-container">
+    <nav class="filter-pills is-hidden" id="series-container" aria-label="Device Series Filter">
       <!-- Rendered dynamically by native JS -->
-    </div>
+    </nav>
 
     <!-- Active Heading & Dedicated Right-Corner Sort By for All Mobile Models -->
     <div class="catalog-heading-row">
@@ -188,7 +188,7 @@
   </main>
 
   <!-- Compare Phones Bottom Drawer Bar -->
-  <div class="compare-drawer-bar is-hidden" id="compare-drawer">
+  <aside class="compare-drawer-bar is-hidden" id="compare-drawer" aria-label="Compare Tray">
     <div class="compare-drawer-left">
       <span class="compare-drawer-title">Compare Models (Max 3):</span>
       <div class="compare-chips-group" id="compare-chips-container">
@@ -202,10 +202,10 @@
         Compare Side-by-Side (<span id="compare-drawer-count">0</span>/3) →
       </button>
     </div>
-  </div>
+  </aside>
 
   <!-- Side-by-Side Comparison Modal Window (Clean Text-Only Matrix) -->
-  <div class="compare-modal-overlay is-hidden" id="compare-modal">
+  <div class="compare-modal-overlay is-hidden" id="compare-modal" role="dialog" aria-modal="true" aria-labelledby="compare-modal-title">
     <div class="compare-modal" id="compare-modal-card">
       <div class="details-header">
         <div class="modal-title-wrap">
@@ -218,9 +218,9 @@
               <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>
             </svg>
           </span>
-          <h3 class="details-title">Mobile Phone Comparison</h3>
+          <h3 class="details-title" id="compare-modal-title">Mobile Phone Comparison</h3>
         </div>
-        <button class="btn-close-modal" id="btn-close-compare">✕</button>
+        <button class="btn-close-modal" id="btn-close-compare" aria-label="Close comparison window">✕</button>
       </div>
 
       <div class="compare-table-scroll-wrap" id="compare-table-container">
@@ -230,7 +230,7 @@
   </div>
 
   <!-- Detailed Technical Specifications Modal Page (Photo-Free, Price-Free, Stylish UI UX) -->
-  <div class="details-overlay is-hidden" id="details-modal">
+  <div class="details-overlay is-hidden" id="details-modal" role="dialog" aria-modal="true" aria-labelledby="details-model-title">
     <div class="details-modal" id="details-modal-card">
       <!-- Modal Top Header -->
       <div class="details-header">
@@ -238,7 +238,7 @@
           <span class="modal-brand-badge" id="details-brand-badge"></span>
           <h3 class="details-title" id="details-model-title"></h3>
         </div>
-        <button class="btn-close-modal" id="btn-close-details">✕</button>
+        <button class="btn-close-modal" id="btn-close-details" aria-label="Close phone specifications modal">✕</button>
       </div>
 
       <div class="details-body" id="details-body-content">
@@ -248,12 +248,12 @@
   </div>
 
   <!-- App Owner Add/Edit Phone Modal -->
-  <div class="form-modal-overlay is-hidden" id="form-modal">
+  <div class="form-modal-overlay is-hidden" id="form-modal" role="dialog" aria-modal="true" aria-labelledby="form-modal-title">
     <div class="form-modal form-modal-container" id="form-modal-card">
       <!-- Modal Top Header -->
       <div class="form-modal-header">
         <h3 class="details-title" id="form-modal-title">Add New Mobile Phone</h3>
-        <button type="button" class="btn-close-modal" id="btn-close-form">✕</button>
+        <button type="button" class="btn-close-modal" id="btn-close-form" aria-label="Close form modal">✕</button>
       </div>
 
       <!-- Main Form with Flex Column Filling Entire Modal Height -->
