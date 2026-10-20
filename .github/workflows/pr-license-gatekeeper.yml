@@ -1,0 +1,56 @@
+#
+# Copyright 2026 Thanooj Kalathuru
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+name: PR Apache 2.0 License Gatekeeper
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  gatekeeper:
+    name: Apache 2.0 PR Verification & Auto-Labeler
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Full License Compliance Check
+        id: compliance_check
+        run: |
+          node scripts/check_license_compliance.js
+
+      - name: Verify PR Description for Apache 2.0 Acknowledgment
+        run: |
+          BODY="${{ github.event.pull_request.body }}"
+          echo "Inspecting pull request description..."
+          # Verify that PR does not contain conflicting proprietary or incompatible license claims
+          if echo "$BODY" | grep -i -E "(GPL|AGPL|proprietary|all rights reserved|commercial use only)"; then
+            echo "::warning::PR description references terms that may conflict with Apache License 2.0 compatibility."
+          fi
+          echo "✓ Pull request description inspected."

@@ -1,0 +1,102 @@
+#
+# Copyright 2026 Thanooj Kalathuru
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+name: Apache 2.0 Release Packaging & Source SBOM
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package-release:
+    name: Package Compliant Apache 2.0 Source Archive & SBOM
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Verify Mandatory Apache 2.0 Distribution Artifacts
+        run: |
+          echo "=================================================="
+          echo " Verifying Legal Files for Apache 2.0 Distribution"
+          echo "=================================================="
+          
+          # Section 4(a): Must provide a copy of this License
+          if [ ! -f "LICENSE" ]; then
+            echo "::error::Missing LICENSE file required by Apache 2.0 Section 4(a)"
+            exit 1
+          fi
+
+          # Section 4(d): Must include a copy of the NOTICE file
+          if [ ! -f "NOTICE" ]; then
+            echo "::error::Missing NOTICE file required by Apache 2.0 Section 4(d)"
+            exit 1
+          fi
+
+          echo "✓ Section 4(a) LICENSE and Section 4(d) NOTICE verified."
+
+      - name: Generate Source Software Bill of Materials (SBOM) & Checksums
+        run: |
+          mkdir -p dist
+          TAG_NAME="${GITHUB_REF_NAME:-source}"
+          ARCHIVE_NAME="phonespecs-${TAG_NAME}-source.tar.gz"
+
+          # Create clean source tarball excluding git and temporary files
+          tar --exclude='./.git' \
+              --exclude='./.github' \
+              --exclude='./dist' \
+              -czvf "dist/${ARCHIVE_NAME}" .
+
+          cd dist
+          # Generate SHA256 checksum for distribution authenticity
+          sha256sum "${ARCHIVE_NAME}" > "${ARCHIVE_NAME}.sha256"
+
+          # Generate SPDX-compatible lightweight JSON manifest
+          cat <<EOF > "phonespecs-${TAG_NAME}-sbom.json"
+          {
+            "spdxVersion": "SPDX-2.3",
+            "dataLicense": "CC0-1.0",
+            "SPDXID": "SPDXRef-DOCUMENT",
+            "name": "PhoneSpecs",
+            "packageLicenseConcluded": "Apache-2.0",
+            "packageLicenseDeclared": "Apache-2.0",
+            "packageCopyrightText": "Copyright 2026 Thanooj Kalathuru",
+            "packages": [
+              {
+                "name": "PhoneSpecs",
+                "SPDXID": "SPDXRef-Package-PhoneSpecs",
+                "versionInfo": "${TAG_NAME}",
+                "downloadLocation": "https://github.com/${{ github.repository }}",
+                "licenseConcluded": "Apache-2.0",
+                "licenseDeclared": "Apache-2.0"
+              }
+            ]
+          }
+          EOF
+
+          echo "Distribution artifacts generated:"
+          ls -lh
+
+      - name: Upload Release Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: apache-release-bundle
+          path: dist/*

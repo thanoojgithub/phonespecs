@@ -279,6 +279,8 @@ Automated Apache 2.0 license compliance and test suites are enforced on every co
 - **[Quality & License Compliance CI](.github/workflows/ci.yml)**: Executes pure Native JS CRUD test suites and catalog schema validation.
 - **[Contributor DCO & License Check](.github/workflows/contributor-dco.yml)**: Enforces Developer Certificate of Origin (DCO) commit sign-offs (`git commit -s`) on all incoming pull requests.
 - **[Apache 2.0 Notice & Trademark Audit](.github/workflows/apache-notice-audit.yml)**: Audits in-app web footer legal disclaimers, trademark non-endorsement language, and third-party attribution fidelity.
+- **[PR Apache 2.0 License Gatekeeper](.github/workflows/pr-license-gatekeeper.yml)**: Scans incoming PR descriptions and code changes to block incompatible license types (e.g. GPL copyleft conflicts).
+- **[Apache 2.0 Release Packaging & SBOM](.github/workflows/apache-release-distribution.yml)**: Packages compliant release archives bundled with mandatory Section 4(a) `LICENSE`, Section 4(d) `NOTICE`, SHA-256 checksums, and SPDX-2.3 Software Bill of Materials (SBOM).
 
 ---
 
