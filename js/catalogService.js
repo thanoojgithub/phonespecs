@@ -300,6 +300,25 @@ class CatalogService {
   }
 
   /**
+   * RESTORE: Restore an exact phone snapshot record (for undo/redo)
+   */
+  setPhone(phoneRecord) {
+    if (!phoneRecord || !phoneRecord.id) {
+      throw new Error('Valid phone record with ID is required to restore.');
+    }
+    const processed = this.processPhonesData([phoneRecord])[0];
+    const existingIndex = this.phones.findIndex(p => p.id === phoneRecord.id);
+    const newPhoneList = [...this.phones];
+    if (existingIndex !== -1) {
+      newPhoneList[existingIndex] = processed;
+    } else {
+      newPhoneList.unshift(processed);
+    }
+    this.phones = Object.freeze(newPhoneList);
+    return processed;
+  }
+
+  /**
    * DELETE: Remove a phone by ID
    */
   deletePhone(phoneId) {

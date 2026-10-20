@@ -1786,6 +1786,7 @@ const DEFAULT_CATALOG_DATA = {
 
 const STORAGE_KEY = 'phonespecs_catalog_v3';
 const ADMIN_PASS_KEY = 'phonespecs_admin_session_active';
+const ITEM_HISTORY_KEY = 'phonespecs_item_history_v1';
 
 /**
  * PhoneSpecsApp — Pure Native JavaScript UI Controller & DOM Engine
@@ -1811,6 +1812,9 @@ class PhoneSpecsApp {
     this.adminMode = false;
     this.showFormModal = false;
     this.formTitle = 'Add New Mobile Phone';
+
+    // Per-item edit history tracking for individual Undo: phoneId -> Array of phone snapshots
+    this.editHistory = this.loadItemHistory();
 
     this.toasts = [];
     this.searchDebounceTimer = null;
@@ -2365,8 +2369,14 @@ class PhoneSpecsApp {
 
       let savedRecord = null;
       if (isEditing) {
+        // Capture snapshot of original state before updating for individual undo
+        const previousPhoneState = this.catalogService.getPhoneById(phoneId);
+        if (previousPhoneState) {
+          this.pushItemSnapshot(phoneId, previousPhoneState);
+        }
+
         savedRecord = this.catalogService.updatePhone(phoneData);
-        this.showToast(`Updated specs for "${savedRecord.model}"`, 'success');
+        this.showToast(`Updated specs for "${savedRecord.model}". Undo available.`, 'success');
         if (this.activePhone && this.activePhone.id === savedRecord.id) {
           this.activePhone = savedRecord;
         }
@@ -2382,6 +2392,87 @@ class PhoneSpecsApp {
     }
   }
 
+  loadItemHistory() {
+    try {
+      const raw = localStorage.getItem(ITEM_HISTORY_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  persistItemHistory() {
+    try {
+      localStorage.setItem(ITEM_HISTORY_KEY, JSON.stringify(this.editHistory));
+    } catch (e) {
+      // Ignore quota errors on history
+    }
+  }
+
+  pushItemSnapshot(phoneId, phoneRecord) {
+    if (!phoneId || !phoneRecord) return;
+    if (!this.editHistory[phoneId]) {
+      this.editHistory[phoneId] = [];
+    }
+    // Clean deep clone of phoneRecord without computed search buffers
+    const snapshot = {
+      id: phoneRecord.id,
+      brandId: phoneRecord.brandId,
+      brandName: phoneRecord.brandName,
+      seriesId: phoneRecord.seriesId || '',
+      seriesName: phoneRecord.seriesName || '',
+      model: phoneRecord.model,
+      tagline: phoneRecord.tagline || '',
+      releaseDate: phoneRecord.releaseDate || '',
+      releaseYear: phoneRecord.releaseYear,
+      specs: JSON.parse(JSON.stringify(phoneRecord.specs || {})),
+      highlights: Array.isArray(phoneRecord.highlights) ? [...phoneRecord.highlights] : []
+    };
+    this.editHistory[phoneId].push(snapshot);
+    // Limit history stack per item to last 20 revisions
+    if (this.editHistory[phoneId].length > 20) {
+      this.editHistory[phoneId].shift();
+    }
+    this.persistItemHistory();
+  }
+
+  hasItemUndo(phoneId) {
+    return Boolean(this.editHistory[phoneId] && this.editHistory[phoneId].length > 0);
+  }
+
+  getItemUndoCount(phoneId) {
+    return this.editHistory[phoneId] ? this.editHistory[phoneId].length : 0;
+  }
+
+  undoItemEdit(phoneId) {
+    if (!phoneId || !this.hasItemUndo(phoneId)) {
+      this.showToast('No previous edit history found for this phone.', 'info');
+      return;
+    }
+
+    try {
+      const historyStack = this.editHistory[phoneId];
+      const previousSnapshot = historyStack.pop();
+      if (historyStack.length === 0) {
+        delete this.editHistory[phoneId];
+      }
+      this.persistItemHistory();
+
+      // Restore snapshot directly in CatalogService
+      const restored = this.catalogService.setPhone(previousSnapshot);
+
+      if (this.activePhone && this.activePhone.id === phoneId) {
+        this.activePhone = restored;
+      }
+
+      this.persistToLocalStorage();
+      this.showToast(`Undid edit for "${restored.model}". Restored previous version.`, 'success');
+      this.render();
+    } catch (err) {
+      this.showToast(`Failed to undo edit: ${err.message}`, 'error');
+    }
+  }
+
   deletePhone(phoneId) {
     if (!phoneId) return;
 
@@ -2393,6 +2484,11 @@ class PhoneSpecsApp {
 
       this.catalogService.deletePhone(phoneId);
       this.compareList = this.compareList.filter(p => p.id !== phoneId);
+
+      if (this.editHistory[phoneId]) {
+        delete this.editHistory[phoneId];
+        this.persistItemHistory();
+      }
 
       if (this.activePhone && this.activePhone.id === phoneId) {
         this.closeDetails();
@@ -2442,6 +2538,7 @@ class PhoneSpecsApp {
     try {
       if (confirm('Reset catalog back to pristine data/catalog.json file from disk? This clears any local browser edits.')) {
         localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(ITEM_HISTORY_KEY);
         window.location.reload();
       }
     } catch (err) {
@@ -2730,6 +2827,7 @@ class PhoneSpecsApp {
 
           <div class="item-card-admin-bar ${this.adminMode ? '' : 'is-hidden'}" data-admin-bar="true">
             <button class="btn-card-edit" data-action="edit" data-phone-id="${phone.id}">Edit</button>
+            ${this.hasItemUndo(phone.id) ? `<button class="btn-card-undo" data-action="undo" data-phone-id="${phone.id}" title="Undo last edit for this phone (${this.getItemUndoCount(phone.id)} available)">↶ Undo</button>` : ''}
             <button class="btn-card-delete" data-action="delete" data-phone-id="${phone.id}">Delete</button>
           </div>
         </div>
@@ -2757,6 +2855,13 @@ class PhoneSpecsApp {
         if (editBtn) {
           e.stopPropagation();
           this.openEditModal(phone);
+          return;
+        }
+
+        const undoBtn = e.target.closest('[data-action="undo"]');
+        if (undoBtn) {
+          e.stopPropagation();
+          this.undoItemEdit(phoneId);
           return;
         }
 
@@ -2983,6 +3088,16 @@ class PhoneSpecsApp {
           <button id="btn-modal-compare-toggle" class="btn-modal-compare ${compareBtnClass}">
             ${compareBtnText}
           </button>
+          ${this.adminMode ? `
+            <button id="btn-modal-edit" class="btn-modal-edit" title="Edit specifications">
+              ✏ Edit Phone
+            </button>
+            ${this.hasItemUndo(phone.id) ? `
+              <button id="btn-modal-undo" class="btn-modal-undo" title="Undo last edit for this phone (${this.getItemUndoCount(phone.id)} available)">
+                ↶ Undo Edit (${this.getItemUndoCount(phone.id)})
+              </button>
+            ` : ''}
+          ` : ''}
         </div>
       </div>
 
@@ -2994,6 +3109,20 @@ class PhoneSpecsApp {
     if (compareBtn) {
       compareBtn.addEventListener('click', () => {
         this.toggleCompare(phone);
+      });
+    }
+
+    const editBtn = document.getElementById('btn-modal-edit');
+    if (editBtn) {
+      editBtn.addEventListener('click', () => {
+        this.openEditModal(phone);
+      });
+    }
+
+    const undoBtn = document.getElementById('btn-modal-undo');
+    if (undoBtn) {
+      undoBtn.addEventListener('click', () => {
+        this.undoItemEdit(phone.id);
       });
     }
   }

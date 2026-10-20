@@ -1570,12 +1570,15 @@ input, select, textarea {
   border-top: 1px dashed #cbd5e1;
 }
 
-.btn-card-edit, .btn-card-delete {
+.btn-card-edit, .btn-card-undo, .btn-card-delete {
   flex: 1;
   padding: 0.35rem 0.6rem;
   border-radius: var(--radius-sm);
   font-size: 0.75rem;
   font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: var(--transition);
 }
 
 .btn-card-edit {
@@ -1584,10 +1587,66 @@ input, select, textarea {
   border: 1px solid #cbd5e1;
 }
 
+.btn-card-edit:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+.btn-card-undo {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.btn-card-undo:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1e40af;
+}
+
 .btn-card-delete {
   background: var(--red-subtle-bg);
   color: var(--red-primary);
   border: 1px solid var(--red-border);
+}
+
+.btn-card-delete:hover {
+  background: #ffe4e6;
+  border-color: var(--red-primary);
+}
+
+.btn-modal-edit,
+.btn-modal-undo {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+}
+
+.btn-modal-edit {
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.btn-modal-edit:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.btn-modal-undo {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.btn-modal-undo:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1e40af;
 }
 
 /* Form Modal — Mobile-First Bottom-Sheet */
