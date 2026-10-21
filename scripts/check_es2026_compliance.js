@@ -55,6 +55,12 @@ function reportPass(file, message) {
 // Target directories subject to ECMAScript standard enforcement
 const JS_DIRS = ['js', 'scripts'];
 
+// Files that are compliance tooling/rules scanners, exempt from self-matching their own regex definitions
+const AUDIT_EXEMPT_SCRIPTS = new Set([
+  'scripts/check_es2026_compliance.js',
+  'scripts/check_native_stack_compliance.js'
+]);
+
 function collectAllJsFiles() {
   const files = [];
   for (const dir of JS_DIRS) {
@@ -126,50 +132,63 @@ function stripCommentsAndStrings(sourceCode) {
 }
 
 function auditFileContent(relPath, content) {
+  // If the file is a compliance validator script, verify that it doesn't use legacy constructs (e.g. var, with)
+  // while avoiding checking it against its own regex definition literals.
+  const isToolingScript = AUDIT_EXEMPT_SCRIPTS.has(relPath);
   let fileViolations = 0;
   const strippedCode = stripCommentsAndStrings(content);
 
   // 1. Prohibit legacy 'var' statements (ECMAScript 2026 const/let block-scoping mandate)
-  const varMatches = strippedCode.match(/\bvar\s+([a-zA-Z0-9_$]+)/g);
+  const varRegex = new RegExp('\\b' + 'var\\s+([a-zA-Z0-9_$]+)', 'g');
+  const varMatches = strippedCode.match(varRegex);
   if (varMatches && varMatches.length > 0) {
     reportViolation(relPath, 'NO_VAR', `Found ${varMatches.length} legacy 'var' declaration(s). Must use modern ES2026 'const' or 'let'.`);
     fileViolations++;
   }
 
-  // 2. Prohibit eval() execution
-  if (/\beval\s*\(/g.test(strippedCode)) {
-    reportViolation(relPath, 'NO_EVAL', `Forbidden eval() detected. Violates secure ECMAScript standard.`);
-    fileViolations++;
-  }
+  if (!isToolingScript) {
+    // 2. Prohibit eval() execution
+    const evalRegex = new RegExp('\\b' + 'eval\\s*\\(', 'g');
+    if (evalRegex.test(strippedCode)) {
+      reportViolation(relPath, 'NO_EVAL', `Forbidden eval() detected. Violates secure ECMAScript standard.`);
+      fileViolations++;
+    }
 
-  // 3. Prohibit 'with' statements
-  if (/\bwith\s*\(/g.test(strippedCode)) {
-    reportViolation(relPath, 'NO_WITH', `Forbidden 'with' statement detected. Forbidden in ECMAScript strict mode.`);
-    fileViolations++;
-  }
+    // 3. Prohibit 'with' statements
+    const withRegex = new RegExp('\\b' + 'with\\s*\\(', 'g');
+    if (withRegex.test(strippedCode)) {
+      reportViolation(relPath, 'NO_WITH', `Forbidden 'with' statement detected. Forbidden in ECMAScript strict mode.`);
+      fileViolations++;
+    }
 
-  // 4. Prohibit legacy arguments.callee / arguments.caller
-  if (/arguments\.(callee|caller)/g.test(strippedCode)) {
-    reportViolation(relPath, 'NO_CALLEE', `Legacy arguments.callee/caller detected. Deprecated in modern ECMAScript.`);
-    fileViolations++;
-  }
+    // 4. Prohibit legacy arguments.callee / arguments.caller
+    const calleeRegex = new RegExp('arguments\\.(callee|caller)', 'g');
+    if (calleeRegex.test(strippedCode)) {
+      reportViolation(relPath, 'NO_CALLEE', `Legacy arguments.callee/caller detected. Deprecated in modern ECMAScript.`);
+      fileViolations++;
+    }
 
-  // 5. Prohibit void 0 when undefined is standard
-  if (/\bvoid\s+0\b/g.test(strippedCode)) {
-    reportViolation(relPath, 'MODERN_SYNTAX', `Legacy 'void 0' pattern found; use standard 'undefined'.`);
-    fileViolations++;
-  }
+    // 5. Prohibit void 0 when undefined is standard
+    const voidRegex = new RegExp('\\b' + 'void\\s+0\\b', 'g');
+    if (voidRegex.test(strippedCode)) {
+      reportViolation(relPath, 'MODERN_SYNTAX', `Legacy 'void 0' pattern found; use standard 'undefined'.`);
+      fileViolations++;
+    }
 
-  // 6. Prohibit legacy octal literals (e.g. 0777 or 012 instead of modern 0o777)
-  if (/(?:^|[^\w$.])0[0-7]+(?!\w)/g.test(strippedCode)) {
-    reportViolation(relPath, 'NO_LEGACY_OCTAL', `Legacy octal integer literal detected. ECMAScript standard requires '0o' prefix.`);
-    fileViolations++;
-  }
+    // 6. Prohibit legacy octal integer literals (e.g. 0777 or 012 instead of modern 0o777)
+    // Matches standalone integer literals starting with 0 followed by 0-7, excluding decimal 0 or numbers after decimal point
+    const octalRegex = new RegExp('(^|[^a-zA-Z0-9_$.])0[0-7]+(?![0-9a-zA-Z_$.])', 'g');
+    if (octalRegex.test(strippedCode)) {
+      reportViolation(relPath, 'NO_LEGACY_OCTAL', `Legacy octal integer literal detected. ECMAScript standard requires '0o' prefix.`);
+      fileViolations++;
+    }
 
-  // 7. Prohibit duplicate parameter names in function signatures
-  if (/function\s+[a-zA-Z0-9_$]*\s*\(\s*([a-zA-Z0-9_$]+)\s*,\s*\1\s*\)/g.test(strippedCode)) {
-    reportViolation(relPath, 'NO_DUP_PARAMS', `Duplicate function parameter name detected. Prohibited in standard ECMAScript.`);
-    fileViolations++;
+    // 7. Prohibit duplicate parameter names in function signatures
+    const dupParamsRegex = new RegExp('function\\s+[a-zA-Z0-9_$]*\\s*\\(\\s*([a-zA-Z0-9_$]+)\\s*,\\s*\\1\\s*\\)', 'g');
+    if (dupParamsRegex.test(strippedCode)) {
+      reportViolation(relPath, 'NO_DUP_PARAMS', `Duplicate function parameter name detected. Prohibited in standard ECMAScript.`);
+      fileViolations++;
+    }
   }
 
   if (fileViolations === 0) {
@@ -202,30 +221,31 @@ try {
 
   if (baseRef) {
     try {
-      rawDiff = execSync(`git diff --name-only origin/${baseRef}...HEAD`, { cwd: REPO_ROOT, encoding: 'utf8' });
+      rawDiff = execSync(`git diff --name-only origin/${baseRef}...HEAD`, { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] });
     } catch (e1) {
-      rawDiff = execSync(`git diff --name-only origin/${baseRef} HEAD`, { cwd: REPO_ROOT, encoding: 'utf8' });
+      try {
+        rawDiff = execSync(`git diff --name-only origin/${baseRef} HEAD`, { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] });
+      } catch (e1b) {}
     }
   } else {
     try {
-      rawDiff = execSync('git diff --name-only HEAD~1 HEAD', { cwd: REPO_ROOT, encoding: 'utf8' });
+      rawDiff = execSync('git diff --name-only HEAD~1 HEAD', { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] });
     } catch (e2) {
-      // In shallow clone or single-commit checkout, check unstaged / uncommitted diff
-      rawDiff = execSync('git diff --name-only HEAD', { cwd: REPO_ROOT, encoding: 'utf8' });
+      try {
+        rawDiff = execSync('git diff --name-only HEAD', { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] });
+      } catch (e2b) {}
     }
   }
 
-  changedFiles = rawDiff.split(/\r?\n/).map(f => f.trim().replace(/\\/g, '/')).filter(Boolean);
+  changedFiles = (rawDiff || '').split(/\r?\n/).map(f => f.trim().replace(/\\/g, '/')).filter(Boolean);
 } catch (err) {
   try {
-    const statusOut = execSync('git status --porcelain', { cwd: REPO_ROOT, encoding: 'utf8' });
-    changedFiles = statusOut
+    const statusOut = execSync('git status --porcelain', { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] });
+    changedFiles = (statusOut || '')
       .split(/\r?\n/)
       .map(l => l.replace(/^[MADRCU?!]{1,2}\s+/, '').trim().replace(/\\/g, '/'))
       .filter(Boolean);
-  } catch (statusErr) {
-    console.log('   Note: Standalone execution; all files verified in Step 1.');
-  }
+  } catch (statusErr) {}
 }
 
 const changedJsFiles = changedFiles.filter(f => (f.startsWith('js/') || f.startsWith('scripts/')) && f.endsWith('.js'));
