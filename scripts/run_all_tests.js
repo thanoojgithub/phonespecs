@@ -38,7 +38,7 @@ for (const suite of testSuites) {
   console.log(`>>> Running Suite: ${suite.name} (${suite.file})`);
   try {
     const filePath = path.resolve(__dirname, suite.file);
-    execSync(`node "${filePath}"`, { stdio: 'inherit' });
+    execSync(`"${process.execPath}" "${filePath}"`, { stdio: 'inherit' });
     console.log(`\n----------------------------------------------------\n`);
   } catch (err) {
     console.error(`\n❌ Test Suite Failed: ${suite.name}\n`);

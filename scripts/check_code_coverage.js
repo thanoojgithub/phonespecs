@@ -77,7 +77,7 @@ for (const suite of REQUIRED_TEST_SUITES) {
 
   process.stdout.write(`   Running: ${suite.name} ... `);
   try {
-    execSync(`node "${fullTestPath}"`, { stdio: 'pipe' });
+    execSync(`"${process.execPath}" "${fullTestPath}"`, { stdio: 'pipe' });
     console.log('✅ PASSED');
   } catch (err) {
     console.log('❌ FAILED');

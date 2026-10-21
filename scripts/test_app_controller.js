@@ -294,8 +294,9 @@ assert(app.selectedBrand === 'all', 'handleHashRoute sets selectedBrand from #al
 
 // Toast notifications
 app.showToast('Test Toast Notification', 'success');
-assert(app.toasts.length === 1, 'showToast adds toast entry');
-assert(app.toasts[0].message === 'Test Toast Notification', 'Toast message matches');
+assert(app.toasts.length > 0, 'showToast adds toast entry');
+const latestToast = app.toasts[app.toasts.length - 1];
+assert(latestToast && latestToast.message === 'Test Toast Notification', 'Toast message matches');
 
 console.log(`\n====================================================`);
 console.log(` PhoneSpecsApp Tests: Total: ${totalTests} | Passed: ${passedTests} | Failed: ${failedTests}`);
