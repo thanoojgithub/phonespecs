@@ -18,6 +18,10 @@ A clean, high-performance, and modern mobile phone technical specifications cata
 
 - [Features](#features)
 - [Architecture & Tech Stack](#architecture--tech-stack)
+- [ECMAScript 2026 (ES2026 / ECMA-262) Standards Compliance](#ecmascript-2026-es2026--ecma-262-standards-compliance)
+  - [Codebase Adherence & Zero Legacy Syntax](#codebase-adherence--zero-legacy-syntax)
+  - [Automated Full-Tree & PR Diff Gatekeeper](#automated-full-tree--pr-diff-gatekeeper)
+  - [ES2026 APIs & Design Patterns Applied](#es2026-apis--design-patterns-applied)
 - [User Guide](#user-guide)
   - [1. Browsing and Filtering by Brand](#1-browsing-and-filtering-by-brand)
   - [2. Real-Time Search & Sorting](#2-real-time-search--sorting)
@@ -26,10 +30,6 @@ A clean, high-performance, and modern mobile phone technical specifications cata
   - [5. App Owner Mode (Admin Data Management)](#5-app-owner-mode-admin-data-management)
   - [6. Robust Versioned Audit Trail & Item History](#6-robust-versioned-audit-trail--item-history)
 - [Local Development & Running](#local-development--running)
-- [ECMAScript 2026 (ES2026 / ECMA-262) Standards Compliance](#ecmascript-2026-es2026--ecma-262-standards-compliance)
-  - [Codebase Adherence & Zero Legacy Syntax](#codebase-adherence--zero-legacy-syntax)
-  - [Automated Full-Tree & PR Diff Gatekeeper](#automated-full-tree--pr-diff-gatekeeper)
-  - [ES2026 APIs & Design Patterns Applied](#es2026-apis--design-patterns-applied)
 - [Apache License 2.0 Compliance](#apache-license-20-compliance)
   - [Summary of Rights & Conditions](#summary-of-rights--conditions)
   - [Legal Limitations & Disclaimers](#legal-limitations--disclaimers)
@@ -60,6 +60,39 @@ A clean, high-performance, and modern mobile phone technical specifications cata
 - **Application Controller**: Pure Native JavaScript UI controller in [`js/app.js`](js/app.js) handling DOM events, view rendering, comparison trays, and modal dialogs.
 - **Data Catalog**: Structured JSON store in [`data/catalog.json`](data/catalog.json).
 - **Audit Trail & Versioning**: Dedicated decoupled audit store in [`data/audit.json`](data/audit.json) maintaining 5 recent revisions per device.
+
+---
+
+## ECMAScript 2026 (ES2026 / ECMA-262) Standards Compliance
+
+PhoneSpecs strictly follows and enforces **100% ECMAScript 2026 (17th Edition / ECMA-262)** standards across both the existing codebase and all incoming pull requests.
+
+### Codebase Adherence & Zero Legacy Syntax
+1. **Strict Block Scoping (0% `var`):**
+   - All variable declarations strictly use modern block-scoped `const` and `let` across [`js/`](js/) and [`scripts/`](scripts/). Legacy `var` declarations are strictly forbidden.
+2. **Secure ECMAScript Runtime (0% `eval` & `with`):**
+   - Zero invocations of dynamic code execution (`eval()`), which violates secure ECMAScript specifications.
+   - Zero usage of the deprecated `with` statement prohibited in ECMAScript strict mode.
+3. **Clean Execution Contexts:**
+   - Zero references to legacy `arguments.callee` or `arguments.caller`.
+   - Native standard `undefined` semantics (zero legacy `void 0` hacks).
+
+### Automated Full-Tree & PR Diff Gatekeeper
+Continuous compliance is enforced on every commit and pull request through automated quality gates:
+* **Dedicated Standalone Engine ([`scripts/check_es2026_compliance.js`](scripts/check_es2026_compliance.js)):**
+  - **Step 1 (Full Codebase):** Audits 100% of all JavaScript source files in the repository.
+  - **Step 2 (PR Changes):** Automatically detects `git diff` comparing the PR branch against `origin/main` (or `HEAD~1`), scanning every incoming and modified line. Any PR introducing legacy/non-standard syntax fails CI immediately.
+* **Architecture Validator Integration ([`scripts/check_native_stack_compliance.js`](scripts/check_native_stack_compliance.js)):**
+  - Integrates ES2026 validation into the pre-check engine alongside zero-dependency and zero-framework compliance checks.
+* **GitHub Actions Workflows:**
+  - **[Quality & License Compliance CI](.github/workflows/ci.yml):** Runs `Verify 100% ECMAScript 2026 (ES2026) Standards Compliance` on all pushes and PRs.
+  - **[PR Pre-Checks Build Verification](.github/workflows/pr-prechecks.yml)**: Executes `Check 3b: 100% ECMAScript 2026 (ES2026) Standards Gate (Full Tree & PR Diffs)` across all PR triggers (`opened`, `synchronize`, `reopened`, `ready_for_review`).
+
+### ES2026 APIs & Design Patterns Applied
+* **`Map.prototype.getOrInsert()`**: Streamlines key-based collection grouping in [`CatalogService.prototype.getBrandDistributionMap()`](js/catalogService.js) without redundant `.has()` / `.set()` lookups.
+* **`Math.sumPrecise()`**: Eliminates floating-point accumulation rounding errors when calculating catalog statistical metrics in [`CatalogService.prototype.calculateAverageReleaseYear()`](js/catalogService.js).
+* **State Immutability**: All core collections and snapshots are permanently guarded with `Object.freeze()`.
+* **Standard Modern Operators**: Comprehensive adoption of optional chaining (`?.`), nullish coalescing (`??`), and native `Map`/`Set` collection structures.
 
 ---
 
@@ -220,39 +253,6 @@ Run the catalog integrity validator and Native JS CRUD test suite using Node.js 
   # Linux / macOS / WSL
   docker run --rm -v "$(pwd)":/app -w /app node:alpine node scripts/run_all_tests.js
   ```
-
----
-
-## ECMAScript 2026 (ES2026 / ECMA-262) Standards Compliance
-
-PhoneSpecs strictly follows and enforces **100% ECMAScript 2026 (17th Edition / ECMA-262)** standards across both the existing codebase and all incoming pull requests.
-
-### Codebase Adherence & Zero Legacy Syntax
-1. **Strict Block Scoping (0% `var`):**
-   - All variable declarations strictly use modern block-scoped `const` and `let` across [`js/`](js/) and [`scripts/`](scripts/). Legacy `var` declarations are strictly forbidden.
-2. **Secure ECMAScript Runtime (0% `eval` & `with`):**
-   - Zero invocations of dynamic code execution (`eval()`), which violates secure ECMAScript specifications.
-   - Zero usage of the deprecated `with` statement prohibited in ECMAScript strict mode.
-3. **Clean Execution Contexts:**
-   - Zero references to legacy `arguments.callee` or `arguments.caller`.
-   - Native standard `undefined` semantics (zero legacy `void 0` hacks).
-
-### Automated Full-Tree & PR Diff Gatekeeper
-Continuous compliance is enforced on every commit and pull request through automated quality gates:
-* **Dedicated Standalone Engine ([`scripts/check_es2026_compliance.js`](scripts/check_es2026_compliance.js)):**
-  - **Step 1 (Full Codebase):** Audits 100% of all JavaScript source files in the repository.
-  - **Step 2 (PR Changes):** Automatically detects `git diff` comparing the PR branch against `origin/main` (or `HEAD~1`), scanning every incoming and modified line. Any PR introducing legacy/non-standard syntax fails CI immediately.
-* **Architecture Validator Integration ([`scripts/check_native_stack_compliance.js`](scripts/check_native_stack_compliance.js)):**
-  - Integrates ES2026 validation into the pre-check engine alongside zero-dependency and zero-framework compliance checks.
-* **GitHub Actions Workflows:**
-  - **[Quality & License Compliance CI](.github/workflows/ci.yml):** Runs `Verify 100% ECMAScript 2026 (ES2026) Standards Compliance` on all pushes and PRs.
-  - **[PR Pre-Checks Build Verification](.github/workflows/pr-prechecks.yml)**: Executes `Check 3b: 100% ECMAScript 2026 (ES2026) Standards Gate (Full Tree & PR Diffs)` across all PR triggers (`opened`, `synchronize`, `reopened`, `ready_for_review`).
-
-### ES2026 APIs & Design Patterns Applied
-* **`Map.prototype.getOrInsert()`**: Streamlines key-based collection grouping in [`CatalogService.prototype.getBrandDistributionMap()`](js/catalogService.js) without redundant `.has()` / `.set()` lookups.
-* **`Math.sumPrecise()`**: Eliminates floating-point accumulation rounding errors when calculating catalog statistical metrics in [`CatalogService.prototype.calculateAverageReleaseYear()`](js/catalogService.js).
-* **State Immutability**: All core collections and snapshots are permanently guarded with `Object.freeze()`.
-* **Standard Modern Operators**: Comprehensive adoption of optional chaining (`?.`), nullish coalescing (`??`), and native `Map`/`Set` collection structures.
 
 ---
 
