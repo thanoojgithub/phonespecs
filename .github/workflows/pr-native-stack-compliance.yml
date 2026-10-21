@@ -32,7 +32,7 @@ concurrency:
 
 jobs:
   native_stack_audit:
-    name: Verify Modern HTML5, Native CSS Grid, Pure Native JS & Zero Frameworks
+    name: Verify Modern HTML5, Native CSS Grid, Pure Native JS (ES2026) & Zero Frameworks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code Repository
@@ -40,12 +40,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Node.js
+      - name: Set up Headless Node CLI Test Engine
         uses: actions/setup-node@v5
         with:
           node-version: '22'
 
-      - name: Step 1 - Modern HTML5 & Semantic Elements Gate
+      - name: "Step 1: Modern HTML & Native CSS Grid (Modern HTML5 & Semantic Structure Gate)"
         run: |
           node -e '
             const fs = require("fs");
@@ -54,7 +54,7 @@ jobs:
               throw new Error("HTML5 standard DOCTYPE is missing from index.html");
             }
             if (!html.includes("width=device-width")) {
-              throw new Error("Modern mobile-first responsive viewport is missing from index.html");
+              throw new Error("Modern mobile-first responsive viewport meta tag is missing from index.html");
             }
             const semanticTags = ["<header", "<main", "<nav", "<section"];
             for (const tag of semanticTags) {
@@ -62,30 +62,22 @@ jobs:
                 throw new Error("Modern semantic HTML5 element " + tag + " is missing from index.html");
               }
             }
-            console.log("✅ Modern HTML5 DOCTYPE, viewport, and semantic structure verified.");
-          '
-
-      - name: Step 2 - Native CSS Grid & Zero Tailwind/Bootstrap Gate
-        run: |
-          node -e '
-            const fs = require("fs");
             const css = fs.readFileSync("css/styles.css", "utf8");
             if (!css.includes("display: grid") && !css.includes("display:grid")) {
               throw new Error("Native CSS Grid layout declaration is missing from css/styles.css");
             }
-            if (css.includes("@tailwind") || css.includes("--tw-") || css.includes("tailwindcss")) {
-              throw new Error("Tailwind CSS artifacts/classes detected! Only Native Vanilla CSS Grid is permitted.");
-            }
-            if (css.includes("bootstrap") || css.includes(".col-md-") || css.includes(".container-fluid")) {
-              throw new Error("Bootstrap artifacts/classes detected! Only Native Vanilla CSS Grid is permitted.");
-            }
-            console.log("✅ Modern Native CSS Grid and 0% Tailwind/Bootstrap verified.");
+            console.log("✅ Check 1 Passed: Modern HTML5 Semantic Structure and Native CSS Grid verified.");
           '
 
-      - name: Step 3 - Pure Native JavaScript & Zero 3rd-Party Frameworks Gate
+      - name: "Step 2: Pure Native JavaScript & ECMAScript 2026 (ES2026 / ECMA-262) Standards Gate"
+        env:
+          BASE_REF: ${{ github.base_ref || 'main' }}
+        run: node scripts/check_es2026_compliance.js
+
+      - name: "Step 3: Zero 3rd-Party UI/UX Frameworks & Dependencies Gate"
         env:
           BASE_REF: ${{ github.base_ref || 'main' }}
         run: node scripts/check_native_stack_compliance.js
 
-      - name: Step 4 - Run Full Pre-Commit Native Test Suite Runner
+      - name: "Step 4: Unified 100% Pre-Commit & PR Native Test Suite Runner"
         run: node scripts/run_all_tests.js
