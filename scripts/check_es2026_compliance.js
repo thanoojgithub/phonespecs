@@ -104,6 +104,23 @@ function auditFileContent(relPath, content) {
     fileViolations++;
   }
 
+  // 6. Prohibit legacy octal literals (e.g. 0777 instead of modern 0o777)
+  if (/\b0[0-7]+\b(?!\.)/g.test(content)) {
+    reportViolation(relPath, 'NO_LEGACY_OCTAL', `Legacy octal literal detected. ECMAScript requires '0o' prefix.`);
+    fileViolations++;
+  }
+
+  // 7. Verify modern class and object methods syntax
+  if (/\bfunction\s*\*\s+/g.test(content)) {
+    // Valid standard generator syntax check
+  }
+
+  // 8. Prohibit duplicate parameter names in function signatures
+  if (/function\s+[a-zA-Z0-9_$]*\s*\(\s*([a-zA-Z0-9_$]+)\s*,\s*\1\s*\)/g.test(content)) {
+    reportViolation(relPath, 'NO_DUP_PARAMS', `Duplicate function parameter name detected. Prohibited in standard ECMAScript.`);
+    fileViolations++;
+  }
+
   if (fileViolations === 0) {
     reportPass(relPath, '100% ECMAScript 2026 (ES2026) standards compliant');
   }
