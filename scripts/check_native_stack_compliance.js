@@ -201,19 +201,21 @@ if (fs.existsSync(jsDir)) {
     }
 
     // ECMAScript (ECMA-262) & ES2026 Modern Standard Verification
-    if (/\bvar\s+[a-zA-Z0-9_$]+/g.test(content)) {
+    let strippedJs = content.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').replace(/(["'`])(?:\\.|(?!\1)[^\\\r\n])*\1/g, '""');
+
+    if (/\bvar\s+[a-zA-Z0-9_$]+/g.test(strippedJs)) {
       reportViolation('es2026-standards', `Legacy 'var' statement detected in js/${jsFile}! Modern ES2026 standard requires const/let.`);
     } else {
       reportPass('es2026-standards', `0 legacy 'var' declarations in js/${jsFile} (Modern block scoping enforced)`);
     }
 
-    if (/\beval\s*\(/g.test(content)) {
+    if (/\beval\s*\(/g.test(strippedJs)) {
       reportViolation('es2026-standards', `Forbidden eval() detected in js/${jsFile}! Violates secure ECMAScript standard.`);
     } else {
       reportPass('es2026-standards', `0 eval() invocations in js/${jsFile}`);
     }
 
-    if (/\bwith\s*\(/g.test(content)) {
+    if (/\bwith\s*\(/g.test(strippedJs)) {
       reportViolation('es2026-standards', `Forbidden 'with' statement detected in js/${jsFile}! Prohibited in strict ECMAScript standard.`);
     } else {
       reportPass('es2026-standards', `0 'with' statements in js/${jsFile}`);
