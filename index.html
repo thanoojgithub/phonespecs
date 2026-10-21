@@ -119,10 +119,15 @@
             <path d="M12.8 12.8L17.2 17.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
         </span>
-        <input type="text" id="search-input" class="search-input" placeholder="Search mobile model, processor, camera, display specs...">
+        <input type="text" id="search-input" class="search-input" placeholder="Search mobile model, processor, camera, display specs..." aria-label="Search mobile models and hardware specs" aria-keyshortcuts="Control+K /">
         
+        <!-- Keyboard shortcut hint indicator -->
+        <span class="search-shortcut-hint" id="search-shortcut-hint" title="Press Ctrl+K or / to search" aria-hidden="true">
+          <kbd class="shortcut-key">Ctrl</kbd><kbd class="shortcut-key">K</kbd>
+        </span>
+
         <!-- Quick Clear Button inside search bar when text is present -->
-        <button type="button" id="search-clear-inner" class="search-clear-inner is-hidden" title="Clear search text">
+        <button type="button" id="search-clear-inner" class="search-clear-inner is-hidden" title="Clear search text (Escape)" aria-label="Clear search input">
           ✕
         </button>
       </div>

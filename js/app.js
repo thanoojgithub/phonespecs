@@ -1860,8 +1860,30 @@ class PhoneSpecsApp {
 
     window.addEventListener('hashchange', () => this.handleHashRoute());
     window.addEventListener('keydown', (e) => {
+      // Global Escape handler: Close any active modal first; if no modals open, clear active search
       if (e.key === 'Escape') {
-        this.closeAllModals();
+        if (this.isAnyModalOpen) {
+          this.closeAllModals();
+        } else if (this.searchQuery && this.searchQuery.trim() !== '') {
+          if (this.dom.searchInput) {
+            this.dom.searchInput.value = '';
+          }
+          this.searchQuery = '';
+          this.render();
+        }
+      }
+
+      // Quick Search Focus: Ctrl+K / Cmd+K or "/" when not inside an editable form element
+      const isModifierK = (e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K');
+      const isSlash = e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
+      if (isModifierK || isSlash) {
+        if (this.dom.searchInput && !this.isAnyModalOpen) {
+          e.preventDefault();
+          this.dom.searchInput.focus();
+          if (typeof this.dom.searchInput.select === 'function') {
+            this.dom.searchInput.select();
+          }
+        }
       }
     });
 
@@ -1886,6 +1908,7 @@ class PhoneSpecsApp {
     this.dom.btnAdminReset = document.getElementById('btn-admin-reset');
 
     this.dom.searchInput = document.getElementById('search-input');
+    this.dom.searchShortcutHint = document.getElementById('search-shortcut-hint');
     this.dom.searchIconWrap = document.getElementById('search-icon-wrap');
     this.dom.searchClearInner = document.getElementById('search-clear-inner');
     this.dom.searchSortSelect = document.getElementById('search-sort-select');
@@ -2979,10 +3002,16 @@ class PhoneSpecsApp {
     const hasSearch = Boolean(this.searchQuery && this.searchQuery.trim() !== '');
     if (hasSearch) {
       this.dom.searchIconWrap.classList.add('is-hidden');
+      if (this.dom.searchShortcutHint) {
+        this.dom.searchShortcutHint.classList.add('is-hidden');
+      }
       this.dom.searchClearInner.classList.remove('is-hidden');
       this.dom.searchInput.classList.add('has-query');
     } else {
       this.dom.searchIconWrap.classList.remove('is-hidden');
+      if (this.dom.searchShortcutHint) {
+        this.dom.searchShortcutHint.classList.remove('is-hidden');
+      }
       this.dom.searchClearInner.classList.add('is-hidden');
       this.dom.searchInput.classList.remove('has-query');
     }
@@ -3168,7 +3197,7 @@ class PhoneSpecsApp {
       const displaySize = phone.specs?.['Display System']?.['Display Size'] || '';
 
       html += `
-        <div class="phone-banner-card" data-phone-id="${phone.id}">
+        <div class="phone-banner-card" data-phone-id="${phone.id}" tabindex="0" role="article" aria-label="${this.escapeHtml(phone.brandName)} ${this.escapeHtml(phone.model)} specifications">
           <div class="banner-top-row">
             <span class="banner-brand-pill">${this.escapeHtml(phone.brandName)}</span>
           </div>
@@ -3211,7 +3240,7 @@ class PhoneSpecsApp {
 
           <div class="banner-bottom-row">
             <span class="btn-banner-view">Full Specs →</span>
-            <button class="btn-banner-compare ${compareBtnClass}" data-action="compare" data-phone-id="${phone.id}">
+            <button class="btn-banner-compare ${compareBtnClass}" data-action="compare" data-phone-id="${phone.id}" aria-label="${inCompare ? 'Remove from comparison' : 'Add to comparison'}">
               ${compareBtnText}
             </button>
           </div>
@@ -3226,10 +3255,13 @@ class PhoneSpecsApp {
 
     this.dom.itemsGrid.innerHTML = html;
 
-    // Delegate clicks on cards
-    const cards = this.dom.itemsGrid.querySelectorAll('.phone-banner-card');
-    cards.forEach(card => {
-      card.addEventListener('click', (e) => {
+    // Attach delegated listener on itemsGrid once for maximum DOM performance
+    if (!this._itemsGridDelegated && this.dom.itemsGrid?.addEventListener) {
+      this._itemsGridDelegated = true;
+      this.dom.itemsGrid.addEventListener('click', (e) => {
+        const card = e.target.closest('.phone-banner-card');
+        if (!card) return;
+
         const phoneId = card.getAttribute('data-phone-id');
         const phone = this.catalogService.getPhoneById(phoneId);
 
@@ -3264,7 +3296,22 @@ class PhoneSpecsApp {
           this.openDetails(phone);
         }
       });
-    });
+
+      // Keyboard navigation: Enter or Space on focused phone card opens details
+      this.dom.itemsGrid.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          const card = e.target.closest('.phone-banner-card');
+          if (card && e.target === card) {
+            e.preventDefault();
+            const phoneId = card.getAttribute('data-phone-id');
+            const phone = this.catalogService.getPhoneById(phoneId);
+            if (phone) {
+              this.openDetails(phone);
+            }
+          }
+        }
+      });
+    }
   }
 
   renderCompareDrawer() {

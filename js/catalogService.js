@@ -38,10 +38,12 @@ class CatalogService {
    * Initializes brands and phones, applying immutable indexing and sorting
    */
   initData({ brands = [], phones = [] } = {}) {
-    // Sort brands alphabetically A-Z
-    const sortedBrands = [...brands].sort((a, b) =>
-      (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' })
-    );
+    // Sort brands alphabetically A-Z using modern ES2026 immutable toSorted when supported
+    const brandComparator = (a, b) =>
+      (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' });
+    const sortedBrands = typeof Array.prototype.toSorted === 'function'
+      ? brands.toSorted(brandComparator)
+      : [...brands].sort(brandComparator);
     this.brands = Object.freeze(sortedBrands);
     this.phones = Object.freeze(this.processPhonesData(phones));
   }
@@ -481,8 +483,12 @@ class CatalogService {
   }
 
   sortPhoneList(list, sortBy) {
+    const comparator = (a, b) => this.comparePhonesBySort(a, b, sortBy);
+    if (typeof Array.prototype.toSorted === 'function') {
+      return list.toSorted(comparator);
+    }
     const copy = [...list];
-    copy.sort((a, b) => this.comparePhonesBySort(a, b, sortBy));
+    copy.sort(comparator);
     return copy;
   }
 

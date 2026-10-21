@@ -404,11 +404,24 @@ const sameYearDiffDate2 = { model: 'M2', releaseYear: 2024, releaseDate: '2024-0
 assert(service.comparePhonesBySort(sameYearDiffDate1, sameYearDiffDate2, 'year-desc') > 0, 'year-desc breaks year tie with releaseDate descending');
 assert(service.comparePhonesBySort(sameYearDiffDate1, sameYearDiffDate2, 'year-asc') < 0, 'year-asc breaks year tie with releaseDate ascending');
 
-// Test 11.5: sortPhoneList() returns sorted copy without mutating input array
+// Test 11.5: sortPhoneList() returns sorted copy without mutating input array (ES2026 toSorted)
 const unsortedSample = [dummyB, dummyA];
 const sortedSample = service.sortPhoneList(unsortedSample, 'name-asc');
 assert(sortedSample[0].model === 'Phone A', 'sortPhoneList sorts list by comparator');
 assert(unsortedSample[0].model === 'Phone B', 'sortPhoneList does not mutate original array');
+
+// Test 11.5.1: sortPhoneList() with toSorted polyfill/native verification
+const originalToSorted = Array.prototype.toSorted;
+try {
+  // Test fallback branch where toSorted is undefined
+  delete Array.prototype.toSorted;
+  const fallbackSorted = service.sortPhoneList([dummyB, dummyA], 'name-asc');
+  assert(fallbackSorted[0].model === 'Phone A', 'sortPhoneList operates correctly in fallback mode without Array.prototype.toSorted');
+} finally {
+  if (originalToSorted) {
+    Array.prototype.toSorted = originalToSorted;
+  }
+}
 
 // Test 11.6: Empty catalog fallback branches for stats
 const emptyCatalogService = new CatalogService({ brands: [], phones: [] });

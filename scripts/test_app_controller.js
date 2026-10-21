@@ -134,6 +134,7 @@ app.cacheDomElements();
 assert(app.dom.body !== undefined, 'cacheDomElements binds body');
 assert(app.dom.btnAdminToggle !== undefined, 'cacheDomElements binds admin toggle');
 assert(app.dom.formSpecsJson !== undefined, 'cacheDomElements binds formSpecsJson');
+assert(app.dom.searchShortcutHint !== undefined, 'cacheDomElements binds searchShortcutHint');
 
 // 2. Modals & Route Handling
 console.log('\n--- 2. Modal States & Route Navigation ---');
@@ -297,6 +298,21 @@ app.showToast('Test Toast Notification', 'success');
 assert(app.toasts.length > 0, 'showToast adds toast entry');
 const latestToast = app.toasts[app.toasts.length - 1];
 assert(latestToast && latestToast.message === 'Test Toast Notification', 'Toast message matches');
+
+// 10. UX Enhancements: Search Shortcut Hint & Keyboard Interaction
+console.log('\n--- 10. UI/UX & Keyboard Navigation ---');
+app.searchQuery = '';
+app.render();
+assert(app.dom.searchShortcutHint.classList.contains('is-hidden') === false, 'searchShortcutHint visible when search query is empty');
+
+app.searchQuery = 'oled';
+app.render();
+assert(app.dom.searchShortcutHint.classList.contains('is-hidden') === true, 'searchShortcutHint hidden when search query is active');
+
+// Reset search query
+app.searchQuery = '';
+app.render();
+assert(app.dom.searchShortcutHint.classList.contains('is-hidden') === false, 'searchShortcutHint restored when search query cleared');
 
 console.log(`\n====================================================`);
 console.log(` PhoneSpecsApp Tests: Total: ${totalTests} | Passed: ${passedTests} | Failed: ${failedTests}`);

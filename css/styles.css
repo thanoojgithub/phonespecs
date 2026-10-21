@@ -619,6 +619,39 @@ input, select, textarea {
   color: #ffffff;
 }
 
+/* Keyboard Shortcut Hint inside Search Bar */
+.search-shortcut-hint {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+  opacity: 0.75;
+  transition: opacity 0.18s ease;
+  user-select: none;
+}
+
+.search-box-wrapper:focus-within .search-shortcut-hint,
+.search-shortcut-hint.is-hidden {
+  display: none !important;
+}
+
+.shortcut-key {
+  font-family: inherit;
+  font-size: 0.65rem;
+  font-weight: 750;
+  color: #64748b;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 0.12rem 0.35rem;
+  line-height: 1;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.08);
+}
+
 /* Filter Group: Limits to content width and does not stretch */
 .filter-group {
   display: inline-flex;
@@ -783,6 +816,14 @@ input, select, textarea {
 }
 
 .phone-banner-card:hover {
+  border-color: var(--red-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px -4px rgba(225, 29, 72, 0.14), 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.phone-banner-card:focus-visible {
+  outline: 2px solid var(--red-primary);
+  outline-offset: 3px;
   border-color: var(--red-primary);
   transform: translateY(-2px);
   box-shadow: 0 10px 28px -4px rgba(225, 29, 72, 0.14), 0 2px 6px rgba(0, 0, 0, 0.04);
