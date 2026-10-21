@@ -263,17 +263,17 @@ assert(app.showDetailsModal === false, 'closeDetailsModal closes details dialog'
 
 // Comparison Tray & Limit Handling
 app.compareList = [];
-app.toggleCompare(targetPhone.id);
-assert(app.compareList.includes(targetPhone.id), 'toggleCompare adds phone to compare list');
-assert(app.isInCompare(targetPhone.id) === true, 'isInCompare returns true for selected device');
+app.toggleCompare(targetPhone);
+assert(app.isInCompare(targetPhone.id) === true, 'toggleCompare adds phone to compare list');
 
-app.toggleCompare(targetPhone.id);
-assert(!app.compareList.includes(targetPhone.id), 'toggleCompare removes phone when already present');
-assert(app.isInCompare(targetPhone.id) === false, 'isInCompare returns false after removal');
+app.toggleCompare(targetPhone);
+assert(app.isInCompare(targetPhone.id) === false, 'toggleCompare removes phone when already present');
 
-// Comparison modal open/close
-app.toggleCompare('apple-iphone-16-pro-max');
-app.toggleCompare('samsung-galaxy-s24-ultra');
+// Comparison modal open/close with minimum 2 devices
+const phoneA = targetPhone;
+const phoneB = app.catalogService.phones[1] || targetPhone;
+app.toggleCompare(phoneA);
+app.toggleCompare(phoneB);
 app.openCompareModal();
 assert(app.showCompareModal === true, 'openCompareModal opens compare dialog');
 app.closeCompareModal();
