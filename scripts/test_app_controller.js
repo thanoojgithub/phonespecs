@@ -255,11 +255,11 @@ assert(app.showTemplateModal === false, 'closeAllModals closes template modal');
 console.log('\n--- 9. Details Modal, Comparison Tray & View State ---');
 
 // Details Modal
-app.openDetailsModal(targetPhone);
-assert(app.showDetailsModal === true, 'openDetailsModal opens details dialog');
+app.openDetails(targetPhone);
+assert(app.showDetailsModal === true, 'openDetails opens details dialog');
 assert(app.activePhone && app.activePhone.id === targetPhone.id, 'activePhone set correctly');
-app.closeDetailsModal();
-assert(app.showDetailsModal === false, 'closeDetailsModal closes details dialog');
+app.closeDetails();
+assert(app.showDetailsModal === false, 'closeDetails closes details dialog');
 
 // Comparison Tray & Limit Handling
 app.compareList = [];
@@ -284,13 +284,13 @@ app.clearCompare();
 assert(app.compareList.length === 0, 'clearCompare empties comparison tray');
 
 // Hash Route handling
-global.window.location.hash = '#/brand/apple';
+global.window.location.hash = '#apple';
 app.handleHashRoute();
-assert(app.selectedBrand === 'apple', 'handleHashRoute sets selectedBrand from #/brand/apple');
+assert(app.selectedBrand === 'apple', 'handleHashRoute sets selectedBrand from #apple');
 
-global.window.location.hash = '#/all';
+global.window.location.hash = '#all';
 app.handleHashRoute();
-assert(app.selectedBrand === 'all', 'handleHashRoute sets selectedBrand from #/all');
+assert(app.selectedBrand === 'all', 'handleHashRoute sets selectedBrand from #all');
 
 // Toast notifications
 app.showToast('Test Toast Notification', 'success');
