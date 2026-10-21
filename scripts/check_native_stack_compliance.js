@@ -250,6 +250,119 @@ if (fs.existsSync(scriptsDir)) {
   }
 }
 
+// ----------------------------------------------------
+// 6. Audit PR Changed Files (Differential PR Check)
+// ----------------------------------------------------
+console.log('\n--- 6. PR Code Changes Native Stack Audit (Differential) ---');
+const { execSync } = require('child_process');
+let prChangedFiles = [];
+
+try {
+  const baseRef = process.env.BASE_REF;
+  let rawDiff = '';
+
+  if (baseRef) {
+    try {
+      rawDiff = execSync(`git diff --name-only origin/${baseRef}...HEAD`, { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] });
+    } catch (e1) {
+      try {
+        rawDiff = execSync(`git diff --name-only origin/${baseRef} HEAD`, { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] });
+      } catch (e1b) {}
+    }
+  } else {
+    try {
+      rawDiff = execSync('git diff --name-only HEAD~1 HEAD', { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] });
+    } catch (e2) {
+      try {
+        rawDiff = execSync('git diff --name-only HEAD', { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] });
+      } catch (e2b) {}
+    }
+  }
+
+  prChangedFiles = (rawDiff || '').split(/\r?\n/).map(f => f.trim().replace(/\\/g, '/')).filter(Boolean);
+} catch (err) {
+  try {
+    const statusOut = execSync('git status --porcelain', { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] });
+    prChangedFiles = (statusOut || '')
+      .split(/\r?\n/)
+      .map(l => l.replace(/^[MADRCU?!]{1,2}\s+/, '').trim().replace(/\\/g, '/'))
+      .filter(Boolean);
+  } catch (statusErr) {}
+}
+
+const FORBIDDEN_3RD_PARTY_FRAMEWORKS = [
+  { name: 'React', regex: /\b(react|react-dom|jsx-runtime)\b/i },
+  { name: 'Vue', regex: /\b(vue|vuex|pinia)\b/i },
+  { name: 'Angular', regex: /\b(@angular\/core|@angular\/common)\b/i },
+  { name: 'Svelte', regex: /\b(svelte)\b/i },
+  { name: 'Alpine.js', regex: /\b(alpinejs|alpine\.min\.js)\b|x-data|x-bind|x-on/i },
+  { name: 'Next.js', regex: /\b(next\/router|next\/navigation|_next\/static)\b/i },
+  { name: 'Vite', regex: /\b(@vite\/client|vite\/client)\b/i },
+  { name: 'Tailwind CSS', regex: /@tailwind|--tw-|tailwindcss|cdn\.tailwindcss\.com/i },
+  { name: 'Bootstrap', regex: /\bbootstrap(\.min)?\.(css|js)\b|\.col-md-|\.container-fluid/i }
+];
+
+if (prChangedFiles.length === 0) {
+  console.log('   No PR changed files detected in current context. Full tree validation active.');
+} else {
+  console.log(`   Auditing ${prChangedFiles.length} PR modified file(s) for 100% Native Stack & Zero Frameworks:`);
+  for (const changedFile of prChangedFiles) {
+    const fullPath = path.join(REPO_ROOT, changedFile);
+    if (!fs.existsSync(fullPath)) continue;
+
+    // A. Audit HTML files
+    if (changedFile.endsWith('.html')) {
+      const html = fs.readFileSync(fullPath, 'utf8');
+      if (!html.includes('<!DOCTYPE html>')) {
+        reportViolation('pr-html', `PR change in ${changedFile} is missing modern HTML5 <!DOCTYPE html>`);
+      } else {
+        reportPass('pr-html', `Modern HTML5 verified in ${changedFile}`);
+      }
+
+      if (!html.includes('<header') || !html.includes('<main') || !html.includes('<nav')) {
+        reportViolation('pr-html', `PR change in ${changedFile} missing modern semantic HTML5 elements (<header>, <main>, <nav>)`);
+      } else {
+        reportPass('pr-html', `Semantic HTML5 elements verified in ${changedFile}`);
+      }
+
+      for (const fw of FORBIDDEN_3RD_PARTY_FRAMEWORKS) {
+        if (fw.regex.test(html)) {
+          reportViolation('pr-zero-framework', `PR change in ${changedFile} introduces forbidden framework "${fw.name}"!`);
+        }
+      }
+    }
+
+    // B. Audit CSS files
+    if (changedFile.endsWith('.css')) {
+      const css = fs.readFileSync(fullPath, 'utf8');
+      if (!css.includes('display: grid') && !css.includes('display:grid')) {
+        reportViolation('pr-css-grid', `PR change in ${changedFile} does not declare Modern Native CSS Grid (display: grid)`);
+      } else {
+        reportPass('pr-css-grid', `Modern Native CSS Grid verified in ${changedFile}`);
+      }
+
+      if (css.includes('@tailwind') || css.includes('--tw-') || css.includes('tailwindcss')) {
+        reportViolation('pr-zero-framework', `PR change in ${changedFile} introduces Tailwind CSS! Only 100% Native Vanilla CSS is permitted.`);
+      }
+
+      if (css.includes('bootstrap') || css.includes('.col-md-') || css.includes('.container-fluid')) {
+        reportViolation('pr-zero-framework', `PR change in ${changedFile} introduces Bootstrap! Only 100% Native Vanilla CSS is permitted.`);
+      }
+    }
+
+    // C. Audit JS files
+    if (changedFile.endsWith('.js') && (changedFile.startsWith('js/') || changedFile.startsWith('scripts/'))) {
+      const js = fs.readFileSync(fullPath, 'utf8');
+      for (const fw of FORBIDDEN_3RD_PARTY_FRAMEWORKS) {
+        if (fw.regex.test(js)) {
+          reportViolation('pr-zero-framework', `PR change in ${changedFile} introduces forbidden framework/library "${fw.name}"!`);
+        }
+      }
+      reportPass('pr-pure-native-js', `Pure Native JavaScript verified (0% third-party frameworks) in ${changedFile}`);
+    }
+  }
+}
+
 console.log('\n====================================================');
 if (violations > 0) {
   console.error(`❌ [PRECHECK FAILURE] ${violations} architectural standard violation(s) found!`);

@@ -28,6 +28,7 @@ const testSuites = [
   { name: 'JsonFormatterService & Control Character Sanitizer', file: 'test_json_formatter.js' },
   { name: 'PhoneSpecsApp Controller & UI State Engine', file: 'test_app_controller.js' },
   { name: '100% ECMAScript 2026 (ES2026) Standards Gate', file: 'check_es2026_compliance.js' },
+  { name: 'Pure Native Stack & Architecture Gate', file: 'check_native_stack_compliance.js' },
   { name: '100% Code Coverage & PR Enforcement Gate', file: 'check_code_coverage.js' },
   { name: 'Apache License 2.0 Full Tree Compliance Audit', file: 'check_license_compliance.js' }
 ];

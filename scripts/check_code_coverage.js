@@ -57,6 +57,11 @@ const REQUIRED_TEST_SUITES = [
     targetCode: ['js/app.js', 'js/catalogService.js', 'js/auditService.js', 'js/jsonFormatterService.js']
   },
   {
+    name: 'Pure Native Stack & Architecture Gate',
+    testFile: 'scripts/check_native_stack_compliance.js',
+    targetCode: ['index.html', 'css/styles.css', 'js/app.js', 'js/catalogService.js']
+  },
+  {
     name: 'Apache License 2.0 Full Tree Compliance Audit',
     testFile: 'scripts/check_license_compliance.js',
     targetCode: ['LICENSE', 'NOTICE']

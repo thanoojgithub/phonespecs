@@ -1,0 +1,91 @@
+#
+# Copyright 2026 Thanooj Kalathuru
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+name: PR Native Stack & Zero Frameworks Pre-Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - main
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+
+concurrency:
+  group: pr-native-stack-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native_stack_audit:
+    name: Verify Modern HTML5, Native CSS Grid, Pure Native JS & Zero Frameworks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Step 1 - Modern HTML5 & Semantic Elements Gate
+        run: |
+          node -e '
+            const fs = require("fs");
+            const html = fs.readFileSync("index.html", "utf8");
+            if (!html.trim().startsWith("<!DOCTYPE html>")) {
+              throw new Error("HTML5 standard DOCTYPE is missing from index.html");
+            }
+            if (!html.includes("width=device-width")) {
+              throw new Error("Modern mobile-first responsive viewport is missing from index.html");
+            }
+            const semanticTags = ["<header", "<main", "<nav", "<section"];
+            for (const tag of semanticTags) {
+              if (!html.includes(tag)) {
+                throw new Error("Modern semantic HTML5 element " + tag + " is missing from index.html");
+              }
+            }
+            console.log("✅ Modern HTML5 DOCTYPE, viewport, and semantic structure verified.");
+          '
+
+      - name: Step 2 - Native CSS Grid & Zero Tailwind/Bootstrap Gate
+        run: |
+          node -e '
+            const fs = require("fs");
+            const css = fs.readFileSync("css/styles.css", "utf8");
+            if (!css.includes("display: grid") && !css.includes("display:grid")) {
+              throw new Error("Native CSS Grid layout declaration is missing from css/styles.css");
+            }
+            if (css.includes("@tailwind") || css.includes("--tw-") || css.includes("tailwindcss")) {
+              throw new Error("Tailwind CSS artifacts/classes detected! Only Native Vanilla CSS Grid is permitted.");
+            }
+            if (css.includes("bootstrap") || css.includes(".col-md-") || css.includes(".container-fluid")) {
+              throw new Error("Bootstrap artifacts/classes detected! Only Native Vanilla CSS Grid is permitted.");
+            }
+            console.log("✅ Modern Native CSS Grid and 0% Tailwind/Bootstrap verified.");
+          '
+
+      - name: Step 3 - Pure Native JavaScript & Zero 3rd-Party Frameworks Gate
+        env:
+          BASE_REF: ${{ github.base_ref || 'main' }}
+        run: node scripts/check_native_stack_compliance.js
+
+      - name: Step 4 - Run Full Pre-Commit Native Test Suite Runner
+        run: node scripts/run_all_tests.js
