@@ -254,6 +254,12 @@ Run the catalog integrity validator and Native JS CRUD test suite using Node.js 
   docker run --rm -v "$(pwd)":/app -w /app node:alpine node scripts/run_all_tests.js
   ```
 
+- **Automated Git Hooks (`pre-commit` & `pre-push`):**
+  The repository includes native Git hooks in `.githooks/` that automatically run `node scripts/run_all_tests.js` before every commit and push:
+  ```bash
+  git config core.hooksPath .githooks
+  ```
+
 ---
 
 ## Apache License 2.0 Compliance
