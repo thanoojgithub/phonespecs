@@ -52,6 +52,11 @@ const REQUIRED_TEST_SUITES = [
     targetCode: ['js/app.js']
   },
   {
+    name: '100% ECMAScript 2026 (ES2026) Standards Gate',
+    testFile: 'scripts/check_es2026_compliance.js',
+    targetCode: ['js/app.js', 'js/catalogService.js', 'js/auditService.js', 'js/jsonFormatterService.js']
+  },
+  {
     name: 'Apache License 2.0 Full Tree Compliance Audit',
     testFile: 'scripts/check_license_compliance.js',
     targetCode: ['LICENSE', 'NOTICE']

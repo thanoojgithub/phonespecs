@@ -251,6 +251,52 @@ app.saveMasterTemplate();
 app.closeAllModals();
 assert(app.showTemplateModal === false, 'closeAllModals closes template modal');
 
+// 9. Details Modal, Comparison Tray & View State Tests
+console.log('\n--- 9. Details Modal, Comparison Tray & View State ---');
+
+// Details Modal
+app.openDetailsModal(targetPhone);
+assert(app.showDetailsModal === true, 'openDetailsModal opens details dialog');
+assert(app.activePhone && app.activePhone.id === targetPhone.id, 'activePhone set correctly');
+app.closeDetailsModal();
+assert(app.showDetailsModal === false, 'closeDetailsModal closes details dialog');
+
+// Comparison Tray & Limit Handling
+app.compareList = [];
+app.toggleCompare(targetPhone.id);
+assert(app.compareList.includes(targetPhone.id), 'toggleCompare adds phone to compare list');
+assert(app.isInCompare(targetPhone.id) === true, 'isInCompare returns true for selected device');
+
+app.toggleCompare(targetPhone.id);
+assert(!app.compareList.includes(targetPhone.id), 'toggleCompare removes phone when already present');
+assert(app.isInCompare(targetPhone.id) === false, 'isInCompare returns false after removal');
+
+// Comparison modal open/close
+app.toggleCompare('apple-iphone-16-pro-max');
+app.toggleCompare('samsung-galaxy-s24-ultra');
+app.openCompareModal();
+assert(app.showCompareModal === true, 'openCompareModal opens compare dialog');
+app.closeCompareModal();
+assert(app.showCompareModal === false, 'closeCompareModal closes compare dialog');
+
+// Clear comparison
+app.clearCompare();
+assert(app.compareList.length === 0, 'clearCompare empties comparison tray');
+
+// Hash Route handling
+global.window.location.hash = '#/brand/apple';
+app.handleHashRoute();
+assert(app.selectedBrand === 'apple', 'handleHashRoute sets selectedBrand from #/brand/apple');
+
+global.window.location.hash = '#/all';
+app.handleHashRoute();
+assert(app.selectedBrand === 'all', 'handleHashRoute sets selectedBrand from #/all');
+
+// Toast notifications
+app.showToast('Test Toast Notification', 'success');
+assert(app.toasts.length === 1, 'showToast adds toast entry');
+assert(app.toasts[0].message === 'Test Toast Notification', 'Toast message matches');
+
 console.log(`\n====================================================`);
 console.log(` PhoneSpecsApp Tests: Total: ${totalTests} | Passed: ${passedTests} | Failed: ${failedTests}`);
 console.log(`====================================================\n`);

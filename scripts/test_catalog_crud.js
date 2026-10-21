@@ -345,6 +345,82 @@ assert(brandDist.has('apple') && brandDist.get('apple').length >= 3, 'ES2026: Br
 const avgYear = service.calculateAverageReleaseYear();
 assert(typeof avgYear === 'number' && avgYear >= 2023 && avgYear <= 2027, `ES2026: calculateAverageReleaseYear computes valid metric (${avgYear})`);
 
+// 11. Additional 100% Code Coverage Edge Cases & Branch Tests
+console.log('\n11. Testing Additional 100% Code Coverage Edge Cases & Branches:');
+
+// Test 11.1: setPhone() existing and non-existing record restoration
+const phoneToRestore = {
+  id: 'apple-iphone-16-pro-max',
+  brandId: 'apple',
+  brandName: 'Apple',
+  seriesId: 'iphone-pro-max',
+  seriesName: 'iPhone Pro Max Series',
+  model: 'iPhone 16 Pro Max Restored Snapshot',
+  releaseYear: 2024,
+  releaseDate: '2024-09',
+  specs: { 'Display System': { 'Display Size': '6.9 inch' } }
+};
+const restoredExisting = service.setPhone(phoneToRestore);
+assert(restoredExisting.model === 'iPhone 16 Pro Max Restored Snapshot', 'setPhone restores existing phone record');
+assert(service.getPhoneById('apple-iphone-16-pro-max').model === 'iPhone 16 Pro Max Restored Snapshot', 'getPhoneById returns restored record');
+
+const newRestoreRecord = {
+  id: 'brand-new-restored-phone',
+  brandId: 'apple',
+  brandName: 'Apple',
+  model: 'Brand New Restored Unit',
+  releaseYear: 2025,
+  specs: {}
+};
+const restoredNew = service.setPhone(newRestoreRecord);
+assert(restoredNew.id === 'brand-new-restored-phone', 'setPhone restores previously deleted/non-existing phone record via unshift');
+assert(service.getPhoneById('brand-new-restored-phone') !== null, 'Newly restored phone is retrievable');
+
+// Test 11.2: setPhone() validation error branches
+assertThrows(() => service.setPhone(null), 'Valid phone record with ID is required', 'setPhone throws on null');
+assertThrows(() => service.setPhone({ model: 'No ID' }), 'Valid phone record with ID is required', 'setPhone throws when ID is missing');
+
+// Test 11.3: deletePhone() validation error branches
+assertThrows(() => service.deletePhone(''), 'Phone ID is required', 'deletePhone throws on empty ID');
+assertThrows(() => service.deletePhone(null), 'Phone ID is required', 'deletePhone throws on null ID');
+assertThrows(() => service.deletePhone('non-existent-device-xyz'), 'not found', 'deletePhone throws on non-existent phone');
+
+// Clean up restored mock phone
+service.deletePhone('brand-new-restored-phone');
+
+// Test 11.4: comparePhonesBySort() fallback and invalid sort branch
+const dummyA = { model: 'Phone A', brandName: 'Brand A', releaseYear: 2024, releaseDate: '2024-01' };
+const dummyB = { model: 'Phone B', brandName: 'Brand B', releaseYear: 2025, releaseDate: '2025-01' };
+assert(service.comparePhonesBySort(dummyA, dummyB, 'unknown-sort') === 0, 'comparePhonesBySort returns 0 for unrecognized sort criteria');
+
+// Secondary ties sorting branch checks
+const sameBrandDiffModel1 = { model: 'Alpha', brandName: 'Brand Same', releaseYear: 2024 };
+const sameBrandDiffModel2 = { model: 'Beta', brandName: 'Brand Same', releaseYear: 2024 };
+assert(service.comparePhonesBySort(sameBrandDiffModel1, sameBrandDiffModel2, 'brand-asc') < 0, 'brand-asc breaks tie with secondary model ascending');
+assert(service.comparePhonesBySort(sameBrandDiffModel1, sameBrandDiffModel2, 'brand-desc') > 0, 'brand-desc breaks tie with secondary model descending');
+
+const sameYearDiffDate1 = { model: 'M1', releaseYear: 2024, releaseDate: '2024-03' };
+const sameYearDiffDate2 = { model: 'M2', releaseYear: 2024, releaseDate: '2024-07' };
+assert(service.comparePhonesBySort(sameYearDiffDate1, sameYearDiffDate2, 'year-desc') > 0, 'year-desc breaks year tie with releaseDate descending');
+assert(service.comparePhonesBySort(sameYearDiffDate1, sameYearDiffDate2, 'year-asc') < 0, 'year-asc breaks year tie with releaseDate ascending');
+
+// Test 11.5: sortPhoneList() returns sorted copy without mutating input array
+const unsortedSample = [dummyB, dummyA];
+const sortedSample = service.sortPhoneList(unsortedSample, 'name-asc');
+assert(sortedSample[0].model === 'Phone A', 'sortPhoneList sorts list by comparator');
+assert(unsortedSample[0].model === 'Phone B', 'sortPhoneList does not mutate original array');
+
+// Test 11.6: Empty catalog fallback branches for stats
+const emptyCatalogService = new CatalogService({ brands: [], phones: [] });
+assert(emptyCatalogService.calculateAverageReleaseYear() === 0, 'calculateAverageReleaseYear returns 0 on empty catalog');
+assert(emptyCatalogService.getActiveSeriesList(null).length === 0, 'getActiveSeriesList returns empty on null brandId');
+assert(emptyCatalogService.getActiveSeriesList('all').length === 0, 'getActiveSeriesList returns empty on "all"');
+assert(emptyCatalogService.getActiveSeriesList('unknown').length === 0, 'getActiveSeriesList returns empty on missing brand');
+
+// Test 11.7: filterAndSortPhones() with default parameter invocation
+const defaultFilterResults = service.filterAndSortPhones();
+assert(Array.isArray(defaultFilterResults) && defaultFilterResults.length > 0, 'filterAndSortPhones works with empty arguments object');
+
 
 // Summary
 console.log('\n====================================================');

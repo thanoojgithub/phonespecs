@@ -154,6 +154,45 @@ assert(brokenRes.success === false, 'Detects unrecoverable broken syntax');
 assert(brokenRes.line !== undefined && brokenRes.col !== undefined, 'Reports exact line and column numbers');
 assert(brokenRes.snippet && brokenRes.snippet.includes('^'), 'Generates contextual visual caret pointer snippet');
 
+// 7. Additional 100% Code Coverage Edge Cases & Diagnostic Branches
+console.log('\n--- 7. Additional Edge Cases & Diagnostic Branches ---');
+
+// Test 7.1: sanitizeRelaxedJson input guard branches
+assert(JsonFormatterService.sanitizeRelaxedJson(null) === '', 'sanitizeRelaxedJson returns empty string on null');
+assert(JsonFormatterService.sanitizeRelaxedJson(12345) === '', 'sanitizeRelaxedJson returns empty string on non-string type');
+
+// Test 7.2: Escape character and quote nesting inside string literals
+const escapedStringJson = "{ 'desc': 'He said \\'Hello\\', and \"Double Quotes\"' }";
+const escapedRes = JsonFormatterService.format(escapedStringJson);
+assert(escapedRes.success === true, 'Handles escaped single quotes and embedded double quotes in single-quoted strings');
+
+// Test 7.3: sortObjectKeys with Arrays and nested values
+const arrayNested = {
+  "features": [
+    { "z": 10, "a": 20 },
+    "plain string"
+  ]
+};
+const sortedArrayRes = JsonFormatterService.sortObjectKeys(arrayNested);
+assert(Array.isArray(sortedArrayRes.features), 'sortObjectKeys preserves array structures');
+assert(Object.keys(sortedArrayRes.features[0])[0] === 'a', 'sortObjectKeys recursively sorts objects inside arrays');
+assert(JsonFormatterService.sortObjectKeys(null) === null, 'sortObjectKeys returns null on null object');
+assert(JsonFormatterService.sortObjectKeys("primitive string") === "primitive string", 'sortObjectKeys returns primitives untouched');
+
+// Test 7.4: minify() error forwarding
+const brokenMinify = JsonFormatterService.minify('{ invalid: json without quotes or values');
+assert(brokenMinify.success === false, 'minify forwards syntax errors cleanly without throwing');
+
+// Test 7.5: diagnoseSyntaxError fallback to Firefox/Safari regex line/column parsing
+const mockFirefoxErr = new Error('JSON.parse: bad parsing at line 3 column 7 of the JSON data');
+const firefoxDiag = JsonFormatterService.diagnoseSyntaxError('line 1\nline 2\nline 3 broken', mockFirefoxErr);
+assert(firefoxDiag.line === 3 && firefoxDiag.col === 7, 'diagnoseSyntaxError extracts line/col from alternative engine error messages');
+
+// Test 7.6: diagnoseSyntaxError unknown format fallback
+const mockUnknownErr = new Error('Unspecified JSON parse failure');
+const unknownDiag = JsonFormatterService.diagnoseSyntaxError('line 1', mockUnknownErr);
+assert(unknownDiag.line === 1 && unknownDiag.col === 1, 'diagnoseSyntaxError defaults gracefully to line 1 column 1 on unknown error string format');
+
 console.log(`\n====================================================`);
 console.log(` JsonFormatterService Tests: Total: ${totalTests} | Passed: ${passedTests} | Failed: ${failedTests}`);
 console.log(`====================================================\n`);

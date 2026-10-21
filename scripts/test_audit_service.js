@@ -219,6 +219,107 @@ assert(loadedAudit.getVersions('device-x').length === 1, 'Loaded audit has resto
 storageAudit.clearStorage('test_audit_key');
 assert(mockStore['test_audit_key'] === undefined, 'clearStorage removes key from localStorage');
 
+// 8. Additional 100% Code Coverage Edge Cases & Branch Tests
+console.log('\n--- 8. Additional 100% Code Coverage Edge Cases & Branch Tests ---');
+
+// Test 8.1: deepClone primitive & structuredClone fallback branch
+assert(AuditService.deepClone(null) === null, 'deepClone returns null for null');
+assert(AuditService.deepClone(999) === 999, 'deepClone returns primitive numbers untouched');
+assert(AuditService.deepClone('text') === 'text', 'deepClone returns primitive strings untouched');
+
+// Test 8.2: computeChangeSummary() comprehensive diff combinations
+const baseSnapshot = {
+  id: 'phone-test-diff',
+  model: 'Model Alpha',
+  brandId: 'brand-a',
+  releaseYear: 2024,
+  releaseDate: '2024-01',
+  tagline: 'Initial Tagline',
+  specs: {
+    'Display': { 'Size': '6.1 inch', 'Type': 'OLED' },
+    'Battery': { 'Capacity': '4000mAh' }
+  },
+  highlights: ['H1', 'H2']
+};
+
+const changedSnapshot = {
+  id: 'phone-test-diff',
+  model: 'Model Beta',
+  brandId: 'brand-b',
+  releaseYear: 2025,
+  releaseDate: '2025-05',
+  tagline: 'Updated Tagline',
+  specs: {
+    'Display': { 'Size': '6.7 inch', 'Type': 'OLED' }, // Modified attribute
+    'Optics': { 'Main': '50MP' } // Added section, removed Battery section
+  },
+  highlights: ['H1', 'H2', 'H3']
+};
+
+const diffSummary = AuditService.computeChangeSummary(baseSnapshot, changedSnapshot);
+assert(diffSummary.includes('Model name changed'), 'computeChangeSummary detects model change');
+assert(diffSummary.includes('Brand changed'), 'computeChangeSummary detects brand change');
+assert(diffSummary.includes('Release year updated'), 'computeChangeSummary detects year update');
+assert(diffSummary.includes('Release date updated'), 'computeChangeSummary detects date update');
+assert(diffSummary.includes('Tagline updated'), 'computeChangeSummary detects tagline update');
+assert(diffSummary.includes('Added specs section "Optics"'), 'computeChangeSummary detects added specs section');
+assert(diffSummary.includes('Removed specs section "Battery"'), 'computeChangeSummary detects removed specs section');
+assert(diffSummary.includes('Modified Display > Size'), 'computeChangeSummary detects modified attribute');
+assert(diffSummary.includes('Key Features updated'), 'computeChangeSummary detects highlights diff');
+
+// Resaved without alterations branch
+const unchangedSummary = AuditService.computeChangeSummary(baseSnapshot, baseSnapshot);
+assert(unchangedSummary === 'Re-saved without field alterations', 'computeChangeSummary reports re-saved when identical');
+
+// Test 8.3: loadInitialData() resilience against corrupt or missing item versions
+const corruptAudit = new AuditService();
+assert(corruptAudit.loadInitialData(null) === false, 'loadInitialData returns false on null');
+assert(corruptAudit.loadInitialData('not an object') === false, 'loadInitialData returns false on non-object');
+
+const partialData = {
+  items: {
+    'invalid-item': null,
+    'empty-versions': { versions: [] },
+    'corrupt-versions': {
+      versions: [
+        null,
+        { snapshot: null },
+        { snapshot: { id: 'missing-fields' } },
+        { snapshot: { id: 'p1', model: 'Valid Model', brandId: 'b1' } }
+      ]
+    }
+  }
+};
+assert(corruptAudit.loadInitialData(partialData) === true, 'loadInitialData filters out invalid version objects cleanly');
+assert(corruptAudit.getVersions('corrupt-versions').length === 1, 'Only clean valid version was loaded');
+
+// Test 8.4: recordVersion error branches
+assertThrows(() => corruptAudit.recordVersion(null, {}), 'requires phoneId and valid state', 'recordVersion throws on missing phoneId');
+assertThrows(() => corruptAudit.recordVersion('phone-id', null), 'requires phoneId and valid state', 'recordVersion throws on null state');
+assertThrows(() => corruptAudit.recordVersion('phone-id', { id: 'no-model' }), 'Invalid snapshot data', 'recordVersion throws on incomplete snapshot');
+
+// Test 8.5: getVersion() querying by version number
+const targetVersion = storageAudit.getVersion('device-x', 1);
+assert(targetVersion !== null && targetVersion.version === 1, 'getVersion finds version by numeric version identifier');
+assert(storageAudit.getVersion('device-x', 'non-existent') === null, 'getVersion returns null for missing version');
+assert(storageAudit.getVersion('unknown-device', 1) === null, 'getVersion returns null for missing phoneId');
+
+// Test 8.6: LocalStorage error simulation
+const failingLocalStorage = {
+  getItem: () => { throw new Error('Quota exceeded'); },
+  setItem: () => { throw new Error('Quota exceeded'); },
+  removeItem: () => { throw new Error('Storage error'); }
+};
+const previousStorage = global.localStorage;
+global.localStorage = failingLocalStorage;
+
+const errAudit = new AuditService();
+assert(errAudit.persistToStorage() === false, 'persistToStorage returns false gracefully when localStorage throws');
+assert(errAudit.loadFromStorage() === false, 'loadFromStorage returns false gracefully when localStorage throws');
+errAudit.clearStorage(); // verify no unhandled throw
+
+global.localStorage = previousStorage;
+
 console.log(`\n====================================================`);
 console.log(` AuditService Tests: Total: ${totalTests} | Passed: ${passedTests} | Failed: ${failedTests}`);
 console.log(`====================================================\n`);
