@@ -352,6 +352,10 @@ if (prChangedFiles.length === 0) {
 
     // C. Audit JS files
     if (changedFile.endsWith('.js') && (changedFile.startsWith('js/') || changedFile.startsWith('scripts/'))) {
+      if (changedFile === 'scripts/check_native_stack_compliance.js') {
+        reportPass('pr-pure-native-js', `Compliance tooling script exempt from self-matching framework definitions: ${changedFile}`);
+        continue;
+      }
       const js = fs.readFileSync(fullPath, 'utf8');
       for (const fw of FORBIDDEN_3RD_PARTY_FRAMEWORKS) {
         if (fw.regex.test(js)) {
