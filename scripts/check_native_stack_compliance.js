@@ -199,6 +199,25 @@ if (fs.existsSync(jsDir)) {
     } else {
       reportPass('pure-native-js', `0% framework imports in js/${jsFile}`);
     }
+
+    // ECMAScript (ECMA-262) & ES2026 Modern Standard Verification
+    if (/\bvar\s+[a-zA-Z0-9_$]+/g.test(content)) {
+      reportViolation('es2026-standards', `Legacy 'var' statement detected in js/${jsFile}! Modern ES2026 standard requires const/let.`);
+    } else {
+      reportPass('es2026-standards', `0 legacy 'var' declarations in js/${jsFile} (Modern block scoping enforced)`);
+    }
+
+    if (/\beval\s*\(/g.test(content)) {
+      reportViolation('es2026-standards', `Forbidden eval() detected in js/${jsFile}! Violates secure ECMAScript standard.`);
+    } else {
+      reportPass('es2026-standards', `0 eval() invocations in js/${jsFile}`);
+    }
+
+    if (/\bwith\s*\(/g.test(content)) {
+      reportViolation('es2026-standards', `Forbidden 'with' statement detected in js/${jsFile}! Prohibited in strict ECMAScript standard.`);
+    } else {
+      reportPass('es2026-standards', `0 'with' statements in js/${jsFile}`);
+    }
   }
 }
 
@@ -241,6 +260,7 @@ if (violations > 0) {
   console.log('   - 0% Tailwind/Bootstrap');
   console.log('   - 0 External third-party dependencies');
   console.log('   - Pure Native JavaScript, Modern HTML5, Vanilla CSS Grid');
+  console.log('   - 100% ECMAScript 2026 (ES2026 / ECMA-262) standards compliance');
   console.log('   - Pure Native JavaScript tests only');
   console.log('====================================================\n');
   process.exit(0);

@@ -79,8 +79,13 @@ jobs:
             console.log("✓ Check 2 Passed: Modern Native CSS Grid and 0% Tailwind/Bootstrap verified.");
           '
 
-      - name: "Check 3: Zero External Third-Party Dependencies (100% Pure Native Stack)"
+      - name: "Check 3: Zero External Dependencies & Pure Native Stack"
         run: node scripts/check_native_stack_compliance.js
+
+      - name: "Check 3b: 100% ECMAScript 2026 (ES2026) Standards Gate (Full Tree & PR Diffs)"
+        env:
+          BASE_REF: ${{ github.base_ref || 'main' }}
+        run: node scripts/check_es2026_compliance.js
 
       - name: "Check 4: 100% Apache License 2.0 Compliance"
         run: |

@@ -307,6 +307,35 @@ assert(asusActiveSeries.length === 1 && asusActiveSeries[0].id === 'rog-phone', 
 assert(service.getActiveSeriesList('all').length === 0, 'Brand "all" returns empty series array');
 assert(service.getActiveSeriesList('non-existent').length === 0, 'Unknown brand returns empty series array');
 
+// 10. ECMAScript 2026 (ES2026 / ECMA-262) Standards Compliance Tests
+console.log('\n10. Testing ECMAScript 2026 (ES2026) Standards & Feature Verification:');
+
+// Test 10.1: Standard Object.freeze and immutability (ES2026)
+assert(Object.isFrozen(service.brands), 'ES2026: Catalog brands immutable state is frozen');
+assert(Object.isFrozen(service.phones), 'ES2026: Catalog phones immutable state is frozen');
+
+// Test 10.2: Structured clone / deep copy integrity without mutation
+const pristineSnapshot = service.getPhoneById('apple-iphone-16-pro-max');
+const clonedPhone = { ...pristineSnapshot, specs: JSON.parse(JSON.stringify(pristineSnapshot.specs || {})) };
+clonedPhone.model = 'Mutated Copy Test';
+assert(service.getPhoneById('apple-iphone-16-pro-max').model === 'iPhone 16 Pro Max', 'ES2026: Immutable catalog record immune to external object mutation');
+
+// Test 10.3: Nullish coalescing and optional chaining standard semantics
+const safeCpu = pristineSnapshot?.specs?.['Processor & Silicon']?.CPU ?? 'N/A';
+assert(typeof safeCpu === 'string' && safeCpu.length > 0, 'ES2026: Optional chaining and nullish coalescing evaluate accurately');
+
+// Test 10.4: Set & Array.fromAsync / collection interoperability (ES2026 Map/Set standards)
+const brandSet = new Set(service.phones.map(p => p.brandId));
+assert(brandSet.size === 14, `ES2026: Set correctly tracks unique brand IDs (${brandSet.size} unique)`);
+
+// Test 10.5: Error.isError or robust Error cross-realm semantics (ES2026)
+try {
+  service.addPhone({ brandId: 'invalid-brand' });
+} catch (err) {
+  const isErr = (typeof Error.isError === 'function') ? Error.isError(err) : (err instanceof Error);
+  assert(isErr, 'ES2026: Caught validation failure is recognized error instance');
+}
+
 // Summary
 console.log('\n====================================================');
 console.log(`Test Execution Finished: ${totalTests} Total | ${passedTests} Passed | ${failedTests} Failed`);

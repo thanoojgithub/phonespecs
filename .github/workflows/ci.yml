@@ -55,7 +55,10 @@ jobs:
       - name: Execute Full 100% Test Suite Runner
         run: node scripts/run_all_tests.js
 
-      - name: Verify Pure Native Stack & Zero-Framework Compliance
+      - name: Verify 100% ECMAScript 2026 (ES2026) Standards Compliance
+        run: node scripts/check_es2026_compliance.js
+
+      - name: Verify Pure Native Stack & ECMAScript 2026 Standards Compliance
         run: node scripts/check_native_stack_compliance.js
 
       - name: Check Apache 2.0 Compliance Files

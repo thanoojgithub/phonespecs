@@ -27,6 +27,7 @@ const testSuites = [
   { name: 'AuditService 128-Bit Versioning & Zero Duplicates', file: 'test_audit_service.js' },
   { name: 'JsonFormatterService & Control Character Sanitizer', file: 'test_json_formatter.js' },
   { name: 'PhoneSpecsApp Controller & UI State Engine', file: 'test_app_controller.js' },
+  { name: '100% ECMAScript 2026 (ES2026) Standards Gate', file: 'check_es2026_compliance.js' },
   { name: 'Apache License 2.0 Full Tree Compliance Audit', file: 'check_license_compliance.js' }
 ];
 
