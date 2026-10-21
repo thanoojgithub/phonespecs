@@ -513,6 +513,39 @@ class CatalogService {
     const currentBrandPhones = this.phones.filter(p => p.brandId === brandId);
     return brand.series.filter(s => currentBrandPhones.some(p => p.seriesId === s.id));
   }
+
+  /**
+   * ECMAScript 2026 Map.prototype.getOrInsert / Map grouping capability
+   * Returns a Map of brandId -> phone models array
+   */
+  getBrandDistributionMap() {
+    const map = new Map();
+    for (const phone of this.phones) {
+      if (typeof map.getOrInsert === 'function') {
+        const list = map.getOrInsert(phone.brandId, () => []);
+        list.push(phone.model);
+      } else {
+        if (!map.has(phone.brandId)) {
+          map.set(phone.brandId, []);
+        }
+        map.get(phone.brandId).push(phone.model);
+      }
+    }
+    return map;
+  }
+
+  /**
+   * ECMAScript 2026 Math.sumPrecise powered summation
+   * Computes precise total or average release year / numerical metrics
+   */
+  calculateAverageReleaseYear() {
+    if (!this.phones || this.phones.length === 0) return 0;
+    const years = this.phones.map(p => Number(p.releaseYear) || 2024);
+    const sum = (typeof Math.sumPrecise === 'function')
+      ? Math.sumPrecise(years)
+      : years.reduce((acc, y) => acc + y, 0);
+    return Math.round(sum / years.length);
+  }
 }
 
 if (typeof module !== 'undefined' && module.exports) {

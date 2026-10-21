@@ -336,6 +336,16 @@ try {
   assert(isErr, 'ES2026: Caught validation failure is recognized error instance');
 }
 
+// Test 10.6: Map.prototype.getOrInsert / Map grouping capability
+const brandDist = service.getBrandDistributionMap();
+assert(brandDist instanceof Map, 'ES2026: getBrandDistributionMap returns Map instance');
+assert(brandDist.has('apple') && brandDist.get('apple').length >= 3, 'ES2026: Brand distribution Map accurately holds model collections');
+
+// Test 10.7: Math.sumPrecise powered calculations
+const avgYear = service.calculateAverageReleaseYear();
+assert(typeof avgYear === 'number' && avgYear >= 2023 && avgYear <= 2027, `ES2026: calculateAverageReleaseYear computes valid metric (${avgYear})`);
+
+
 // Summary
 console.log('\n====================================================');
 console.log(`Test Execution Finished: ${totalTests} Total | ${passedTests} Passed | ${failedTests} Failed`);
